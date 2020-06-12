@@ -1,0 +1,15 @@
+[
+  {
+    "name": "git",
+    "image": "713487064356.dkr.ecr.us-east-2.amazonaws.com/tyk-ci/git:1.0",
+    "cpu": 1,
+    "memory": 512,
+    "essential": true,
+    "portMappings": [
+      {
+        "containerPort": 22,
+        "hostPort": 22
+      }
+    ]
+  }
+]

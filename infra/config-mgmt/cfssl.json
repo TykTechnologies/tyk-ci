@@ -1,0 +1,15 @@
+[
+  {
+    "name": "cfssl",
+    "image": "713487064356.dkr.ecr.us-east-2.amazonaws.com/tyk-ci/cfssl:1.0",
+    "cpu": 1,
+    "memory": 512,
+    "essential": true,
+    "portMappings": [
+      {
+        "containerPort": 8888,
+        "hostPort": 80
+      }
+    ]
+  }
+]
