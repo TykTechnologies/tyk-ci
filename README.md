@@ -37,9 +37,9 @@ Adds a bastion host in the public subnet with alok's key.
 
 ``` shell
 tf=terraform
-tfA='terraform apply -var-file=$(terraform workspace show).tfvars'
+tfA='terraform apply'
 tfa='[ -f out.plan ] && terraform apply out.plan || echo no plan'
-tfp='terraform plan -var-file=$(terraform workspace show).tfvars -out out.plan'
+tfp='terraform plan -out out.plan'
 tfv='terraform validate'
 tfw='terraform workspace'
 ```

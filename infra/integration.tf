@@ -1,5 +1,13 @@
 terraform {
   required_version = ">= 0.12"
+  backend "remote" {
+    hostname = "app.terraform.io"
+    organization = "Tyk"
+
+    workspaces {
+      prefix = "dev-"
+    }
+  }
 }
 
 provider "aws" {
@@ -249,4 +257,17 @@ data "aws_ami" "bastion" {
     name = "virtualization-type"
     values = [ "hvm" ]
   }
+}
+
+resource "aws_route53_record" "bastion" {
+  zone_id = data.aws_route53_zone.integration.zone_id
+  name = "bastion.${data.aws_route53_zone.integration.name}"
+  type = "A"
+  ttl = 300
+  records = [ aws_instance.bastion.public_ip ]
+}
+
+data "aws_route53_zone" "integration" {
+  name         = "dev.tyk.technology."
+  private_zone = false
 }
