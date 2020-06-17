@@ -3,6 +3,11 @@ output "bastion_host" {
   description = "Connect with ec2-user"
 }
 
+output "region" {
+  value = var.region
+  description = "Region in which the dev env is running"
+}
+
 # Keep it explicit to make sure that the correct
 # value is populated in the correct place
 
