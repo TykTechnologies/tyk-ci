@@ -13,38 +13,23 @@ output "region" {
   description = "Region in which the dev env is running"
 }
 
-# Keep it explicit to make sure that the correct
-# value is populated in the correct place
-
-output "tyk_key_id" {
-  value = aws_iam_access_key.integration["tyk"].id
-  description = "Key ID for tyk repo"
+output "tyk" {
+  value = map("key", aws_iam_access_key.integration["tyk"].id,
+    "secret", aws_iam_access_key.integration["tyk"].secret,
+    "ecr", aws_ecr_repository.integration["tyk"].repository_url)
+  description = "gateway"
 }
 
-output "tyk-analytics_key_id" {
-  value = aws_iam_access_key.integration["tyk-analytics"].id
-  description = "Key ID for tyk-analytics repo"
+output "tyk-analytics" {
+  value = map("key", aws_iam_access_key.integration["tyk-analytics"].id,
+    "secret", aws_iam_access_key.integration["tyk-analytics"].secret,
+    "ecr", aws_ecr_repository.integration["tyk-analytics"].repository_url)
+  description = "gateway"
 }
 
-output "tyk-pump_key_id" {
-  value = aws_iam_access_key.integration["tyk-pump"].id
-  description = "Key ID for tyk-pump repo"
-}
-
-output "tyk_secret_key" {
-  value = aws_iam_access_key.integration["tyk"].secret
-  description = "Secret key for tyk repo"
-  sensitive = true
-}
-
-output "tyk-analytics_secret_key" {
-  value = aws_iam_access_key.integration["tyk-analytics"].secret
-  description = "Secret key for tyk repo"
-  sensitive = true
-}
-
-output "tyk-pump_secret_key" {
-  value = aws_iam_access_key.integration["tyk-pump"].secret
-  description = "Secret key for tyk repo"
-  sensitive = true
+output "tyk-pump" {
+  value = map("key", aws_iam_access_key.integration["tyk-pump"].id,
+    "secret", aws_iam_access_key.integration["tyk-pump"].secret,
+    "ecr", aws_ecr_repository.integration["tyk-pump"].repository_url)
+  description = "gateway"
 }
