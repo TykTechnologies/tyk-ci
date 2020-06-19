@@ -21,7 +21,8 @@ locals {
   common_tags = "${map(
     "managed", "terraform",
     "ou", "devops",
-    "purpose", "ci"
+    "purpose", "ci",
+    "env", var.name_prefix,
   )}"
 }
 
@@ -160,6 +161,12 @@ resource "aws_security_group" "egress-all" {
     protocol    = "-1"
     cidr_blocks = [ "0.0.0.0/0" ]
   }
+}
+
+# Created by hand in the eu-central-1 region of the CE account on
+# Fri, 19 Jun 2020 16:05:41 IST
+data "aws_secretsmanager_secret" "mongo_password" {
+  arn = "arn:aws:secretsmanager:eu-central-1:046805072452:secret:dev_shared_mongo_password-NtuHRv"
 }
 
 resource "aws_instance" "mongo" {

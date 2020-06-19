@@ -1,6 +1,11 @@
-output "bastion_host" {
-  value = aws_instance.bastion.public_ip
-  description = "Connect with ec2-user"
+output "mongo_host" {
+  value = aws_instance.mongo.private_ip
+  description = "Shared with all environments"
+}
+
+output "config_efs" {
+  value = aws_efs_file_system.config.id
+  description = "Shared with all environments"
 }
 
 output "region" {
