@@ -111,6 +111,7 @@ module "vpc" {
 
   enable_nat_gateway = true
   single_nat_gateway = true
+  # Need DNS to address EFS by name
   enable_dns_support = true
   enable_dns_hostnames = true
 
@@ -215,6 +216,18 @@ resource "aws_security_group" "efs" {
   }
 }
 
+resource "aws_efs_file_system" "cfssl" {
+  creation_token = "cfssl-keys"
+
+  tags = local.common_tags
+}
+
+resource "aws_efs_mount_target" "cfssl" {
+  file_system_id = aws_efs_file_system.cfssl.id
+  subnet_id = module.vpc.private_subnets[0]
+  security_groups = [ aws_security_group.efs.id ]
+}
+
 resource "aws_efs_file_system" "config" {
   creation_token = "dev-env-config"
 
@@ -227,22 +240,51 @@ resource "aws_efs_mount_target" "config" {
   security_groups = [ aws_security_group.efs.id ]
 }
 
+data "template_file" "mount_config" {
+  template = file("scripts/setup-efs.sh")
+  vars = {
+    efs_id = aws_efs_file_system.config.id
+    mount_point = "/config"
+  }
+}
+
+data "template_file" "mount_cfssl_keys" {
+  template = file("scripts/setup-efs.sh")
+  vars = {
+    efs_id = aws_efs_file_system.cfssl.id
+    mount_point = "/cfssl"
+  }
+}
+
+data "template_cloudinit_config" "mounts" {
+  gzip = true
+  base64_encode = true
+
+  part {
+    content_type = "text/x-shellscript"
+    content = data.template_file.mount_config.rendered
+  }
+
+  part {
+    content_type = "text/x-shellscript"
+    content = data.template_file.mount_cfssl_keys.rendered
+  }
+}
+
 resource "aws_instance" "bastion" {
   ami = data.aws_ami.bastion.id
   instance_type = "t2.micro"
   key_name = var.key_name
   subnet_id = module.vpc.public_subnets[0]
   vpc_security_group_ids = [ aws_security_group.efs.id, aws_security_group.mongo.id, aws_security_group.ssh.id, aws_security_group.egress-all.id ]
-  user_data = data.template_file.efs.rendered
+  user_data_base64 = data.template_cloudinit_config.mounts.rendered
+
+  depends_on = [
+    aws_efs_mount_target.config,
+    aws_efs_mount_target.cfssl,
+  ]
   
   tags = local.common_tags
-}
-
-data "template_file" "efs" {
-  template = file("scripts/setup-efs.sh")
-  vars = {
-    efs_id = aws_efs_file_system.config.id
-  }
 }
 
 data "aws_ami" "bastion" {
