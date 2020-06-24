@@ -24,12 +24,12 @@ output "tyk-analytics" {
   value = map("key", aws_iam_access_key.integration["tyk-analytics"].id,
     "secret", aws_iam_access_key.integration["tyk-analytics"].secret,
     "ecr", aws_ecr_repository.integration["tyk-analytics"].repository_url)
-  description = "gateway"
+  description = "dashboard"
 }
 
 output "tyk-pump" {
   value = map("key", aws_iam_access_key.integration["tyk-pump"].id,
     "secret", aws_iam_access_key.integration["tyk-pump"].secret,
     "ecr", aws_ecr_repository.integration["tyk-pump"].repository_url)
-  description = "gateway"
+  description = "pump"
 }
