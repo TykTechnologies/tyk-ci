@@ -19,7 +19,7 @@ provider "aws" {
 
 locals {
   common_tags = "${map(
-    "managed", "terraform",
+    "managed", "automation",
     "ou", "devops",
     "purpose", "ci",
     "env", var.name_prefix,
@@ -105,9 +105,9 @@ module "vpc" {
   name = var.name_prefix
   cidr = "10.91.0.0/16"
 
-  azs             = [ data.aws_availability_zones.available.names[0] ]
-  private_subnets = [ cidrsubnet(var.cidr, 8, 100) ]
-  public_subnets  = [ cidrsubnet(var.cidr, 8, 1) ]
+  azs             = data.aws_availability_zones.available.names 
+  private_subnets = cidrsubnets(cidrsubnet(var.cidr, 8, 100), 4, 4, 4) 
+  public_subnets = cidrsubnets(cidrsubnet(var.cidr, 8, 1), 4, 4, 4) 
 
   enable_nat_gateway = true
   single_nat_gateway = true
@@ -132,7 +132,7 @@ resource "aws_security_group" "mongo" {
     from_port   = 27017
     to_port     = 27017
     protocol    = "tcp"
-    cidr_blocks = [ module.vpc.private_subnets_cidr_blocks[0] ]
+    cidr_blocks = module.vpc.private_subnets_cidr_blocks 
   }
 }
 
@@ -216,26 +216,14 @@ resource "aws_security_group" "efs" {
   }
 }
 
-resource "aws_efs_file_system" "cfssl" {
-  creation_token = "cfssl-keys"
-
-  tags = local.common_tags
-}
-
 resource "aws_efs_mount_target" "cfssl" {
-  file_system_id = aws_efs_file_system.cfssl.id
+  file_system_id = var.cfssl_efs
   subnet_id = module.vpc.private_subnets[0]
   security_groups = [ aws_security_group.efs.id ]
 }
 
-resource "aws_efs_file_system" "config" {
-  creation_token = "dev-env-config"
-
-  tags = local.common_tags
-}
-
 resource "aws_efs_mount_target" "config" {
-  file_system_id = aws_efs_file_system.config.id
+  file_system_id = var.config_efs
   subnet_id = module.vpc.public_subnets[0]
   security_groups = [ aws_security_group.efs.id ]
 }
@@ -243,7 +231,7 @@ resource "aws_efs_mount_target" "config" {
 data "template_file" "mount_config" {
   template = file("scripts/setup-efs.sh")
   vars = {
-    efs_id = aws_efs_file_system.config.id
+    efs_id = var.config_efs
     mount_point = "/config"
   }
 }
@@ -251,7 +239,7 @@ data "template_file" "mount_config" {
 data "template_file" "mount_cfssl_keys" {
   template = file("scripts/setup-efs.sh")
   vars = {
-    efs_id = aws_efs_file_system.cfssl.id
+    efs_id = var.cfssl_efs
     mount_point = "/cfssl"
   }
 }
@@ -320,3 +308,20 @@ data "aws_route53_zone" "integration" {
   name         = "dev.tyk.technology."
   private_zone = false
 }
+
+# NLB
+# Entrypoint to all infra services: cfssl, int-service
+resource "aws_lb" "integration" {
+  name            = "nlb-integration"
+  internal = false
+  load_balancer_type = "network"
+  subnets         =  module.vpc.public_subnets 
+
+  tags = local.common_tags
+}
+
+# Used in all ecs task definitions
+data "aws_iam_role" "ecs_task_execution_role" {
+  name = "ecsTaskExecutionRole"
+}
+

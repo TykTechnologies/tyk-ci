@@ -7,7 +7,8 @@ This is where the PKI infra for CI/CD resides.
 There is a self-signed root CA which is used for all resources and for revocations.
 
 ``` shellsession
-% cfssl gencert -initca rootca/csr.json | cfssljson -bare root
+% cd rootca
+% cfssl gencert -initca csr.json | cfssljson -bare root
 ```
 
 will generate `root-key.pem`, `root.pem`, and `root.csr` (for cross-signing).
