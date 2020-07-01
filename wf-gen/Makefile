@@ -1,9 +1,17 @@
 # This makefile uses relative paths, make sure you are in the correct directory
 
-cfssl:
-	m4 -DxREPO=$@ templates/output.tf.m4 > ../$(@)/outputs.tf
-	m4 -DxREPO=$@ -DxPATH_TRIGGERED=true templates/int-image.yml.m4 > ../.github/workflows/$(@).yml
+local: ../cfssl/outputs.tf ../.github/workflows/cfssl.yml ../int-service/outputs.tf ../.github/workflows/int-service.yml
 
-int-service:
-	m4 -DxREPO=$@ templates/output.tf.m4 > ../$(@)/outputs.tf
-	m4 -DxREPO=$@ -DxPATH_TRIGGERED=true templates/int-image.yml.m4 > ../.github/workflows/$(@).yml
+external:
+
+../cfssl/outputs.tf: output.tf.m4
+	m4 -DxREPO=cfssl $< > $@
+
+../.github/workflows/cfssl.yml: int-image.yml.m4
+	m4 -DxREPO=cfssl -DxPATH_TRIGGERED=true $< > $@
+
+../int-service/outputs.tf: output.tf.m4
+	m4 -DxREPO=int-service $< > $@
+
+../.github/workflows/int-service.yml: int-image.yml.m4
+	m4 -DxREPO=int-service -DxPATH_TRIGGERED=true $< > $@
