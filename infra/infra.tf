@@ -11,13 +11,14 @@ terraform {
 }
 
 provider "aws" {
-  version = ">= 2.17"
+  version = ">= 2.46"
   region  = var.region
 }
 
 # Internal variables
 
 locals {
+  registryid = element(split(".", var.gromit_ecr), 0)
   common_tags = "${map(
     "managed", "automation",
     "ou", "devops",
@@ -38,7 +39,9 @@ module "vpc" {
 
   azs             = data.aws_availability_zones.available.names
   private_subnets = cidrsubnets(cidrsubnet(var.cidr, 8, 100), 4, 4, 4)
+  private_subnet_tags = { Type = "private" }
   public_subnets  = cidrsubnets(cidrsubnet(var.cidr, 8, 1), 4, 4, 4)
+  public_subnet_tags = { Type = "public" }
 
   enable_nat_gateway = true
   single_nat_gateway = true
@@ -61,22 +64,6 @@ resource "aws_security_group" "efs" {
     protocol    = "tcp"
     cidr_blocks = [module.vpc.vpc_cidr_block]
   }
-}
-
-resource "aws_efs_mount_target" "cfssl" {
-  for_each = toset(module.vpc.public_subnets)
-  
-  file_system_id  = var.cfssl_efs
-  subnet_id       = each.value
-  security_groups = [aws_security_group.efs.id]
-}
-
-resource "aws_efs_mount_target" "config" {
-  for_each = toset(module.vpc.public_subnets)
-  
-  file_system_id  = var.cfssl_efs
-  subnet_id       = each.value
-  security_groups = [aws_security_group.efs.id]
 }
 
 resource "aws_security_group" "mongo" {
@@ -159,6 +146,8 @@ data "aws_ami" "mongo" {
   }
 }
 
+# config and cfssl mount targets for all public subnets
+
 data "template_file" "mount_config" {
   template = file("scripts/setup-efs.sh")
   vars = {
@@ -190,12 +179,30 @@ data "template_cloudinit_config" "mounts" {
   }
 }
 
+resource "aws_efs_mount_target" "cfssl" {
+  for_each = toset(module.vpc.public_subnets)
+  
+  file_system_id  = var.cfssl_efs
+  subnet_id       = each.value
+  security_groups = [aws_security_group.efs.id]
+}
+
+resource "aws_efs_mount_target" "config" {
+  for_each = toset(module.vpc.public_subnets)
+  
+  file_system_id  = var.config_efs
+  subnet_id       = each.value
+  security_groups = [aws_security_group.efs.id]
+}
+
+# Bastion
+
 resource "aws_instance" "bastion" {
   ami                    = data.aws_ami.bastion.id
   instance_type          = "t2.micro"
   key_name               = var.key_name
   subnet_id              = module.vpc.public_subnets[0]
-  vpc_security_group_ids = [var.efs_sg, aws_security_group.mongo.id, aws_security_group.ssh.id, aws_security_group.egress-all.id]
+  vpc_security_group_ids = [aws_security_group.efs.id, aws_security_group.mongo.id, aws_security_group.ssh.id, aws_security_group.egress-all.id]
   user_data_base64       = data.template_cloudinit_config.mounts.rendered
 
   tags = local.common_tags
@@ -222,24 +229,38 @@ data "aws_ami" "bastion" {
   }
 }
 
-# Service discovery
-resource "aws_service_discovery_public_dns_namespace" "dev" {
-  name        = "dev.tyk.technology."
-  description = "Developer environments"
-}
+# Internal cluster ancillaries
 
-resource "aws_eip" "bastion" {
-  vpc = true
+resource "aws_ecs_cluster" "internal" {
+  name = "internal"
 
   tags = local.common_tags
 }
 
-resource "aws_eip_association" "bastion" {
-  instance_id   = aws_instance.bastion.id
-  allocation_id = aws_eip.bastion.id
+resource "aws_cloudwatch_log_group" "internal" {
+  name = "internal"
+
+  tags = local.common_tags
 }
 
-# Used in all ecs task definitions
+# DNS
+
+resource "aws_route53_zone" "dev_tyk_tech" {
+  name = "dev.tyk.technology"
+
+  tags = local.common_tags
+}
+
+resource "aws_route53_record" "bastion" {
+  zone_id = aws_route53_zone.dev_tyk_tech.zone_id
+  name    = "bastion"
+  type    = "A"
+  ttl     = "300"
+
+  records        = [ aws_instance.bastion.public_ip ]
+}
+
+# The default for ecs task definitions
 data "aws_iam_role" "ecs_task_execution_role" {
   name = "ecsTaskExecutionRole"
 }

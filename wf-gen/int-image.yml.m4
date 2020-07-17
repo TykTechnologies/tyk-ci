@@ -85,6 +85,11 @@ ifelse(xREPO, `tyk-analytics', `
                          .
             docker push $ECR_REGISTRY/$ECR_REPOSITORY
 
+      - name: Tell gromit about new build
+        run: |
+            curl -fsSL -H "Authorization: ${{secrets.GROMIT_TOKEN}}" 'https://domu-kun.cloud.tyk.io/gromit/newbuild' \
+                 -X POST -d '{ "repo": "${{ github.repository}}", "ref": "${{ github.ref }}", "sha": "${{ github.sha }}" }'
+
       - name: Logout of Amazon ECR
         if: always()
         run: docker logout ${{ steps.login-ecr.outputs.registry }}

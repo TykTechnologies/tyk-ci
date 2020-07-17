@@ -5,6 +5,32 @@ dnl The comment below is quoted so that it is not treated as a comment
 
 FROM debian:buster-slim
 
+RUN apt-get update \
+ && apt-get upgrade -y \
+ && apt-get install -y --no-install-recommends \
+        wget jq curl ca-certificates apt-transport-https gnupg unzip
+
+ifelse(xREPO, `tyk', `RUN apt-get install -y --no-install-recommends \
+        build-essential \
+        python3-setuptools \
+        libpython3.7 \
+        python3-pip \
+        && pip3 install protobuf grpcio==1.24.0 \
+        && apt-get purge -y build-essential \
+        && rm -rf /root/.cache',)
+
+ifelse(xREPO, `tyk-analytics', `RUN apt-get install -y --no-install-recommends \
+        build-essential \
+        && curl -sL https://deb.nodesource.com/setup_12.x | bash - \
+        && apt-get install -y --no-install-recommends --allow-downgrades nodejs \
+        && npm config set user 0 && npm config set unsafe-perm true \
+        && npm install -g aglio \
+        && apt-get purge -y build-essential\
+        && apt-get autoremove -y \
+        && rm -rf /root/.npm && rm -rf /root/.node-gyp',)
+
+RUN apt-get autoremove -y 
+
 ADD xREPO.tar.gz /opt/xREPO
 
 VOLUME ["/conf"]
@@ -12,6 +38,7 @@ WORKDIR /opt/xREPO
 
 ENTRYPOINT ["/opt/xREPO/xREPO" ]
 CMD [ "--conf=/conf/xREPO/xREPO.conf" ]
+
 # Local Variables:
 # mode: dockerfile
 # End:

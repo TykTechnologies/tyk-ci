@@ -3,7 +3,7 @@ output "mongo_host" {
   description = "Shared with all environments"
 }
 
-output "bastion" {
-  value       = aws_eip.bastion.public_dns
-  description = "Bastion host EIP"
+output "r53_hosted_zoneid" {
+  value = aws_route53_zone.dev_tyk_tech.zone_id
+  description = "Zone ID for dev.tyk.technology"
 }

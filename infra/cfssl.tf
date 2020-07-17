@@ -1,50 +1,27 @@
-# This needs to be separate from int_service as a bug[1]
-# prevents multiple service_registries in an aws_ecs_service block
-# [1] https://github.com/terraform-providers/terraform-provider-aws/issues/9573
+data "template_file" "cfssl" {
+  template = templatefile("templates/cd-awsvpc.tpl",
+    { port=8888,
+      name="cfssl",
+      log_group="internal",
+      image=var.cfssl_ecr,
+      mounts=[
+        { src="cfssl", dest="/cfssl" }
+      ],
+      region = var.region,
+      env=[
+        { name="CFSSL_API_KEY", value=var.cfssl_apikey }
+      ] })
+}
 
 resource "aws_ecs_task_definition" "cfssl" {
-  family                   = "int_service"
+  family                   = "cfssl"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
   execution_role_arn       = data.aws_iam_role.ecs_task_execution_role.arn
   cpu                      = 256
   memory                   = 512
 
-  container_definitions = <<EOF
-    [
-        {
-            "portMappings": [
-                {
-                    "hostPost": 8888,
-                    "containerPort": 8888
-                }
-            ],
-            "mountPoints": [
-                {
-                    "sourceVolume": "cfssl",
-                    "containerPath": "/cfssl",
-                    "readOnly": true
-                }
-            ],
-            "environment": [
-                {
-                    "name": "CFSSL_API_KEY",
-                    "value": "${var.cfssl_apikey}"
-                }
-            ],
-            "image": "${var.cfssl_ecr}:latest",
-            "name": "cfssl",
-            "logConfiguration": {
-                "logDriver": "awslogs",
-                "options": {
-                    "awslogs-group": "int_service",
-                    "awslogs-stream-prefix": "cfssl",
-                    "awslogs-region": "${var.region}"
-                }
-            }
-        }
-    ]
-EOF
+  container_definitions = data.template_file.cfssl.rendered 
 
   volume {
     name = "cfssl"
@@ -55,27 +32,37 @@ EOF
     }
   }
 
-  depends_on = [aws_cloudwatch_log_group.int_service]
+  depends_on = [aws_cloudwatch_log_group.internal]
 
   tags = local.common_tags
 }
 
-resource "aws_service_discovery_service" "cfssl" {
-  name = "cfssl"
+resource "aws_security_group" "cfssl" {
+  name        = "cfssl"
+  description = "Allow traffic from anywhere"
+  vpc_id      = module.vpc.vpc_id
 
-  dns_config {
-    namespace_id = aws_service_discovery_public_dns_namespace.dev.id
 
-    dns_records {
-      ttl  = 60
-      type = "SRV"
-    }
+  ingress {
+    from_port   = 8888
+    to_port     = 8888
+    protocol    = "tcp"
+    cidr_blocks = [ "0.0.0.0/0" ]
   }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = local.common_tags
 }
 
 resource "aws_ecs_service" "cfssl" {
   name            = "cfssl"
-  cluster         = aws_ecs_cluster.int_service.id
+  cluster         = aws_ecs_cluster.internal.id
   task_definition = aws_ecs_task_definition.cfssl.id
   desired_count   = 1
   launch_type     = "FARGATE"
@@ -84,14 +71,9 @@ resource "aws_ecs_service" "cfssl" {
 
   network_configuration {
     subnets          = module.vpc.public_subnets
+    security_groups = [ aws_security_group.cfssl.id ]
     assign_public_ip = true
-
   } 
-
-  service_registries {
-    registry_arn = aws_service_discovery_service.cfssl.arn
-    port = 8888
-  }
 
   tags = local.common_tags
 }

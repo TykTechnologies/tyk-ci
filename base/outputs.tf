@@ -34,10 +34,10 @@ output "tyk-pump" {
   description = "pump"
 }
 
-output "int-service" {
-  value = map("key", aws_iam_access_key.integration["int-service"].id,
-    "secret", aws_iam_access_key.integration["int-service"].secret,
-  "ecr", aws_ecr_repository.integration["int-service"].repository_url)
+output "gromit" {
+  value = map("key", aws_iam_access_key.integration["gromit"].id,
+    "secret", aws_iam_access_key.integration["gromit"].secret,
+  "ecr", aws_ecr_repository.integration["gromit"].repository_url)
   description = "integration service"
 }
 
@@ -46,4 +46,15 @@ output "cfssl" {
     "secret", aws_iam_access_key.integration["cfssl"].secret,
   "ecr", aws_ecr_repository.integration["cfssl"].repository_url)
   description = "cfssl"
+}
+
+output "devshared" {
+  value = map("key", aws_iam_access_key.devshared.id,
+    "secret", aws_iam_access_key.devshared.secret)
+  description = "shared developer key for access to all repos"
+}
+
+output "gromit_role_arn" {
+  value = aws_iam_role.gromit.arn
+  description = "IAM role for gromit tasks"
 }

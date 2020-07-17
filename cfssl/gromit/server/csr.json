@@ -1,6 +1,6 @@
 {
     "CN": "Integeration service",
-    "hosts": [ "int-service.dev.tyk.technologies" ],
+    "hosts": [ "gromit.dev.tyk.technology", "localhost" ],
     "key": {
         "algo": "rsa",
         "size": 2048

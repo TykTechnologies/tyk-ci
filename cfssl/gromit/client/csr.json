@@ -1,9 +1,6 @@
 {
-    "CN": "cd.tyk.technologies",
-    "hosts": [
-        "cd.dev.tyk.technologies",
-        "localhost"
-    ],
+    "CN": "Gromit client",
+    "hosts": [ ],
     "key": {
         "algo": "rsa",
         "size": 2048

@@ -26,10 +26,6 @@ variable "cfssl_efs" {
   description = "EFS volume with CFSSL keys and certs"
 }
 
-variable "efs_sg" {
-  description = "SG for access on EFS port"
-}
-
 variable "cfssl_apikey" {
   description = "API key for cfssl requests"
 }
@@ -38,7 +34,11 @@ variable "cfssl_ecr" {
   description = "Repo URL for CFSSL"
 }
 
-variable "int_service_ecr" {
-  description = "Repo URL for int-service"
+variable "gromit_ecr" {
+  description = "Repo URL for gromit"
+}
+
+variable "gromit_role_arn" {
+  description = "Task role for gromit tasks"
 }
 

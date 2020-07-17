@@ -22,7 +22,7 @@ endef
 
 all: local external
 
-local: ../cfssl/outputs.tf ../.github/workflows/cfssl.yml ../int-service/outputs.tf ../.github/workflows/int-service.yml
+local: ../cfssl/outputs.tf ../.github/workflows/cfssl.yml ../gromit/outputs.tf ../.github/workflows/gromit.yml
 
 external: tyk tyk-analytics tyk-pump
 
@@ -41,11 +41,11 @@ tyk-pump: tyk-pump/.github/workflows/int-image.yml tyk-pump/integration/terrafor
 ../.github/workflows/cfssl.yml: int-image.yml.m4
 	m4 -DxREPO=cfssl -DxPATH_TRIGGERED $< > $@
 
-../int-service/outputs.tf: output.tf.m4
-	m4 -DxREPO=int-service $< > $@
+../gromit/outputs.tf: output.tf.m4
+	m4 -DxREPO=gromit $< > $@
 
-../.github/workflows/int-service.yml: int-image.yml.m4
-	m4 -DxREPO=int-service -DxPATH_TRIGGERED=true $< > $@
+../.github/workflows/gromit.yml: int-image.yml.m4
+	m4 -DxREPO=gromit -DxPATH_TRIGGERED=true $< > $@
 
 tyk/.github/workflows/int-image.yml: int-image.yml.m4
 	$(git-pull)
