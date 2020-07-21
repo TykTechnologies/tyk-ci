@@ -1,8 +1,9 @@
-all: integration
-	./$<
+ECR := 046805072452.dkr.ecr.eu-central-1.amazonaws.com
 
-integration: main.go
-	go build -o $@
+.PHONY: int-service
 
-image: 
-	docker build -t tykio/integration .
+int-service:
+	aws ecr get-login-password --region eu-central-1 | docker login --username AWS --password-stdin $(ECR)
+	docker build -t $(@):latest .
+	docker tag $(@):latest $(ECR)/$(@):latest
+	docker push $(ECR)/$(@):latest

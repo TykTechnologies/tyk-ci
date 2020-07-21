@@ -1,0 +1,16 @@
+{
+    "CN": "Mongo Intermediate CA",
+    "key": {
+        "algo": "rsa",
+        "size": 2048
+    },
+    "names": [
+        {
+            "C": "UK",
+            "L": "London",
+            "O": "Tyk Technologies",
+            "OU": "Devops",
+            "ST": "Greater London"
+        }
+    ]
+}

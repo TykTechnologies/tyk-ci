@@ -1,0 +1,42 @@
+version: "3"
+services:
+    upstream:
+        image: citizenstig/httpbin
+
+    dashboard:
+        image: 046805072452.dkr.ecr.eu-central-1.amazonaws.com/tyk-analytics:latest
+        ports:
+            - "3000:3000"
+            - "5000:5000"
+        environment:
+            - TYK_LOGLEVEL=${TYK_LOGLEVEL:-debug}
+        volumes:
+            - ../confs/default:/conf
+        depends_on:
+            - tyk-mongo
+
+    gateway:
+        image: 046805072452.dkr.ecr.eu-central-1.amazonaws.com/tyk:latest
+        ports:
+            - "8080:8080"
+        volumes:
+            - ../confs/default:/conf
+        depends_on:
+            - tyk-redis
+
+    pump:
+        image: 046805072452.dkr.ecr.eu-central-1.amazonaws.com/tyk-pump:latest
+        volumes:
+            - ../confs/default:/conf
+        depends_on:
+            - gateway
+            - tyk-mongo
+
+    tyk-redis:
+        image: redis
+        ports:
+            - "6379:6379"
+
+    tyk-mongo:
+        image: mongo
+#        command: mongod --sslMode allowSSL --sslCAFile /etc/ssl/tyk-mongo-ca.pem --sslPEMKeyFile /etc/ssl/tyk-mongo-key.pem --sslAllowConnectionsWithoutCertificates --sslAllowInvalidCertificates --sslAllowInvalidHostnames

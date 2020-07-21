@@ -10,8 +10,8 @@ COPY --from=builder /integration /usr/local/bin/
 ENV PATH "${PATH}:/usr/local/bin"
 
 EXPOSE 8443
-VOLUME /cfssl/certs
+VOLUME /cfssl
 WORKDIR /cfssl
 
 ENTRYPOINT [ "integration" ]
-CMD [ "-certpath=certs" ]
+CMD [ "-ca=rootca/rootca.pem", "-cert=int-service-server/server.pem", "-key=int-service-server/server-key.pem" ]

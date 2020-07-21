@@ -1,7 +1,7 @@
 terraform {
   required_version = ">= 0.12"
   backend "remote" {
-    hostname = "app.terraform.io"
+    hostname     = "app.terraform.io"
     organization = "Tyk"
 
     workspaces {
@@ -12,7 +12,7 @@ terraform {
 
 provider "aws" {
   version = ">= 2.17"
-  region = var.region
+  region  = var.region
 }
 
 # Internal variables
@@ -26,77 +26,8 @@ locals {
   )}"
 }
 
-resource "aws_ecr_repository" "integration" {
-  for_each = toset(var.repositories)
-  
-  name                 = each.key
-  image_tag_mutability = "MUTABLE" 
-
-  image_scanning_configuration {
-    scan_on_push = false
-  }
-
-  tags = local.common_tags
-}
-
-resource "aws_iam_access_key" "integration" {
-  for_each = toset(var.repositories)
-  
-  user    = aws_iam_user.integration[each.key].name
-}
-
-resource "aws_iam_user" "integration" {
-  for_each = toset(var.repositories)
-
-  name = "ecr-push_${each.key}"
-
-  tags = local.common_tags
-}
-
-resource "aws_iam_user_policy" "integration" {
-  for_each = toset(var.repositories)
-  
-  name = "ECRpush"
-  user = "ecr-push_${each.key}"
-  policy = <<EOF
-{
-   "Version":"2012-10-17",
-   "Statement":[
-      {
-         "Sid":"GetAuthorizationToken",
-         "Effect":"Allow",
-         "Action":[
-            "ecr:GetAuthorizationToken"
-         ],
-         "Resource":"*"
-      },
-       {
-         "Sid":"AllowPull",
-         "Effect":"Allow",
-         "Action":[
-            "ecr:GetDownloadUrlForLayer",
-            "ecr:BatchGetImage",
-            "ecr:BatchCheckLayerAvailability"
-         ],
-         "Resource": "${aws_ecr_repository.integration[each.key].arn}"
-       },
-       {
-         "Sid":"AllowPush",
-         "Effect":"Allow",
-         "Action":[
-            "ecr:GetDownloadUrlForLayer",
-            "ecr:BatchGetImage",
-            "ecr:BatchCheckLayerAvailability",
-            "ecr:PutImage",
-            "ecr:InitiateLayerUpload",
-            "ecr:UploadLayerPart",
-            "ecr:CompleteLayerUpload"
-         ],
-         "Resource": "${aws_ecr_repository.integration[each.key].arn}"
-      }
-   ]
-}
-EOF
+data "aws_availability_zones" "available" {
+  state = "available"
 }
 
 module "vpc" {
@@ -105,21 +36,47 @@ module "vpc" {
   name = var.name_prefix
   cidr = "10.91.0.0/16"
 
-  azs             = data.aws_availability_zones.available.names 
-  private_subnets = cidrsubnets(cidrsubnet(var.cidr, 8, 100), 4, 4, 4) 
-  public_subnets = cidrsubnets(cidrsubnet(var.cidr, 8, 1), 4, 4, 4) 
+  azs             = data.aws_availability_zones.available.names
+  private_subnets = cidrsubnets(cidrsubnet(var.cidr, 8, 100), 4, 4, 4)
+  public_subnets  = cidrsubnets(cidrsubnet(var.cidr, 8, 1), 4, 4, 4)
 
   enable_nat_gateway = true
   single_nat_gateway = true
   # Need DNS to address EFS by name
-  enable_dns_support = true
+  enable_dns_support   = true
   enable_dns_hostnames = true
 
   tags = local.common_tags
 }
 
-data "aws_availability_zones" "available" {
-  state = "available"
+resource "aws_security_group" "efs" {
+  name        = "efs"
+  description = "Allow efs inbound traffic from anywhere in the VPC"
+  vpc_id      = module.vpc.vpc_id
+
+
+  ingress {
+    from_port   = 2049
+    to_port     = 2049
+    protocol    = "tcp"
+    cidr_blocks = [module.vpc.vpc_cidr_block]
+  }
+}
+
+resource "aws_efs_mount_target" "cfssl" {
+  for_each = toset(module.vpc.public_subnets)
+  
+  file_system_id  = var.cfssl_efs
+  subnet_id       = each.value
+  security_groups = [aws_security_group.efs.id]
+}
+
+resource "aws_efs_mount_target" "config" {
+  for_each = toset(module.vpc.public_subnets)
+  
+  file_system_id  = var.cfssl_efs
+  subnet_id       = each.value
+  security_groups = [aws_security_group.efs.id]
 }
 
 resource "aws_security_group" "mongo" {
@@ -132,7 +89,7 @@ resource "aws_security_group" "mongo" {
     from_port   = 27017
     to_port     = 27017
     protocol    = "tcp"
-    cidr_blocks = module.vpc.private_subnets_cidr_blocks 
+    cidr_blocks = module.vpc.private_subnets_cidr_blocks
   }
 }
 
@@ -146,7 +103,7 @@ resource "aws_security_group" "ssh" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = [ "0.0.0.0/0" ]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -160,7 +117,7 @@ resource "aws_security_group" "egress-all" {
     from_port   = 0
     to_port     = 0
     protocol    = "-1"
-    cidr_blocks = [ "0.0.0.0/0" ]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
@@ -171,67 +128,41 @@ data "aws_secretsmanager_secret" "mongo_password" {
 }
 
 resource "aws_instance" "mongo" {
-  ami = data.aws_ami.mongo.id
-  instance_type = "t3.micro"
-  key_name = var.key_name
-  subnet_id = module.vpc.private_subnets[0]
-  vpc_security_group_ids = [ aws_security_group.mongo.id, aws_security_group.ssh.id, aws_security_group.egress-all.id ]
-  
+  ami                    = data.aws_ami.mongo.id
+  instance_type          = "t3.micro"
+  key_name               = var.key_name
+  subnet_id              = module.vpc.private_subnets[0]
+  vpc_security_group_ids = [aws_security_group.mongo.id, aws_security_group.ssh.id, aws_security_group.egress-all.id]
+
   tags = local.common_tags
 }
 
 data "aws_ami" "mongo" {
   most_recent = true
   # Bitnami
-  owners = [ "979382823631" ]
+  owners = ["979382823631"]
   filter {
-    name = "name"
-    values = [ "bitnami-mongo*"]
-  }
-  filter {
-    name = "architecture"
-    values = [ "x86_64" ]
+    name   = "name"
+    values = ["bitnami-mongo*"]
   }
   filter {
-    name = "root-device-type"
-    values = [ "ebs" ]
+    name   = "architecture"
+    values = ["x86_64"]
   }
   filter {
-    name = "virtualization-type"
-    values = [ "hvm" ]
+    name   = "root-device-type"
+    values = ["ebs"]
   }
-}
-
-resource "aws_security_group" "efs" {
-  name        = "efs"
-  description = "Allow efs inbound traffic from anywhere in the VPC"
-  vpc_id      = module.vpc.vpc_id
-
-
-  ingress {
-    from_port   = 2049
-    to_port     = 2049
-    protocol    = "tcp"
-    cidr_blocks = [ module.vpc.vpc_cidr_block ]
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
   }
-}
-
-resource "aws_efs_mount_target" "cfssl" {
-  file_system_id = var.cfssl_efs
-  subnet_id = module.vpc.private_subnets[0]
-  security_groups = [ aws_security_group.efs.id ]
-}
-
-resource "aws_efs_mount_target" "config" {
-  file_system_id = var.config_efs
-  subnet_id = module.vpc.public_subnets[0]
-  security_groups = [ aws_security_group.efs.id ]
 }
 
 data "template_file" "mount_config" {
   template = file("scripts/setup-efs.sh")
   vars = {
-    efs_id = var.config_efs
+    efs_id      = var.config_efs
     mount_point = "/config"
   }
 }
@@ -239,89 +170,76 @@ data "template_file" "mount_config" {
 data "template_file" "mount_cfssl_keys" {
   template = file("scripts/setup-efs.sh")
   vars = {
-    efs_id = var.cfssl_efs
+    efs_id      = var.cfssl_efs
     mount_point = "/cfssl"
   }
 }
 
 data "template_cloudinit_config" "mounts" {
-  gzip = true
+  gzip          = true
   base64_encode = true
 
   part {
     content_type = "text/x-shellscript"
-    content = data.template_file.mount_config.rendered
+    content      = data.template_file.mount_config.rendered
   }
 
   part {
     content_type = "text/x-shellscript"
-    content = data.template_file.mount_cfssl_keys.rendered
+    content      = data.template_file.mount_cfssl_keys.rendered
   }
 }
 
 resource "aws_instance" "bastion" {
-  ami = data.aws_ami.bastion.id
-  instance_type = "t2.micro"
-  key_name = var.key_name
-  subnet_id = module.vpc.public_subnets[0]
-  vpc_security_group_ids = [ aws_security_group.efs.id, aws_security_group.mongo.id, aws_security_group.ssh.id, aws_security_group.egress-all.id ]
-  user_data_base64 = data.template_cloudinit_config.mounts.rendered
+  ami                    = data.aws_ami.bastion.id
+  instance_type          = "t2.micro"
+  key_name               = var.key_name
+  subnet_id              = module.vpc.public_subnets[0]
+  vpc_security_group_ids = [var.efs_sg, aws_security_group.mongo.id, aws_security_group.ssh.id, aws_security_group.egress-all.id]
+  user_data_base64       = data.template_cloudinit_config.mounts.rendered
 
-  depends_on = [
-    aws_efs_mount_target.config,
-    aws_efs_mount_target.cfssl,
-  ]
-  
   tags = local.common_tags
 }
 
 data "aws_ami" "bastion" {
   most_recent = true
-  owners = [ "amazon" ]
+  owners      = ["amazon"]
   filter {
-    name = "name"
-    values = [ "amzn2-ami-minimal-*"]
+    name   = "name"
+    values = ["amzn2-ami-minimal-*"]
   }
   filter {
-    name = "architecture"
-    values = [ "x86_64" ]
+    name   = "architecture"
+    values = ["x86_64"]
   }
   filter {
-    name = "root-device-type"
-    values = [ "ebs" ]
+    name   = "root-device-type"
+    values = ["ebs"]
   }
   filter {
-    name = "virtualization-type"
-    values = [ "hvm" ]
+    name   = "virtualization-type"
+    values = ["hvm"]
   }
 }
 
-resource "aws_route53_record" "bastion" {
-  zone_id = data.aws_route53_zone.integration.zone_id
-  name = "bastion.${data.aws_route53_zone.integration.name}"
-  type = "A"
-  ttl = 300
-  records = [ aws_instance.bastion.public_ip ]
+# Service discovery
+resource "aws_service_discovery_public_dns_namespace" "dev" {
+  name        = "dev.tyk.technology."
+  description = "Developer environments"
 }
 
-data "aws_route53_zone" "integration" {
-  name         = "dev.tyk.technology."
-  private_zone = false
-}
-
-# NLB
-# Entrypoint to all infra services: cfssl, int-service
-resource "aws_lb" "integration" {
-  name            = "nlb-integration"
-  internal = false
-  load_balancer_type = "network"
-  subnets         =  module.vpc.public_subnets 
+resource "aws_eip" "bastion" {
+  vpc = true
 
   tags = local.common_tags
+}
+
+resource "aws_eip_association" "bastion" {
+  instance_id   = aws_instance.bastion.id
+  allocation_id = aws_eip.bastion.id
 }
 
 # Used in all ecs task definitions
 data "aws_iam_role" "ecs_task_execution_role" {
   name = "ecsTaskExecutionRole"
 }
-

@@ -1,16 +1,14 @@
-resource "aws_ecs_cluster" "cfssl" {
-  name = "integration_service"
-
-  tags = local.common_tags
-}
+# This needs to be separate from int_service as a bug[1]
+# prevents multiple service_registries in an aws_ecs_service block
+# [1] https://github.com/terraform-providers/terraform-provider-aws/issues/9573
 
 resource "aws_ecs_task_definition" "cfssl" {
-  family = "cfssl"
-  requires_compatibilities = [ "FARGATE" ]
-  network_mode = "awsvpc"
-  execution_role_arn = data.aws_iam_role.ecs_task_execution_role.arn
-  cpu = 256
-  memory = 512
+  family                   = "int_service"
+  requires_compatibilities = ["FARGATE"]
+  network_mode             = "awsvpc"
+  execution_role_arn       = data.aws_iam_role.ecs_task_execution_role.arn
+  cpu                      = 256
+  memory                   = 512
 
   container_definitions = <<EOF
     [
@@ -24,95 +22,77 @@ resource "aws_ecs_task_definition" "cfssl" {
             "mountPoints": [
                 {
                     "sourceVolume": "cfssl",
-                    "containerPath": "/cfssl/certs",
+                    "containerPath": "/cfssl",
                     "readOnly": true
                 }
             ],
             "environment": [
                 {
-                    "name": "SECRET",
-                    "value": "KEY"
+                    "name": "CFSSL_API_KEY",
+                    "value": "${var.cfssl_apikey}"
                 }
             ],
-            "image": "046805072452.dkr.ecr.eu-central-1.amazonaws.com/cfssl:latest",
+            "image": "${var.cfssl_ecr}:latest",
             "name": "cfssl",
             "logConfiguration": {
                 "logDriver": "awslogs",
                 "options": {
-                    "awslogs-group": "cfssl",
-                    "awslogs-stream-prefix": "ecs",
+                    "awslogs-group": "int_service",
+                    "awslogs-stream-prefix": "cfssl",
                     "awslogs-region": "${var.region}"
                 }
             }
         }
     ]
 EOF
-  
+
   volume {
     name = "cfssl"
 
     efs_volume_configuration {
       file_system_id = var.cfssl_efs
-      root_directory = "/integration"
+      root_directory = "/"
     }
   }
 
-  depends_on = [ aws_cloudwatch_log_group.cfssl ]
-  
+  depends_on = [aws_cloudwatch_log_group.int_service]
+
   tags = local.common_tags
 }
 
-resource "aws_cloudwatch_log_group" "cfssl" {
+resource "aws_service_discovery_service" "cfssl" {
   name = "cfssl"
 
-  tags = local.common_tags
+  dns_config {
+    namespace_id = aws_service_discovery_public_dns_namespace.dev.id
+
+    dns_records {
+      ttl  = 60
+      type = "SRV"
+    }
+  }
 }
 
 resource "aws_ecs_service" "cfssl" {
-  name = "cfssl"
-  cluster = aws_ecs_cluster.cfssl.id
+  name            = "cfssl"
+  cluster         = aws_ecs_cluster.int_service.id
   task_definition = aws_ecs_task_definition.cfssl.id
-  desired_count = 1
-  launch_type = "FARGATE"
+  desired_count   = 1
+  launch_type     = "FARGATE"
   # Needed for EFS
   platform_version = "1.4.0"
 
   network_configuration {
-    subnets =  module.vpc.private_subnets
+    subnets          = module.vpc.public_subnets
+    assign_public_ip = true
+
+  } 
+
+  service_registries {
+    registry_arn = aws_service_discovery_service.cfssl.arn
+    port = 8888
   }
 
   tags = local.common_tags
-}
-
-resource "aws_lb_target_group" "cfssl" {
-  name        = "int-service"
-  port        = 8443
-  protocol    = "TCP"
-  vpc_id      = module.vpc.vpc_id
-  target_type = "ip"
-
-  tags = local.common_tags
-
-  depends_on = [ aws_lb.integration ]
-}
-
-# Redirect all traffic from the ALB to the target group
-resource "aws_lb_listener" "cfssl" {
-  load_balancer_arn = aws_lb.integration.id
-  port              = "443"
-  protocol          = "TCP"
-
-  default_action {
-    target_group_arn = aws_lb_target_group.cfssl.id
-    type             = "forward"
-  }
-}
-
-resource "aws_route53_record" "cfssl" {
-  zone_id = data.aws_route53_zone.integration.zone_id
-  name = "cfssl.${data.aws_route53_zone.integration.name}"
-  type = "CNAME"
-  ttl = 300
-  records = [ aws_lb.integration.dns_name ]
 }
 

@@ -8,7 +8,7 @@ data "terraform_remote_state" "integration" {
   config = {
     organization = "Tyk"
     workspaces = {
-      name = "dev-xTF_ENV"
+      name = "base-xTF_ENV"
     }
   }
 }

@@ -27,7 +27,7 @@ local: ../cfssl/outputs.tf ../.github/workflows/cfssl.yml ../int-service/outputs
 external: tyk tyk-analytics tyk-pump
 
 tyk: tyk/.github/workflows/int-image.yml tyk/integration/terraform/outputs.tf tyk/integration/image/Dockerfile
-	$(call git-push-origin,tyk-analytics)
+	$(call git-push-origin,tyk)
 
 tyk-analytics: tyk-analytics/.github/workflows/int-image.yml tyk-analytics/integration/terraform/outputs.tf tyk-analytics/integration/image/Dockerfile
 	$(call git-push-origin,tyk-analytics)

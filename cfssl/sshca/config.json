@@ -1,0 +1,52 @@
+{
+    "signing": {
+        "default": {
+            "expiry": "8760h"
+        },
+        "profiles": {
+            "peer": {
+                "usages": [
+                    "signing",
+                    "digital signature",
+                    "key encipherment", 
+                    "client auth",
+                    "server auth"
+                ],
+                "ca_constraint": {
+                    "is_ca": true
+                },
+                "expiry": "8760h"
+            },
+            "server": {
+                "usages": [
+                    "signing",
+                    "digital signing",
+                    "key encipherment",
+                    "server auth"
+                ],
+                "ca_constraint": {
+                    "is_ca": true
+                },
+                "expiry": "8760h"
+            },
+            "client": {
+                "usages": [
+                    "signing",
+                    "digital signature",
+                    "key encipherment", 
+                    "client auth"
+                ],
+                "ca_constraint": {
+                    "is_ca": true
+                },
+                "expiry": "8760h"
+            }
+        }
+    },
+    "auth_keys": {
+        "key1": {
+            "key": "env:CFSSL_API_KEY",
+            "type": "standard"
+        }
+    }
+}
