@@ -10,7 +10,7 @@ root-path = $(dir $(dir $(dir $1)))
 
 define git-pull =
 mkdir -p $(dir $@)
-(cd $(call root-path,$@); git checkout -q $(BRANCH) && git pull -q)
+(cd $(call root-path,$@); git checkout -q $(BRANCH))
 endef
 
 define git-push-origin =
@@ -18,34 +18,18 @@ define git-push-origin =
 git diff -q && git add . && git commit -m "Syncing integration workflow from tyk-ci"; git push origin $(BRANCH))
 endef
 
-.PHONY: tyk tyk-analytics tyk-pump local external
+.PHONY: tyk tyk-analytics tyk-pump external
 
-all: local external
-
-local: ../cfssl/outputs.tf ../.github/workflows/cfssl.yml ../int-service/outputs.tf ../.github/workflows/int-service.yml
-
-external: tyk tyk-analytics tyk-pump
+all: tyk tyk-analytics tyk-pump
 
 tyk: tyk/.github/workflows/int-image.yml tyk/integration/terraform/outputs.tf tyk/integration/image/Dockerfile
-	$(call git-push-origin,tyk-analytics)
+	$(call git-push-origin,tyk)
 
 tyk-analytics: tyk-analytics/.github/workflows/int-image.yml tyk-analytics/integration/terraform/outputs.tf tyk-analytics/integration/image/Dockerfile
 	$(call git-push-origin,tyk-analytics)
 
 tyk-pump: tyk-pump/.github/workflows/int-image.yml tyk-pump/integration/terraform/outputs.tf tyk-pump/integration/image/Dockerfile
 	$(call git-push-origin,tyk-pump)
-
-../cfssl/outputs.tf: output.tf.m4
-	m4 -DxREPO=cfssl $< > $@
-
-../.github/workflows/cfssl.yml: int-image.yml.m4
-	m4 -DxREPO=cfssl -DxPATH_TRIGGERED $< > $@
-
-../int-service/outputs.tf: output.tf.m4
-	m4 -DxREPO=int-service $< > $@
-
-../.github/workflows/int-service.yml: int-image.yml.m4
-	m4 -DxREPO=int-service -DxPATH_TRIGGERED=true $< > $@
 
 tyk/.github/workflows/int-image.yml: int-image.yml.m4
 	$(git-pull)

@@ -1,0 +1,17 @@
+{
+  "signing": {
+    "default": {
+      "auth_key": "key1",
+      "remote": "caserver"
+    }
+  },
+  "auth_keys": {
+    "key1": {
+    "key": "env:CFSSL_API_KEY",
+    "type": "standard"
+    }
+  },
+  "remotes": {
+    "caserver": "cfssl.dev.tyk.technology:8888"
+  }
+}
