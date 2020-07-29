@@ -27,7 +27,7 @@ ifelse(xREPO, `tyk-analytics', `RUN apt-get install -y --no-install-recommends \
         && npm install -g aglio \
         && apt-get purge -y build-essential\
         && apt-get autoremove -y \
-        && rm -rf /root/.npm && rm -rf /root/.node-gyp',)
+        && rm -rf /root/.npm && rm -rf /root/.node-gyp',)dnl
 
 RUN apt-get autoremove -y 
 
