@@ -12,6 +12,11 @@ variable "region" {
   type = string
 }
 
+variable "registryid" {
+  description = "Registry ID of the ECR repos"
+  type = string
+}
+
 variable "key_name" {
   description = "ssh pubkey added to bastion"
   type        = string
@@ -30,15 +35,14 @@ variable "cfssl_apikey" {
   description = "API key for cfssl requests"
 }
 
-variable "cfssl_ecr" {
-  description = "Repo URL for CFSSL"
+variable "cfssl_image" {
+  description = "Full repo URL with tag of the cfssl image to use"
 }
 
-variable "gromit_ecr" {
-  description = "Repo URL for gromit"
+variable "gromit_image" {
+  description = "Full repo URL with tag of the gromit image to use"
 }
 
 variable "gromit_role_arn" {
-  description = "Task role for gromit tasks"
+  description = "Full repo URL with tag of the gromit image to use"
 }
-

@@ -18,7 +18,10 @@ provider "aws" {
 # Internal variables
 
 locals {
-  registryid = element(split(".", var.gromit_ecr), 0)
+  gromit = {
+    table = "DeveloperEnvironments"
+    repos = "tyk,tyk-analytics,tyk-pump"
+  }
   common_tags = "${map(
     "managed", "automation",
     "ou", "devops",
