@@ -1,16 +1,17 @@
 data "template_file" "cfssl" {
   template = templatefile("templates/cd-awsvpc.tpl",
-    { port=8888,
-      name="cfssl",
-      log_group="internal",
-      image=var.cfssl_ecr,
-      mounts=[
-        { src="cfssl", dest="/cfssl" }
+    { port      = 8888,
+      name      = "cfssl",
+      log_group = "internal",
+      image     = var.cfssl_image,
+      command   = [ "-port=8888", "-ca=rootca/rootca.pem", "-ca-key=rootca/rootca-key.pem", "-config=rootca/config.json", "-loglevel", "0" ],
+      mounts = [
+        { src = "cfssl", dest = "/cfssl" }
       ],
       region = var.region,
-      env=[
-        { name="CFSSL_API_KEY", value=var.cfssl_apikey }
-      ] })
+      env = [
+        { name = "CFSSL_API_KEY", value = var.cfssl_apikey }
+  ] })
 }
 
 resource "aws_ecs_task_definition" "cfssl" {
@@ -21,7 +22,7 @@ resource "aws_ecs_task_definition" "cfssl" {
   cpu                      = 256
   memory                   = 512
 
-  container_definitions = data.template_file.cfssl.rendered 
+  container_definitions = data.template_file.cfssl.rendered
 
   volume {
     name = "cfssl"
@@ -47,7 +48,7 @@ resource "aws_security_group" "cfssl" {
     from_port   = 8888
     to_port     = 8888
     protocol    = "tcp"
-    cidr_blocks = [ "0.0.0.0/0" ]
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
@@ -71,9 +72,9 @@ resource "aws_ecs_service" "cfssl" {
 
   network_configuration {
     subnets          = module.vpc.public_subnets
-    security_groups = [ aws_security_group.cfssl.id ]
+    security_groups  = [aws_security_group.cfssl.id]
     assign_public_ip = true
-  } 
+  }
 
   tags = local.common_tags
 }

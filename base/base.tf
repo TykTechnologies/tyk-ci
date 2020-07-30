@@ -20,7 +20,6 @@ locals {
   name = "base-euc1"
   # Repositories to create
   tyk_repos = ["tyk", "tyk-analytics", "tyk-pump" ]
-  repositories = concat(local.tyk_repos, ["gromit", "cfssl"])
   # Managed policies for task role
   policies = [ "AmazonRoute53FullAccess", "AmazonECS_FullAccess", "AmazonDynamoDBFullAccess" ]
   # Somehow this works, even on 0.12.0
@@ -83,7 +82,7 @@ resource "aws_efs_file_system" "config" {
 # TODO: Lifecycle management for ECR images
 
 resource "aws_ecr_repository" "integration" {
-  for_each = toset(local.repositories)
+  for_each = toset(local.tyk_repos)
   
   name                 = each.key
   image_tag_mutability = "MUTABLE"
@@ -95,34 +94,16 @@ resource "aws_ecr_repository" "integration" {
   tags = local.common_tags
 }
 
-resource "null_resource" "gromit" {
-  provisioner "local-exec" {
-    command = "cd ../gromit; make gromit"
-  }
-  triggers = {
-    ecr_repo = aws_ecr_repository.integration["gromit"].repository_url
-  }
-}
-
-resource "null_resource" "cfssl" {
-  provisioner "local-exec" {
-    command = "cd ../cfssl; make cfssl"
-  }
-  triggers = {
-    ecr_repo = aws_ecr_repository.integration["cfssl"].repository_url
-  }
-}
-
 # Per repo access keys
 
 resource "aws_iam_access_key" "integration" {
-  for_each = toset(local.repositories)
+  for_each = toset(local.tyk_repos)
 
   user = aws_iam_user.integration[each.key].name
 }
 
 resource "aws_iam_user" "integration" {
-  for_each = toset(local.repositories)
+  for_each = toset(local.tyk_repos)
 
   name = "ecr-push_${each.value}"
 
@@ -130,7 +111,7 @@ resource "aws_iam_user" "integration" {
 }
 
 resource "aws_iam_user_policy" "integration" {
-  for_each = toset(local.repositories)
+  for_each = toset(local.tyk_repos)
 
   name   = "ECRpush-${each.value}"
   user   = "ecr-push_${each.value}"
@@ -138,7 +119,7 @@ resource "aws_iam_user_policy" "integration" {
 }
 
 data "template_file" "per_repo_access" {
-  for_each = toset(local.repositories)
+  for_each = toset(local.tyk_repos)
   
   template = templatefile("templates/ecr-push-pull.tpl",
                           {resources = [ aws_ecr_repository.integration[each.value].arn ]})

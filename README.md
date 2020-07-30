@@ -1,51 +1,52 @@
-# tyk-ci
+# Tyk CI
 Infrastructure definition for CI environments. This is the infra in which the integration images run for
 
 - [tyk](https://github.com/TykTechnologies/tyk/actions?query=workflow%3A%22Integration+image%22 "gw")
 - [tyk-analytics](https://github.com/TykTechnologies/tyk-analytics/actions?query=workflow%3A%22Integration+image%22 "db")
 - [pump](https://github.com/TykTechnologies/tyk-pump/actions?query=workflow%3A%22Integration+image%22)
 
-See <infra/*.auto.tfvars> for the region, vpc subnet, etc.
+## Base
+Contains the AWS Resources that require privileged access like IAM roles. These resources have a lifecycle separate from the infra and are stored in a separate state on [Terraform Cloud](https://app.terraform.io/app/Tyk/workspaces/base-euc1/states).
 
-## Network
+Contents:
+- vpc 
+- ECR repos
+- ECS Task roles
+- EFS filesystems for Tyk config (`config`) and Tyk PKI (`certs`)
+
+See <base/*.auto.tfvars> for the actual values being used right now.
+
+### Network
 Given a vpc cidr of 10.91.0.0/16, we create,
 - a /24 private subnet per az
 - a /24 public subnet per az
 - a nat gw for internet access from the private subnets
 - igw for the public subnets
 
-## Registry
+### ECR
 [Registries](https://eu-central-1.console.aws.amazon.com/ecr/repositories?region=eu-central-1 "eu-central-1") are created with mutable tags and no automated scanning.
 
-## Users
+### IAM Users
 IAM users are created per-repo and given just enough access to access their repo with an inline policy. The users can login, push and pull images for just their repo. 
 
 The access key\_ids and secrets are stored in the terraform state. Use `terraform output` to see the values.
 
-## Mongo
-Adds the newest bitnami mongo image (4.2 in June 2020) on a `t3.micro` instance.
-
-## EFS
+### EFS
 This is used to hold all the configuration data requierd for the services. This is mounted on the mongo instance as well as _all_ the containers. To repeat, the same fs is mounted on all containers.
-
-## Bastion
-Adds a bastion host in the public subnet with alok's key.
 
 ## TODOs
 - add a permission boundary on the IAM users (paranoia)
 
-## Aliases
+## Infra
+Contains the components required to support a Tyk installation. These resources have a lifecycle separate from the developer environments and are stored in a separate state on [Terraform Cloud](https://app.terraform.io/app/Tyk/workspaces/dev-euc1/states).
 
-``` shell
-tf=terraform
-tfA='terraform apply'
-tfa='[ -f out.plan ] && terraform apply out.plan || echo no plan'
-tfp='terraform plan -out out.plan'
-tfv='terraform validate'
-tfw='terraform workspace'
-```
-## PKI
+### Bastion
+Adds a bastion host in the public subnet with alok's key. The EFS filesystems are mounted here. The `tyk` group has access to the config directories in `/config`. Login to the bastion to change the config or to create new config groups.
 
+### Mongo
+Adds the newest bitnami mongo image (4.2 in June 2020) on a `t3.micro` instance.
+
+# Tyk PKI
 In `certs`.
 
 ## Generating the CA
