@@ -4,7 +4,7 @@ data "template_file" "gromit" {
       name      = "gromit",
       log_group = "internal",
       image     = var.gromit_image,
-      command   = [ "serve", "--certpath=/cfssl/gromit/server" ],
+      command   = [ "serve", "--certpath=/cfssl" ],
       mounts = [
         { src = "cfssl", dest = "/cfssl" },
         { src = "config", dest = "/config" }

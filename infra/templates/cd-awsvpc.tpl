@@ -9,6 +9,7 @@
         "environment": ${jsonencode([ for e in env: { "name": e.name, "value": e.value }])},
         "image": "${image}",
         "name": "${name}",
+        "command": ${jsonencode(command)},
         "logConfiguration": {
             "logDriver": "awslogs",
             "options": {

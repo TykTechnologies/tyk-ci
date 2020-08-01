@@ -40,11 +40,11 @@ module "vpc" {
   name = var.name_prefix
   cidr = "10.91.0.0/16"
 
-  azs             = data.aws_availability_zones.available.names
-  private_subnets = cidrsubnets(cidrsubnet(var.cidr, 8, 100), 4, 4, 4)
+  azs                 = data.aws_availability_zones.available.names
+  private_subnets     = cidrsubnets(cidrsubnet(var.cidr, 8, 100), 4, 4, 4)
   private_subnet_tags = { Type = "private" }
-  public_subnets  = cidrsubnets(cidrsubnet(var.cidr, 8, 1), 4, 4, 4)
-  public_subnet_tags = { Type = "public" }
+  public_subnets      = cidrsubnets(cidrsubnet(var.cidr, 8, 1), 4, 4, 4)
+  public_subnet_tags  = { Type = "public" }
 
   enable_nat_gateway = true
   single_nat_gateway = true
@@ -71,7 +71,7 @@ resource "aws_security_group" "efs" {
 
 resource "aws_security_group" "mongo" {
   name        = "mongo"
-  description = "Allow mongo inbound traffic from private subnet"
+  description = "Allow mongo inbound traffic from anywhere in the VPC"
   vpc_id      = module.vpc.vpc_id
 
 
@@ -79,7 +79,7 @@ resource "aws_security_group" "mongo" {
     from_port   = 27017
     to_port     = 27017
     protocol    = "tcp"
-    cidr_blocks = module.vpc.private_subnets_cidr_blocks
+    cidr_blocks = [module.vpc.vpc_cidr_block]
   }
 }
 
@@ -184,7 +184,7 @@ data "template_cloudinit_config" "mounts" {
 
 resource "aws_efs_mount_target" "cfssl" {
   for_each = toset(module.vpc.public_subnets)
-  
+
   file_system_id  = var.cfssl_efs
   subnet_id       = each.value
   security_groups = [aws_security_group.efs.id]
@@ -192,7 +192,7 @@ resource "aws_efs_mount_target" "cfssl" {
 
 resource "aws_efs_mount_target" "config" {
   for_each = toset(module.vpc.public_subnets)
-  
+
   file_system_id  = var.config_efs
   subnet_id       = each.value
   security_groups = [aws_security_group.efs.id]
@@ -260,7 +260,7 @@ resource "aws_route53_record" "bastion" {
   type    = "A"
   ttl     = "300"
 
-  records        = [ aws_instance.bastion.public_ip ]
+  records = [aws_instance.bastion.public_ip]
 }
 
 # The default for ecs task definitions
