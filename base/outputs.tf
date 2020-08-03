@@ -47,5 +47,5 @@ output "gromit_role_arn" {
 
 output "registry_id" {
   value       = aws_ecr_repository.integration["tyk"].registry_id
-  description = "IAM role for gromit tasks"
+  description = "Registry ID of the ECR"
 }

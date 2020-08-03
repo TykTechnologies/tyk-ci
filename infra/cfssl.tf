@@ -4,14 +4,15 @@ data "template_file" "cfssl" {
       name      = "cfssl",
       log_group = "internal",
       image     = var.cfssl_image,
-      command   = [ "-port=8888", "-ca=rootca/rootca.pem", "-ca-key=rootca/rootca-key.pem", "-config=rootca/config.json", "-loglevel", "0" ],
+      command   = ["-port=8888", "-ca=rootca/rootca.pem", "-ca-key=rootca/rootca-key.pem", "-config=rootca/config.json", "-loglevel", "0"],
       mounts = [
         { src = "cfssl", dest = "/cfssl" }
       ],
       region = var.region,
       env = [
         { name = "CFSSL_API_KEY", value = var.cfssl_apikey }
-  ] })
+      ],
+      secrets = [] })
 }
 
 resource "aws_ecs_task_definition" "cfssl" {

@@ -1,4 +1,4 @@
-data "template_file" "gromit" {
+data "template_file" "gromit_serve" {
   template = templatefile("templates/cd-awsvpc.tpl",
     { port      = 443,
       name      = "gromit",
@@ -14,11 +14,12 @@ data "template_file" "gromit" {
         { name = "GROMIT_REGISTRYID", value = var.registryid },
         { name = "GROMIT_REPOS", value = local.gromit.repos }
       ],
+      secrets = [],
   region = var.region })
 }
 
-resource "aws_ecs_task_definition" "gromit" {
-  family                   = "gromit"
+resource "aws_ecs_task_definition" "gromit_serve" {
+  family                   = "gromit_serve"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
   execution_role_arn       = data.aws_iam_role.ecs_task_execution_role.arn
@@ -26,7 +27,7 @@ resource "aws_ecs_task_definition" "gromit" {
   cpu                      = 256
   memory                   = 512
 
-  container_definitions = data.template_file.gromit.rendered
+  container_definitions = data.template_file.gromit_serve.rendered
 
   volume {
     name = "config"
@@ -51,8 +52,8 @@ resource "aws_ecs_task_definition" "gromit" {
   tags = local.common_tags
 }
 
-resource "aws_security_group" "gromit" {
-  name        = "gromit"
+resource "aws_security_group" "gromit_serve" {
+  name        = "gromit_serve"
   description = "Allow traffic from anywhere"
   vpc_id      = module.vpc.vpc_id
 
@@ -74,10 +75,10 @@ resource "aws_security_group" "gromit" {
   tags = local.common_tags
 }
 
-resource "aws_ecs_service" "gromit" {
-  name            = "gromit"
+resource "aws_ecs_service" "gromit_serve" {
+  name            = "gromit_serve"
   cluster         = aws_ecs_cluster.internal.id
-  task_definition = aws_ecs_task_definition.gromit.id
+  task_definition = aws_ecs_task_definition.gromit_serve.id
   desired_count   = 1
   launch_type     = "FARGATE"
   # Needed for EFS
@@ -85,35 +86,35 @@ resource "aws_ecs_service" "gromit" {
 
   network_configuration {
     subnets          = module.vpc.public_subnets
-    security_groups  = [aws_security_group.gromit.id]
+    security_groups  = [aws_security_group.gromit_serve.id]
     assign_public_ip = true
   }
 
   tags = local.common_tags
 }
 
-resource "null_resource" "gromit_public_ip" {
-  triggers = {
-    gromit_service = aws_ecs_service.gromit.id
-  }
-  depends_on = [aws_ecs_service.gromit]
+# resource "null_resource" "gromit_public_ip" {
+#   triggers = {
+#     gromit_service = aws_ecs_service.gromit_serve.id
+#   }
+#   depends_on = [aws_ecs_service.gromit_serve]
 
-  provisioner "local-exec" {
-    command = <<EOF
-while [ -z $public_ip ]
-do
-	sleep 20
-	public_ip=$(aws ec2 describe-network-interfaces | jq -arcM --arg sg $name '.NetworkInterfaces[] | select(.Groups[].GroupName == $sg) | .Association.PublicIp')
-done
-export public_ip
+#   provisioner "local-exec" {
+#     command = <<EOF
+# while [ -z $public_ip ]
+# do
+# 	sleep 20
+# 	public_ip=$(aws ec2 describe-network-interfaces | jq -arcM --arg sg $name '.NetworkInterfaces[] | select(.Groups[].GroupName == $sg) | .Association.PublicIp')
+# done
+# export public_ip
 
-aws route53 change-resource-record-sets --hosted-zone-id $hosted_zone --change-batch "$(jq -nMc -f templates/r53-upsert.jq)"
-EOF
-    environment = {
-      name        = "gromit"
-      fqdn        = "gromit.dev.tyk.technology"
-      hosted_zone = aws_route53_zone.dev_tyk_tech.zone_id
-      region      = var.region
-    }
-  }
-}
+# aws route53 change-resource-record-sets --hosted-zone-id $hosted_zone --change-batch "$(jq -nMc -f templates/r53-upsert.jq)"
+# EOF
+#     environment = {
+#       name        = "gromit"
+#       fqdn        = "gromit.dev.tyk.technology"
+#       hosted_zone = aws_route53_zone.dev_tyk_tech.zone_id
+#       region      = var.region
+#     }
+#   }
+# }

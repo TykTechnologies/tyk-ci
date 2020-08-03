@@ -22,6 +22,10 @@ locals {
     table = "DeveloperEnvironments"
     repos = "tyk,tyk-analytics,tyk-pump"
   }
+  r53 = {
+    domain = "dev.tyk.technology"
+    zoneid = "Z07417902665IQVVMAJKJ"
+  }
   common_tags = "${map(
     "managed", "automation",
     "ou", "devops",
@@ -263,6 +267,37 @@ resource "aws_route53_record" "bastion" {
 
   records = [aws_instance.bastion.public_ip]
 }
+
+# Access to Terraform cloud
+
+resource "aws_iam_policy" "gromit_terraform" {
+  name = "gromit-terraform"
+  description = "Access to remote state in TFCloud"
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "secretsmanager:GetSecretValue",
+        "kms:Decrypt"
+      ],
+      "Resource": [
+        "arn:aws:secretsmanager:eu-central-1:046805072452:secret:TFCloudAPI-VbBFQf",
+        "arn:aws:kms:eu-central-1:046805072452:key/219ad562-d72b-4a40-bc2a-8e13af94b66f"
+      ]
+    }
+  ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "gromit_terraform" {
+  role      = data.aws_iam_role.ecs_task_execution_role.name
+  policy_arn = aws_iam_policy.gromit_terraform.arn
+}
+
 
 # The default for ecs task definitions
 data "aws_iam_role" "ecs_task_execution_role" {

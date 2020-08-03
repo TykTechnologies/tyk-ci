@@ -7,6 +7,7 @@
         ],
         "mountPoints": ${jsonencode([ for m in mounts: { "sourceVolume": m.src, "containerPath": m.dest, "readOnly": true }])},
         "environment": ${jsonencode([ for e in env: { "name": e.name, "value": e.value }])},
+        "secrets": ${jsonencode([ for s in secrets: { "name": s.name, "valueFrom": s.from }])},
         "image": "${image}",
         "name": "${name}",
         "command": ${jsonencode(command)},

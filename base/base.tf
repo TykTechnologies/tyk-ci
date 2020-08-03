@@ -10,7 +10,7 @@ terraform {
 }
 
 provider "aws" {
-  version = ">= 2.17"
+  version = "= 2.70"
   region = "eu-central-1"
 }
 
@@ -32,6 +32,8 @@ locals {
 }
 
 data "aws_region" "current" {}
+
+# Gromit ECS task execution role
 
 data "aws_iam_policy" "gromit" {
   for_each = toset(local.policies)
@@ -66,6 +68,8 @@ resource "aws_iam_role_policy_attachment" "gromit" {
   role       = aws_iam_role.gromit.id
   policy_arn = data.aws_iam_policy.gromit[each.value].arn
 }
+
+# EFS filesystems
 
 resource "aws_efs_file_system" "cfssl" {
   creation_token = "cfssl-keys"
