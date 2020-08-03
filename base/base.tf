@@ -21,7 +21,7 @@ locals {
   # Repositories to create
   tyk_repos = ["tyk", "tyk-analytics", "tyk-pump" ]
   # Managed policies for task role
-  policies = [ "AmazonRoute53FullAccess", "AmazonECS_FullAccess", "AmazonDynamoDBFullAccess", "AmazonEC2ContainerRegistryReadOnly" ]
+  policies = [ "AmazonRoute53FullAccess", "AmazonECS_FullAccess", "AmazonDynamoDBFullAccess", "AmazonEC2ContainerRegistryReadOnly", "AWSCloudMapFullAccess" ]
   # Somehow this works, even on 0.12.0
   common_tags = "${map(
     "managed", "byhand",
