@@ -242,6 +242,7 @@ resource "aws_ecs_cluster" "internal" {
 
 resource "aws_cloudwatch_log_group" "internal" {
   name = "internal"
+  retention_in_days = 5
 
   tags = local.common_tags
 }
