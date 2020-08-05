@@ -11,7 +11,7 @@ terraform {
 }
 
 provider "aws" {
-  version = ">= 2.46"
+  version = "= 2.70"
   region  = var.region
 }
 
@@ -21,10 +21,7 @@ locals {
   gromit = {
     table = "DeveloperEnvironments"
     repos = "tyk,tyk-analytics,tyk-pump"
-  }
-  r53 = {
     domain = "dev.tyk.technology"
-    zoneid = "Z07417902665IQVVMAJKJ"
   }
   common_tags = "${map(
     "managed", "automation",
@@ -254,7 +251,7 @@ resource "aws_cloudwatch_log_group" "internal" {
 # DNS
 
 resource "aws_route53_zone" "dev_tyk_tech" {
-  name = "dev.tyk.technology"
+  name = local.gromit.domain
 
   tags = local.common_tags
 }
@@ -266,6 +263,15 @@ resource "aws_route53_record" "bastion" {
   ttl     = "300"
 
   records = [aws_instance.bastion.public_ip]
+}
+
+resource "aws_route53_record" "mongo" {
+  zone_id = aws_route53_zone.dev_tyk_tech.zone_id
+  name    = "mongo"
+  type    = "A"
+  ttl     = "300"
+
+  records = [aws_instance.mongo.private_ip]
 }
 
 # Access to Terraform cloud

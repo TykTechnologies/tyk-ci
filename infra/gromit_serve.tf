@@ -1,7 +1,7 @@
 data "template_file" "gromit_serve" {
   template = templatefile("templates/cd-awsvpc.tpl",
     { port      = 443,
-      name      = "gromit",
+      name      = "gserve",
       log_group = "internal",
       image     = var.gromit_image,
       command   = [ "serve", "--certpath=/cfssl" ],
@@ -92,29 +92,3 @@ resource "aws_ecs_service" "gromit_serve" {
 
   tags = local.common_tags
 }
-
-# resource "null_resource" "gromit_public_ip" {
-#   triggers = {
-#     gromit_service = aws_ecs_service.gromit_serve.id
-#   }
-#   depends_on = [aws_ecs_service.gromit_serve]
-
-#   provisioner "local-exec" {
-#     command = <<EOF
-# while [ -z $public_ip ]
-# do
-# 	sleep 20
-# 	public_ip=$(aws ec2 describe-network-interfaces | jq -arcM --arg sg $name '.NetworkInterfaces[] | select(.Groups[].GroupName == $sg) | .Association.PublicIp')
-# done
-# export public_ip
-
-# aws route53 change-resource-record-sets --hosted-zone-id $hosted_zone --change-batch "$(jq -nMc -f templates/r53-upsert.jq)"
-# EOF
-#     environment = {
-#       name        = "gromit"
-#       fqdn        = "gromit.dev.tyk.technology"
-#       hosted_zone = aws_route53_zone.dev_tyk_tech.zone_id
-#       region      = var.region
-#     }
-#   }
-# }

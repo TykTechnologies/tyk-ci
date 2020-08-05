@@ -1,7 +1,7 @@
 data "template_file" "gromit_run" {
   template = templatefile("templates/cd-awsvpc.tpl",
     { port      = 443,
-      name      = "gromit_run",
+      name      = "grun",
       log_group = "internal",
       image     = var.gromit_image,
       command   = ["run"],
@@ -11,8 +11,8 @@ data "template_file" "gromit_run" {
       env = [
         { name = "GROMIT_TABLENAME", value = local.gromit.table },
         { name = "GROMIT_REPOS", value = local.gromit.repos },
-        { name = "R53_DOMAIN", value = local.r53.domain },
-        { name = "R53_ZONEID", value = local.r53.zoneid }
+        { name = "GROMIT_DOMAIN", value = local.gromit.domain },
+        { name = "GROMIT_ZONEID", value = aws_route53_zone.dev_tyk_tech.zone_id }
       ],
       secrets = [
         { name = "TF_API_TOKEN", from = "arn:aws:secretsmanager:eu-central-1:046805072452:secret:TFCloudAPI-VbBFQf" }
