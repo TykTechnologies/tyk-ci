@@ -11,18 +11,20 @@ data "template_file" "gromit_serve" {
       ],
       env = [
         { name = "GROMIT_TABLENAME", value = local.gromit.table },
-        { name = "GROMIT_REGISTRYID", value = var.registryid },
+        { name = "GROMIT_REGISTRYID", value = data.aws_caller_identity.current.account_id },
         { name = "GROMIT_REPOS", value = local.gromit.repos }
       ],
       secrets = [],
   region = var.region })
 }
 
+data "aws_caller_identity" "current" {}
+
 resource "aws_ecs_task_definition" "gromit_serve" {
   family                   = "gromit_serve"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  execution_role_arn       = data.aws_iam_role.ecs_task_execution_role.arn
+  execution_role_arn       = aws_iam_role.ecs_role.arn
   task_role_arn            = var.gromit_role_arn
   cpu                      = 256
   memory                   = 512

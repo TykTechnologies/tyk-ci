@@ -4,7 +4,7 @@ terraform {
     hostname = "app.terraform.io"
     organization = "Tyk"
     workspaces {
-      name = "base-euc1"
+      prefix = "base-"
     }
   }
 }

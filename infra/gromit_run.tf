@@ -15,7 +15,7 @@ data "template_file" "gromit_run" {
         { name = "GROMIT_ZONEID", value = aws_route53_zone.dev_tyk_tech.zone_id }
       ],
       secrets = [
-        { name = "TF_API_TOKEN", from = "arn:aws:secretsmanager:eu-central-1:046805072452:secret:TFCloudAPI-VbBFQf" }
+        { name = "TF_API_TOKEN", from = "arn:aws:secretsmanager:eu-central-1:754489498669:secret:TFCloudAPI-1UnG8y" }
       ],
   region = var.region })
 }
@@ -24,7 +24,7 @@ resource "aws_ecs_task_definition" "gromit_run" {
   family                   = "gromit_run"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  execution_role_arn       = data.aws_iam_role.ecs_task_execution_role.arn
+  execution_role_arn       = aws_iam_role.ecs_role.arn
   task_role_arn            = var.gromit_role_arn
   cpu                      = 256
   memory                   = 512
@@ -55,24 +55,6 @@ resource "aws_security_group" "gromit_run" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
-  }
-
-  tags = local.common_tags
-}
-
-resource "aws_ecs_service" "gromit_run" {
-  name            = "gromit_run"
-  cluster         = aws_ecs_cluster.internal.id
-  task_definition = aws_ecs_task_definition.gromit_run.id
-  desired_count   = 1
-  launch_type     = "FARGATE"
-  # Needed for EFS
-  platform_version = "1.4.0"
-
-  network_configuration {
-    subnets          = module.vpc.public_subnets
-    security_groups  = [aws_security_group.gromit_serve.id]
-    assign_public_ip = true
   }
 
   tags = local.common_tags

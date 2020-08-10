@@ -4,7 +4,7 @@ data "template_file" "cfssl" {
       name      = "cfssl",
       log_group = "internal",
       image     = var.cfssl_image,
-      command   = ["-port=8888", "-ca=rootca/rootca.pem", "-ca-key=rootca/rootca-key.pem", "-config=rootca/config.json", "-loglevel", "0"],
+      command   = ["-port=8888", "-ca=rootca/rootca.pem", "-ca-key=rootca/rootca-key.pem", "-config=rootca/config.json", "-loglevel", "1"],
       mounts = [
         { src = "cfssl", dest = "/cfssl" }
       ],
@@ -19,7 +19,7 @@ resource "aws_ecs_task_definition" "cfssl" {
   family                   = "cfssl"
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
-  execution_role_arn       = data.aws_iam_role.ecs_task_execution_role.arn
+  execution_role_arn       = aws_iam_role.ecs_role.arn
   cpu                      = 256
   memory                   = 512
 

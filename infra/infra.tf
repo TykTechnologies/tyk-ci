@@ -5,7 +5,7 @@ terraform {
     organization = "Tyk"
 
     workspaces {
-      prefix = "dev-"
+      prefix = "infra-"
     }
   }
 }
@@ -110,12 +110,6 @@ resource "aws_security_group" "egress-all" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-}
-
-# Created by hand in the eu-central-1 region of the CE account on
-# Fri, 19 Jun 2020 16:05:41 IST
-data "aws_secretsmanager_secret" "mongo_password" {
-  arn = "arn:aws:secretsmanager:eu-central-1:046805072452:secret:dev_shared_mongo_password-NtuHRv"
 }
 
 resource "aws_instance" "mongo" {
@@ -290,8 +284,8 @@ resource "aws_iam_policy" "gromit_terraform" {
         "kms:Decrypt"
       ],
       "Resource": [
-        "arn:aws:secretsmanager:eu-central-1:046805072452:secret:TFCloudAPI-VbBFQf",
-        "arn:aws:kms:eu-central-1:046805072452:key/219ad562-d72b-4a40-bc2a-8e13af94b66f"
+        "arn:aws:secretsmanager:eu-central-1:754489498669:secret:TFCloudAPI-1UnG8y",
+        "arn:aws:kms:eu-central-1:754489498669:key/17432de6-5a75-4a4a-b32e-ff8d8efd277f"
       ]
     }
   ]
@@ -300,12 +294,31 @@ EOF
 }
 
 resource "aws_iam_role_policy_attachment" "gromit_terraform" {
-  role      = data.aws_iam_role.ecs_task_execution_role.name
+  role      = aws_iam_role.ecs_role.name
   policy_arn = aws_iam_policy.gromit_terraform.arn
 }
 
+resource "aws_iam_role" "ecs_role" {
+  name = "ecsExecutionRole"
+ 
+  assume_role_policy = <<EOF
+{
+ "Version": "2012-10-17",
+ "Statement": [
+   {
+     "Action": "sts:AssumeRole",
+     "Principal": {
+       "Service": "ecs-tasks.amazonaws.com"
+     },
+     "Effect": "Allow",
+     "Sid": ""
+   }
+ ]
+}
+EOF
+}
 
-# The default for ecs task definitions
-data "aws_iam_role" "ecs_task_execution_role" {
-  name = "ecsTaskExecutionRole"
+resource "aws_iam_role_policy_attachment" "ecs_role" {
+  role       = aws_iam_role.ecs_role.name
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }

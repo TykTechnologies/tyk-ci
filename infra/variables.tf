@@ -12,11 +12,6 @@ variable "region" {
   type = string
 }
 
-variable "registryid" {
-  description = "Registry ID of the ECR repos"
-  type = string
-}
-
 variable "key_name" {
   description = "ssh pubkey added to bastion"
   type        = string
