@@ -37,7 +37,3 @@ variable "cfssl_image" {
 variable "gromit_image" {
   description = "Full repo URL with tag of the gromit image to use"
 }
-
-variable "gromit_role_arn" {
-  description = "Full repo URL with tag of the gromit image to use"
-}

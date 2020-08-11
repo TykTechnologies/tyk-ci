@@ -20,8 +20,6 @@ locals {
   name = "base-prod"
   # Repositories to create
   tyk_repos = ["tyk", "tyk-analytics", "tyk-pump" ]
-  # Managed policies for task role
-  policies = [ "AmazonRoute53FullAccess", "AmazonECS_FullAccess", "AmazonDynamoDBFullAccess", "AmazonEC2ContainerRegistryReadOnly", "AWSCloudMapFullAccess" ]
   # Somehow this works, even on 0.12.0
   common_tags = "${map(
     "managed", "byhand",
@@ -29,44 +27,6 @@ locals {
     "purpose", "ci",
     "env", local.name,
   )}"
-}
-
-data "aws_region" "current" {}
-
-# Gromit ECS task execution role
-
-data "aws_iam_policy" "gromit" {
-  for_each = toset(local.policies)
-  arn = "arn:aws:iam::aws:policy/${each.value}"
-}
-
-resource "aws_iam_role" "gromit" {
-  name = "gromit"
-
-  assume_role_policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "",
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "ecs-tasks.amazonaws.com"
-      },
-      "Action": "sts:AssumeRole"
-    }
-  ]
-}
-EOF
-
-  tags = local.common_tags
-}
-
-resource "aws_iam_role_policy_attachment" "gromit" {
-  for_each = toset(local.policies)
-  
-  role       = aws_iam_role.gromit.id
-  policy_arn = data.aws_iam_policy.gromit[each.value].arn
 }
 
 # EFS filesystems

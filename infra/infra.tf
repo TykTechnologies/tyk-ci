@@ -19,10 +19,19 @@ provider "aws" {
 
 locals {
   gromit = {
-    table = "DeveloperEnvironments"
-    repos = "tyk,tyk-analytics,tyk-pump"
+    table  = "DeveloperEnvironments"
+    repos  = "tyk,tyk-analytics,tyk-pump"
     domain = "dev.tyk.technology"
   }
+  # Managed policies for task role
+  policies = [
+    "AmazonRoute53FullAccess",
+    "AmazonECS_FullAccess",
+    "AmazonDynamoDBFullAccess",
+    "AmazonEC2ContainerRegistryReadOnly",
+    "AWSCloudMapFullAccess",
+    "AmazonS3FullAccess"
+  ]
   common_tags = "${map(
     "managed", "automation",
     "ou", "devops",
@@ -236,7 +245,7 @@ resource "aws_ecs_cluster" "internal" {
 }
 
 resource "aws_cloudwatch_log_group" "internal" {
-  name = "internal"
+  name              = "internal"
   retention_in_days = 5
 
   tags = local.common_tags
@@ -266,59 +275,4 @@ resource "aws_route53_record" "mongo" {
   ttl     = "300"
 
   records = [aws_instance.mongo.private_ip]
-}
-
-# Access to Terraform cloud
-
-resource "aws_iam_policy" "gromit_terraform" {
-  name = "gromit-terraform"
-  description = "Access to remote state in TFCloud"
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Effect": "Allow",
-      "Action": [
-        "secretsmanager:GetSecretValue",
-        "kms:Decrypt"
-      ],
-      "Resource": [
-        "arn:aws:secretsmanager:eu-central-1:754489498669:secret:TFCloudAPI-1UnG8y",
-        "arn:aws:kms:eu-central-1:754489498669:key/17432de6-5a75-4a4a-b32e-ff8d8efd277f"
-      ]
-    }
-  ]
-}
-EOF
-}
-
-resource "aws_iam_role_policy_attachment" "gromit_terraform" {
-  role      = aws_iam_role.ecs_role.name
-  policy_arn = aws_iam_policy.gromit_terraform.arn
-}
-
-resource "aws_iam_role" "ecs_role" {
-  name = "ecsExecutionRole"
- 
-  assume_role_policy = <<EOF
-{
- "Version": "2012-10-17",
- "Statement": [
-   {
-     "Action": "sts:AssumeRole",
-     "Principal": {
-       "Service": "ecs-tasks.amazonaws.com"
-     },
-     "Effect": "Allow",
-     "Sid": ""
-   }
- ]
-}
-EOF
-}
-
-resource "aws_iam_role_policy_attachment" "ecs_role" {
-  role       = aws_iam_role.ecs_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }

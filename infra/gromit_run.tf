@@ -25,7 +25,7 @@ resource "aws_ecs_task_definition" "gromit_run" {
   requires_compatibilities = ["FARGATE"]
   network_mode             = "awsvpc"
   execution_role_arn       = aws_iam_role.ecs_role.arn
-  task_role_arn            = var.gromit_role_arn
+  task_role_arn            = aws_iam_role.gromit.arn
   cpu                      = 256
   memory                   = 512
 
@@ -69,7 +69,7 @@ resource "aws_cloudwatch_event_target" "gromit_run" {
   target_id = "gromit-run"
   rule      = aws_cloudwatch_event_rule.gromit_run.name
   arn       = aws_ecs_cluster.internal.arn
-  role_arn  = var.gromit_role_arn
+  role_arn  = aws_iam_role.gromit.arn
 
   ecs_target {
     task_count          = 1

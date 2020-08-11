@@ -8,11 +8,6 @@ output "config_efs" {
   description = "Shared with all environments"
 }
 
-output "region" {
-  value       = data.aws_region.current.name
-  description = "Region in which the dev env is running"
-}
-
 output "tyk" {
   value = map("key", aws_iam_access_key.integration["tyk"].id,
     "secret", aws_iam_access_key.integration["tyk"].secret,
@@ -38,11 +33,6 @@ output "devshared" {
   value = map("key", aws_iam_access_key.devshared.id,
   "secret", aws_iam_access_key.devshared.secret)
   description = "shared developer key for access to all repos"
-}
-
-output "gromit_role_arn" {
-  value       = aws_iam_role.gromit.arn
-  description = "IAM role for gromit tasks"
 }
 
 output "registry_id" {
