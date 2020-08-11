@@ -17,7 +17,7 @@ provider "aws" {
 # Internal variables
 locals {
   # name should match the tf workspace name
-  name = "base-euc1"
+  name = "base-prod"
   # Repositories to create
   tyk_repos = ["tyk", "tyk-analytics", "tyk-pump" ]
   # Managed policies for task role
