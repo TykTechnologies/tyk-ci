@@ -1,3 +1,8 @@
+output "region" {
+  value       = data.aws_region.current.name
+  description = "Region for base, infra and devenvs"
+}
+
 output "cfssl_efs" {
   value       = aws_efs_file_system.cfssl.id
   description = "Shared with all environments"

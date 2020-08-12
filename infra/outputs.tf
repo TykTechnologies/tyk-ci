@@ -8,6 +8,11 @@ output "vpc_id" {
   description = "VPC for infra"
 }
 
+output "vpc_cidr" {
+  value       = module.vpc.vpc_cidr_block
+  description = "CIDR block of infra VPC"
+}
+
 output "r53_hosted_zoneid" {
   value = aws_route53_zone.dev_tyk_tech.zone_id
   description = "Zone ID for dev.tyk.technology"

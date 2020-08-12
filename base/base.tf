@@ -29,6 +29,9 @@ locals {
   )}"
 }
 
+# This is exported in outputs.tf
+data "aws_region" "current" {}
+
 # EFS filesystems
 
 resource "aws_efs_file_system" "cfssl" {
