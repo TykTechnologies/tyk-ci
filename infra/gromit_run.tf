@@ -69,7 +69,7 @@ resource "aws_cloudwatch_event_target" "gromit_run" {
   target_id = "gromit-run"
   rule      = aws_cloudwatch_event_rule.gromit_run.name
   arn       = aws_ecs_cluster.internal.arn
-  role_arn  = aws_iam_role.gromit.arn
+  role_arn  = aws_iam_role.ecs_events.arn
 
   ecs_target {
     task_count          = 1
