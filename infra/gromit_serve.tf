@@ -6,8 +6,8 @@ data "template_file" "gromit_serve" {
       image     = var.gromit_image,
       command   = [ "serve", "--certpath=/cfssl" ],
       mounts = [
-        { src = "cfssl", dest = "/cfssl" },
-        { src = "config", dest = "/config" }
+        { src = "cfssl", dest = "/cfssl", readonly = true },
+        { src = "config", dest = "/config", readonly = true }
       ],
       env = [
         { name = "GROMIT_TABLENAME", value = local.gromit.table },

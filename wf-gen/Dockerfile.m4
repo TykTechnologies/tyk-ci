@@ -14,21 +14,11 @@ ifelse(xREPO, `tyk', `RUN apt-get install -y --no-install-recommends \
         build-essential \
         python3-setuptools \
         libpython3.7 \
+        python3.7-dev \
         python3-pip \
         && pip3 install protobuf grpcio==1.24.0 \
         && apt-get purge -y build-essential \
         && rm -rf /root/.cache',)
-
-ifelse(xREPO, `tyk-analytics', `RUN apt-get install -y --no-install-recommends \
-        build-essential \
-        && curl -sL https://deb.nodesource.com/setup_12.x | bash - \
-        && apt-get install -y --no-install-recommends --allow-downgrades nodejs \
-        && npm config set user 0 && npm config set unsafe-perm true \
-        && npm install -g aglio \
-        && apt-get purge -y build-essential\
-        && apt-get autoremove -y \
-        && rm -rf /root/.npm && rm -rf /root/.node-gyp',)dnl
-
 RUN apt-get autoremove -y 
 
 ADD xREPO.tar.gz /opt/xREPO

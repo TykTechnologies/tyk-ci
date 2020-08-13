@@ -6,7 +6,7 @@ data "template_file" "cfssl" {
       image     = var.cfssl_image,
       command   = ["-port=8888", "-ca=rootca/rootca.pem", "-ca-key=rootca/rootca-key.pem", "-config=rootca/config.json", "-loglevel", "1"],
       mounts = [
-        { src = "cfssl", dest = "/cfssl" }
+        { src = "cfssl", dest = "/cfssl", readonly = true }
       ],
       region = var.region,
       env = [

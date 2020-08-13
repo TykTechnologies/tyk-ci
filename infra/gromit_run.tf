@@ -6,7 +6,7 @@ data "template_file" "gromit_run" {
       image     = var.gromit_image,
       command   = ["run"],
       mounts = [
-        { src = "config", dest = "/config" }
+        { src = "config", dest = "/config", readonly = false }
       ],
       env = [
         { name = "GROMIT_TABLENAME", value = local.gromit.table },
@@ -62,7 +62,7 @@ resource "aws_security_group" "gromit_run" {
 
 resource "aws_cloudwatch_event_rule" "gromit_run" {
   name                = "gromit-run-rule"
-  schedule_expression = "rate(37 minutes)"
+  schedule_expression = "rate(7 minutes)"
 }
 
 resource "aws_cloudwatch_event_target" "gromit_run" {
