@@ -62,7 +62,7 @@ resource "aws_security_group" "gromit_run" {
 
 resource "aws_cloudwatch_event_rule" "gromit_run" {
   name                = "gromit-run-rule"
-  schedule_expression = "rate(7 minutes)"
+  schedule_expression = "rate(37 minutes)"
 }
 
 resource "aws_cloudwatch_event_target" "gromit_run" {
