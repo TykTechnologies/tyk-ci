@@ -30,7 +30,8 @@ locals {
     "AmazonDynamoDBFullAccess",
     "AmazonEC2ContainerRegistryReadOnly",
     "AWSCloudMapFullAccess",
-    "AmazonS3FullAccess"
+    "AmazonS3FullAccess",
+    "AmazonEC2FullAccess"
   ]
   common_tags = "${map(
     "managed", "automation",

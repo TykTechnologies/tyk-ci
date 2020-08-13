@@ -34,9 +34,15 @@ resource "aws_iam_role_policy_attachment" "gromit" {
   policy_arn = data.aws_iam_policy.gromit[each.value].arn
 }
 
-resource "aws_iam_policy" "gromit_terraform" {
-  name        = "gromit-terraform"
-  description = "Access to remote state in TFCloud"
+# To be able to pull from ECR
+resource "aws_iam_role_policy_attachment" "ecr" {
+  role       = aws_iam_role.ecs_role.id
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+resource "aws_iam_policy" "gromit_ecs" {
+  name        = "gromit-ecs"
+  description = "Start tasks via schedule"
   policy      = <<EOF
 {
   "Version": "2012-10-17",
@@ -51,15 +57,30 @@ resource "aws_iam_policy" "gromit_terraform" {
         "arn:aws:secretsmanager:eu-central-1:754489498669:secret:TFCloudAPI-1UnG8y",
         "arn:aws:kms:eu-central-1:754489498669:key/17432de6-5a75-4a4a-b32e-ff8d8efd277f"
       ]
+    },
+    {
+        "Effect": "Allow",
+        "Action": [
+           "iam:PassRole",
+           "logs:CreateLogStream",
+           "logs:PutLogEvents"
+        ],
+        "Resource": "*"
+    },
+    {
+        "Effect": "Allow",
+        "Action": "ecs:RunTask",
+        "Resource": "${replace(aws_ecs_task_definition.gromit_run.arn, "/:\\d+$/", ":*")}"
     }
+
   ]
 }
 EOF
 }
 
-resource "aws_iam_role_policy_attachment" "gromit_terraform" {
+resource "aws_iam_role_policy_attachment" "gromit_ecs" {
   role       = aws_iam_role.ecs_role.name
-  policy_arn = aws_iam_policy.gromit_terraform.arn
+  policy_arn = aws_iam_policy.gromit_ecs.arn
 }
 
 resource "aws_iam_role" "ecs_role" {
@@ -76,56 +97,16 @@ resource "aws_iam_role" "ecs_role" {
      },
      "Effect": "Allow",
      "Sid": ""
+   },
+   {
+     "Sid": "",
+     "Effect": "Allow",
+     "Principal": {
+       "Service": "events.amazonaws.com"
+     },
+     "Action": "sts:AssumeRole"
    }
  ]
 }
 EOF
-}
-
-resource "aws_iam_role_policy_attachment" "ecs_role" {
-  role       = aws_iam_role.ecs_role.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-}
-
-resource "aws_iam_role" "ecs_events" {
-  name = "ecs_events"
-
-  assume_role_policy = <<DOC
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Sid": "",
-      "Effect": "Allow",
-      "Principal": {
-        "Service": "events.amazonaws.com"
-      },
-      "Action": "sts:AssumeRole"
-    }
-  ]
-}
-DOC
-}
-
-resource "aws_iam_role_policy" "ecs_events_run_task" {
-  name = "ecs_events_run_task"
-  role = aws_iam_role.ecs_events.id
-
-  policy = <<DOC
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Effect": "Allow",
-            "Action": "iam:PassRole",
-            "Resource": "*"
-        },
-        {
-            "Effect": "Allow",
-            "Action": "ecs:RunTask",
-            "Resource": "${replace(aws_ecs_task_definition.gromit_run.arn, "/:\\d+$/", ":*")}"
-        }
-    ]
-}
-DOC
 }
