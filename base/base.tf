@@ -107,11 +107,11 @@ resource "aws_iam_access_key" "devshared" {
 resource "aws_iam_user_policy" "devshared" {
   name   = "ECRpush-devshared"
   user   = "ecr-devshared"
-  policy = data.template_file.tyk_repo_access.rendered
+  policy = data.template_file.devshared_access.rendered
 }
 
-data "template_file" "tyk_repo_access" {
-  template = templatefile("templates/ecr-push-pull.tpl",
+data "template_file" "devshared_access" {
+  template = templatefile("templates/devshared.tpl",
                           {resources = [ for repo in local.tyk_repos: aws_ecr_repository.integration[repo].arn ]})
 }
 

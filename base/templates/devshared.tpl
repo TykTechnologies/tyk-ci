@@ -5,7 +5,10 @@
          "Sid":"GetAuthorizationToken",
          "Effect":"Allow",
          "Action":[
-             "ecr:GetAuthorizationToken"
+             "ecr:GetAuthorizationToken",
+             "logs:FilterLogEvents",
+             "logs:GetLogEvents",
+             "logs:DescribeLogStreams"
          ],
          "Resource":"*"
       },
