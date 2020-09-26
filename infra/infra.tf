@@ -11,8 +11,8 @@ terraform {
 }
 
 provider "aws" {
-  version = "= 2.70"
-  region  = var.region
+  #version = "= 2.70"
+  region = var.region
 }
 
 # Internal variables
@@ -33,12 +33,12 @@ locals {
     "AmazonS3FullAccess",
     "AmazonEC2FullAccess"
   ]
-  common_tags = "${map(
+  common_tags = map(
     "managed", "automation",
     "ou", "devops",
     "purpose", "ci",
     "env", var.name_prefix,
-  )}"
+  )
 }
 
 data "aws_availability_zones" "available" {
@@ -128,6 +128,7 @@ resource "aws_instance" "mongo" {
   key_name               = var.key_name
   subnet_id              = module.vpc.private_subnets[0]
   vpc_security_group_ids = [aws_security_group.mongo.id, aws_security_group.ssh.id, aws_security_group.egress-all.id]
+  user_data_base64       = data.template_cloudinit_config.mongo_noauth.rendered
 
   tags = local.common_tags
 }
@@ -151,6 +152,16 @@ data "aws_ami" "mongo" {
   filter {
     name   = "virtualization-type"
     values = ["hvm"]
+  }
+}
+
+data "template_cloudinit_config" "mongo_noauth" {
+  gzip = true
+  base64_encode = true
+
+  part {
+    content_type = "text/x-shellscript"
+    content = "sed -i.orig -e '/security:/,+3 s/^/#/' /opt/bitnami/mongodb/conf/mongodb.conf"
   }
 }
 
