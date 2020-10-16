@@ -4,7 +4,7 @@ data "template_file" "cfssl" {
       name      = "cfssl",
       log_group = "internal",
       image     = var.cfssl_image,
-      command   = ["-port=8888", "-ca=rootca/rootca.pem", "-ca-key=rootca/rootca-key.pem", "-config=rootca/config.json", "-loglevel", "1"],
+      command   = ["-port=8888", "-ca=rootca/rootca.pem", "-ca-key=rootca/rootca-key.pem", "-config=config.json", "-responder=rootca/ocsp.pem", "-responder-key=rootca/ocsp-key.pem", "-db-config=db.json", "-loglevel", "1"],
       mounts = [
         { src = "cfssl", dest = "/cfssl", readonly = true }
       ],

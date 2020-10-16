@@ -1,5 +1,4 @@
 provider "cloudflare" {
-  version = "~> 2.0"
   account_id = "35b8134b47c7d01ee8198bb2b82a8dc5"
 }
 
