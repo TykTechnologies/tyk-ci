@@ -1,5 +1,4 @@
 terraform {
-  required_version = ">= 0.12.16"
   backend "remote" {
     hostname = "app.terraform.io"
     organization = "Tyk"
@@ -10,7 +9,6 @@ terraform {
 }
 
 provider "aws" {
-  version = "= 2.70"
   region = "eu-central-1"
 }
 
@@ -20,13 +18,12 @@ locals {
   name = "base-prod"
   # Repositories to create
   tyk_repos = ["tyk", "tyk-analytics", "tyk-pump" ]
-  # Somehow this works, even on 0.12.0
-  common_tags = "${map(
-    "managed", "byhand",
-    "ou", "devops",
-    "purpose", "ci",
-    "env", local.name,
-  )}"
+  common_tags = {
+    "managed" = "automation",
+    "ou"      = "devops",
+    "purpose" = "ci",
+    "env"     = local.name
+  }
 }
 
 # This is exported in outputs.tf

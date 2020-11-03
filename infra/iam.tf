@@ -70,7 +70,7 @@ resource "aws_iam_policy" "gromit_ecs" {
     {
         "Effect": "Allow",
         "Action": "ecs:RunTask",
-        "Resource": "${replace(aws_ecs_task_definition.gromit_run.arn, "/:\\d+$/", ":*")}"
+        "Resource": "*"
     }
 
   ]

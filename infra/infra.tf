@@ -1,5 +1,4 @@
 terraform {
-  required_version = ">= 0.12"
   backend "remote" {
     hostname     = "app.terraform.io"
     organization = "Tyk"
@@ -11,8 +10,7 @@ terraform {
 }
 
 provider "aws" {
-  #version = "= 2.70"
-  region = var.region
+  region  = var.region
 }
 
 # Internal variables
@@ -33,28 +31,50 @@ locals {
     "AmazonS3FullAccess",
     "AmazonEC2FullAccess"
   ]
-  common_tags = map(
-    "managed", "automation",
-    "ou", "devops",
-    "purpose", "ci",
-    "env", var.name_prefix,
-  )
+  common_tags = {
+    "managed" = "automation",
+    "ou"      = "devops",
+    "purpose" = "ci",
+    "env"     = var.name_prefix
+  }
 }
 
 data "aws_availability_zones" "available" {
   state = "available"
 }
 
+module "private_subnets" {
+  source = "hashicorp/subnets/cidr"
+
+  base_cidr_block = cidrsubnet(var.cidr, 4, 1)
+  networks = [
+    { name = "privaz1", new_bits = 4 },
+    { name = "privaz2", new_bits = 4 },
+    { name = "privaz3", new_bits = 4 },
+  ]
+}
+
+module "public_subnets" {
+  source = "hashicorp/subnets/cidr"
+
+  base_cidr_block = cidrsubnet(var.cidr, 4, 15)
+  networks = [
+    { name = "pubaz1", new_bits = 4 },
+    { name = "pubaz2", new_bits = 4 },
+    { name = "pubaz3", new_bits = 4 },
+  ]
+}
+
 module "vpc" {
   source = "terraform-aws-modules/vpc/aws"
 
   name = var.name_prefix
-  cidr = "10.91.0.0/16"
+  cidr = var.cidr
 
   azs                 = data.aws_availability_zones.available.names
-  private_subnets     = cidrsubnets(cidrsubnet(var.cidr, 8, 100), 4, 4, 4)
+  private_subnets     = module.private_subnets.networks[*].cidr_block
   private_subnet_tags = { Type = "private" }
-  public_subnets      = cidrsubnets(cidrsubnet(var.cidr, 8, 1), 4, 4, 4)
+  public_subnets      = module.public_subnets.networks[*].cidr_block
   public_subnet_tags  = { Type = "public" }
 
   enable_nat_gateway = true
