@@ -37,13 +37,12 @@ ifelse(xREPO, `tyk-analytics', `
         with:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
           terraform_wrapper: false
-          terraform_version: 0.13.0-beta2
             
       - name: Get AWS creds from Terraform remote state
         id: aws-creds
         run: |
             cd xTF_DIR
-            terraform init -input=false
+            terraform init -input=false -lock=false
             terraform refresh
             eval $(terraform output -json xREPO | jq -r 'to_entries[] | [.key,.value] | join("=")')
             region=$(terraform output region)
