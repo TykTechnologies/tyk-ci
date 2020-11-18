@@ -9,7 +9,7 @@ PR_BODY=pr.md
 REPOS=(tyk tyk-analytics tyk-pump)
 # Files to update for each repo
 TARGETS=(.github/workflows/int-image.yml integration/terraform/outputs.tf integration/image/Dockerfile)
-# For each target above, add the suffix below to the basename to generate the source file for that target
+# For each TARGETS, add SOURCE_SUFFIX to the basename to obtain the source file for that target
 SOURCE_SUFFIX=m4
 # Generation commands for each file type, using just the extension
 # because I'm lazy, the keys can be made to match as much of the
@@ -45,20 +45,20 @@ function process_repo {
 function fetch_branch {
     local r=${1?"repo undefined for fetch"}
     local b=${2?"branch undefined for fetch"}
+    local base=${3:=master}
 
     # Since the work is done in subshell, failures are not fatal
-    #(cd $r; git diff; read -p "Diff in $r. C-c to cancel." c)
     (
 	cd $r
-	git fetch --recurse-submodules=yes origin master
+	git fetch --recurse-submodules=yes origin $base
 	[[ $r == "tyk-analytics" ]] && git submodule update --remote --merge
-	# Pull from origin if branch exists
+	# Pull from origin if branch exists there
 	git ls-remote --exit-code origin "$b" && git pull "$b"
 	# Create branch if it does not exist
 	git show-ref --quiet "refs/heads/$b" || git branch "$b"
 	[[ "$b" == "$(git branch --show-current)" ]] || git checkout --quiet "$b"
 	# Incorporate latest changes if not dirty
-	git diff --quiet --exit-code && git rebase master "$b" || print Automatic rebase of branch $b for $repo failed, fix this manually before proceeding.
+	git diff --quiet --exit-code && git rebase $base "$b" || print Automatic rebase of branch $b onto $base for $repo failed, fix this manually before proceeding.
     )
     return $?
 }
@@ -71,10 +71,11 @@ function commit_changes {
 
     (
 	cd $r
+	print Start of diff for $r
 	git diff
-	read -q "?Diff for $r. C-c to cancel. Enter to confirm." c
+	read -q "?End of diff for $r. C-c to cancel. Any key to confirm." c
 	# commit if there are changes
-	git diff --quiet --exit-code || git commit -a -m "Syncing wf-gen from tyk-ci"
+	git diff --quiet --exit-code || git commit -a -m "Syncing wf-gen from tyk-ci using pr.zsh"
 	# latest commit
 	local c=$(git rev-parse HEAD)
 	# Create PR if the latest commit is not on the base branch
@@ -91,7 +92,7 @@ local body
 if [[ -r $PR_BODY ]]; then
     body=$(<${PR_BODY})
     print -l $title $body
-    read -q "?C-c to cancel. Enter to confirm." c
+    read -q "?C-c to cancel. Any key to confirm." c
 else
     print Body text for PR not supplied. Looking for a file named ./$PR_BODY
     exit 1

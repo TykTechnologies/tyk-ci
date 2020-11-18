@@ -1,6 +1,11 @@
 # Used as a proxy for ECR registry ID
 data "aws_caller_identity" "current" {}
 
+data "aws_route53_zone" "dev_tyk_tech" {
+  name         = "dev.tyk.technology"
+  private_zone = false
+}
+
 # Processes env updates
 module "gromit-run" {
   source = "../modules/fg-sched-task"
@@ -10,7 +15,7 @@ module "gromit-run" {
   cluster  = aws_ecs_cluster.internal.arn
   # Container definition
   cd = {
-    name     = "grun",
+    name      = "grun",
     log_group = "internal",
     image     = var.gromit_image,
     command   = ["cluster", "run", "/config"],
@@ -20,16 +25,17 @@ module "gromit-run" {
     env = [
       { name = "GROMIT_TABLENAME", value = local.gromit.table },
       { name = "GROMIT_REPOS", value = local.gromit.repos },
-      { name = "GROMIT_DOMAIN", value = local.gromit.domain },
-      { name = "GROMIT_ZONEID", value = aws_route53_zone.dev_tyk_tech.zone_id }
+      { name = "GROMIT_REGISTRYID", value = data.aws_caller_identity.current.account_id },
+      { name = "GROMIT_DOMAIN", value = data.aws_route53_zone.dev_tyk_tech.name },
+      { name = "GROMIT_ZONEID", value = data.aws_route53_zone.dev_tyk_tech.zone_id }
     ],
     secrets = [
-      { name = "TF_API_TOKEN", from = "arn:aws:secretsmanager:eu-central-1:754489498669:secret:TFCloudAPI-1UnG8y" }
+      { name = "TF_API_TOKEN", from = local.gromit.tfcloud }
     ],
     region = var.region
   }
-  trarn       = aws_iam_role.gromit.arn
-  tearn       = aws_iam_role.ecs_role.arn
+  trarn       = aws_iam_role.gromit_tr.arn
+  tearn       = aws_iam_role.gromit_ter.arn
   vpc         = module.vpc.vpc_id
   subnets     = module.vpc.private_subnets
   volume_map  = { config = var.config_efs }
@@ -40,11 +46,11 @@ module "gromit-run" {
 module "gromit-serve" {
   source = "../modules/fg-service"
 
-  cluster  = aws_ecs_cluster.internal.arn
-  cdt = "templates/cd-awsvpc.tpl"
+  cluster = aws_ecs_cluster.internal.arn
+  cdt     = "templates/cd-awsvpc.tpl"
   # Container definition
   cd = {
-    name   = "gserve",
+    name      = "gserve",
     port      = 443,
     log_group = "internal",
     image     = var.gromit_image,
@@ -60,8 +66,8 @@ module "gromit-serve" {
     secrets = [],
     region  = var.region
   }
-  trarn       = aws_iam_role.gromit.arn
-  tearn       = aws_iam_role.ecs_role.arn
+  trarn       = aws_iam_role.gromit_tr.arn
+  tearn       = aws_iam_role.gromit_ter.arn
   vpc         = module.vpc.vpc_id
   subnets     = module.vpc.public_subnets
   volume_map  = { cfssl = var.cfssl_efs }
@@ -70,14 +76,14 @@ module "gromit-serve" {
 
 # Refresh license
 module "licenser" {
-  source   = "../modules/fg-sched-task"
+  source = "../modules/fg-sched-task"
 
   schedule = "rate(25 days)"
   cluster  = aws_ecs_cluster.internal.arn
-  cdt = "templates/cd-awsvpc.tpl"
+  cdt      = "templates/cd-awsvpc.tpl"
   # Container definition
   cd = {
-    name     = "db-license",
+    name      = "db-license",
     log_group = "internal",
     image     = var.gromit_image,
     command   = ["licenser", "dashboard-trial", "/config/dash.license"],
@@ -86,12 +92,12 @@ module "licenser" {
     ],
     env = [],
     secrets = [
-      { name = "GROMIT_LICENSE_TOKEN", from = "arn:aws:secretsmanager:eu-central-1:754489498669:secret:TFCloudAPI-1UnG8y" }
+      { name = "GROMIT_LICENSE_TOKEN", from = local.gromit.dashtrial_token }
     ],
     region = var.region
   }
-  trarn       = aws_iam_role.gromit.arn
-  tearn       = aws_iam_role.ecs_role.arn
+  trarn       = aws_iam_role.gromit_tr.arn
+  tearn       = aws_iam_role.gromit_ter.arn
   vpc         = module.vpc.vpc_id
   subnets     = module.vpc.private_subnets
   volume_map  = { config = var.config_efs }

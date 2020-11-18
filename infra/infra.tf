@@ -10,16 +10,18 @@ terraform {
 }
 
 provider "aws" {
-  region  = var.region
+  region = var.region
 }
 
 # Internal variables
 
 locals {
   gromit = {
-    table  = "DeveloperEnvironments"
-    repos  = "tyk,tyk-analytics,tyk-pump"
-    domain = "dev.tyk.technology"
+    table           = "DeveloperEnvironments"
+    repos           = "tyk,tyk-analytics,tyk-pump"
+    domain          = "dev.tyk.technology"
+    dashtrial_token = "arn:aws:secretsmanager:eu-central-1:754489498669:secret:DashTrialToken-BfNk9B"
+    tfcloud         = "arn:aws:secretsmanager:eu-central-1:754489498669:secret:TFCloudAPI-1UnG8y"
   }
   # Managed policies for task role
   policies = [
@@ -105,7 +107,6 @@ resource "aws_security_group" "mongo" {
   description = "Allow mongo inbound traffic from anywhere in the VPC"
   vpc_id      = module.vpc.vpc_id
 
-
   ingress {
     from_port   = 27017
     to_port     = 27017
@@ -119,7 +120,6 @@ resource "aws_security_group" "ssh" {
   description = "Allow ssh inbound traffic from anywhere"
   vpc_id      = module.vpc.vpc_id
 
-
   ingress {
     from_port   = 22
     to_port     = 22
@@ -132,7 +132,6 @@ resource "aws_security_group" "egress-all" {
   name        = "egress-all"
   description = "Allow all outbound traffic"
   vpc_id      = module.vpc.vpc_id
-
 
   egress {
     from_port   = 0
@@ -176,12 +175,12 @@ data "aws_ami" "mongo" {
 }
 
 data "template_cloudinit_config" "mongo_noauth" {
-  gzip = true
+  gzip          = true
   base64_encode = true
 
   part {
     content_type = "text/x-shellscript"
-    content = "sed -i.orig -e '/security:/,+3 s/^/#/' /opt/bitnami/mongodb/conf/mongodb.conf"
+    content      = "sed -i.orig -e '/security:/,+3 s/^/#/' /opt/bitnami/mongodb/conf/mongodb.conf"
   }
 }
 

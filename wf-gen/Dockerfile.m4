@@ -6,8 +6,7 @@ dnl The comment below is quoted so that it is not treated as a comment
 FROM debian:buster-slim
 
 RUN apt-get update \
- && apt-get upgrade -y \
- && apt-get install -y --no-install-recommends \
+ && apt-get dist-upgrade -y --no-install-recommends \
         wget jq curl ca-certificates apt-transport-https gnupg unzip
 
 ifelse(xREPO, `tyk', `RUN apt-get install -y --no-install-recommends \

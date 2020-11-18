@@ -2,8 +2,8 @@
     "signing": {
         "default": {
             "auth_key": "key1",
-            "oscp_url": "http://cfssl.dev.tyk.technology:8889",
-            "crl_url": "http://cfssl.dev.tyk.technology:8888/crl",
+            "oscp_url": "http://cfssl.internal.dev.tyk.technology:8889",
+            "crl_url": "http://cfssl.internal.dev.tyk.technology:8888/crl",
             "expiry": "8760h"
         },
         "profiles": {
