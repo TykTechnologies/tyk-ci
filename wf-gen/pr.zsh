@@ -30,11 +30,15 @@ function process_repo {
 	local target=${r}/${target}
 	# Get extension of $target
 	local type=${target:t:e}
+	# Use whole filename if there is no extension like Dockerfile)
+	[[ -z $type ]] && type=${target:t}
+	
 	# :t is basename
 	local src="${target:t}.${SOURCE_SUFFIX}"
 	print -v cmd -f ${CMDS[$type]} $r
 	
-	if [[ $target -ot $src ]]; then
+	if [[ ${+OPTS[-force]} || $target -ot $src || ! -s $target ]]; then
+	    print Running: $cmd $src with output to $target
 	    eval "$cmd $src >! $target"
 	else
 	    print $target newer than $src
@@ -45,7 +49,7 @@ function process_repo {
 function fetch_branch {
     local r=${1?"repo undefined for fetch"}
     local b=${2?"branch undefined for fetch"}
-    local base=${3:=master}
+    local base=${3?"base branch undefined for fetch"}
 
     # Since the work is done in subshell, failures are not fatal
     (
@@ -67,8 +71,9 @@ function commit_changes {
     local r=${1?"repo undefined for commit"}
     local t=${2?"title undefined for commit"}
     local b=${3?"body undefined for commit"}
-    local base=${4:=master}
+    local base=${4?"base branch undefined for commit"}
 
+    local c
     (
 	cd $r
 	print Start of diff for $r
@@ -77,7 +82,7 @@ function commit_changes {
 	# commit if there are changes
 	git diff --quiet --exit-code || git commit -a -m "Syncing wf-gen from tyk-ci using pr.zsh"
 	# latest commit
-	local c=$(git rev-parse HEAD)
+	c=$(git rev-parse HEAD)
 	# Create PR if the latest commit is not on the base branch
 	[[ -z $(git branch $base --contains $c) ]] && gh pr create -d --title $t --body $b  --base $base
     )
@@ -86,23 +91,24 @@ function commit_changes {
 #
 # Start here
 
-local title=${1?"title undefined"}
-local body
+zmodload zsh/zutil
+zparseopts -D -E -F -A OPTS force base: title: body: || exit 1
 
-if [[ -r $PR_BODY ]]; then
-    body=$(<${PR_BODY})
-    print -l $title $body
+local body c
+if [[ -r $OPTS[-body] ]]; then
+    body=$(<$OPTS[-body])
+    print -l $OPTS[-title] $body
     read -q "?C-c to cancel. Any key to confirm." c
 else
-    print Body text for PR not supplied. Looking for a file named ./$PR_BODY
+    print Body text for PR not supplied. Looking for a file named $OPTS[-body]
     exit 1
 fi
 
 for repo in $REPOS
 do
-    print "Processing branch $GIT_BRANCH for $repo\n"
-    fetch_branch $repo $GIT_BRANCH
+    print "Processing branch $base_branch for $repo\n"
+    fetch_branch $repo $GIT_BRANCH $OPTS[-base]
     print Generating files for $repo
-    process_repo $repo && commit_changes $repo $title $body
+    process_repo $repo && commit_changes $repo $OPTS[-title] $body $OPTS[-base]
     print
 done
