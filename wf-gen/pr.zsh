@@ -3,17 +3,13 @@
 setopt no_continue_on_error warn_nested_var no_clobber pipefail
 #setopt verbose
 
-# Contents of this file go into the PR body
-PR_BODY=pr.md
-# Repos under management, these are expected to be dirs in cwd
-REPOS=(tyk tyk-analytics tyk-pump)
 # Files to update for each repo
 TARGETS=(.github/workflows/int-image.yml integration/terraform/outputs.tf integration/image/Dockerfile)
 # For each TARGETS, add SOURCE_SUFFIX to the basename to obtain the source file for that target
 SOURCE_SUFFIX=m4
 # Generation commands for each file type, using just the extension
-# because I'm lazy, the keys can be made to match as much of the
-# filename as needed. %s is substituted with the repo name.
+# because I'm lazy. If there is no extension, the whole filename is used.
+# %s is substituted with the repo name.
 typeset -A CMDS
 CMDS=( [yml]="m4 -E -DxREPO=%s -DxREPO_DIR=integration/image -DxTF_DIR=integration/terraform -DxRELEASE_BRANCHES" \
 	    [tf]="m4 -E -DxREPO=%s" \
@@ -30,7 +26,7 @@ function process_repo {
 	local target=${r}/${target}
 	# Get extension of $target
 	local type=${target:t:e}
-	# Use whole filename if there is no extension like Dockerfile)
+	# Use whole filename if there is no extension (eg. Dockerfile)
 	[[ -z $type ]] && type=${target:t}
 	
 	# :t is basename
@@ -53,16 +49,11 @@ function fetch_branch {
 
     # Since the work is done in subshell, failures are not fatal
     (
+	# Clean up old stale directories
+	[[ -d $r ]] && rm -rf $r
+	git clone git@github.com:TykTechnologies/$r --depth 1 -b $base
 	cd $r
-	git fetch --recurse-submodules=yes origin $base
-	[[ $r == "tyk-analytics" ]] && git submodule update --remote --merge
-	# Pull from origin if branch exists there
-	git ls-remote --exit-code origin "$b" && git pull "$b"
-	# Create branch if it does not exist
-	git show-ref --quiet "refs/heads/$b" || git branch "$b"
-	[[ "$b" == "$(git branch --show-current)" ]] || git checkout --quiet "$b"
-	# Incorporate latest changes if not dirty
-	git diff --quiet --exit-code && git rebase $base "$b" || print Automatic rebase of branch $b onto $base for $repo failed, fix this manually before proceeding.
+	git checkout -b $b
     )
     return $?
 }
@@ -84,7 +75,7 @@ function commit_changes {
 	# latest commit
 	c=$(git rev-parse HEAD)
 	# Create PR if the latest commit is not on the base branch
-	[[ -z $(git branch $base --contains $c) ]] && gh pr create -d --title $t --body $b  --base $base
+	[[ -z $(git branch origin/$base --contains $c) ]] && gh pr create -d --title $t --body $b  --base $base
     )
 }
 
@@ -92,7 +83,7 @@ function commit_changes {
 # Start here
 
 zmodload zsh/zutil
-zparseopts -D -E -F -A OPTS force base: title: body: || exit 1
+zparseopts -D -E -F -A OPTS force repos: branch: base: title: body: || exit 1
 
 local body c
 if [[ -r $OPTS[-body] ]]; then
@@ -104,10 +95,11 @@ else
     exit 1
 fi
 
-for repo in $REPOS
+# Split on comma for repos
+for repo in "${(@s/,/)OPTS[-repos]}"
 do
     print "Processing branch $base_branch for $repo\n"
-    fetch_branch $repo $GIT_BRANCH $OPTS[-base]
+    fetch_branch $repo $OPTS[-branch] $OPTS[-base]
     print Generating files for $repo
     process_repo $repo && commit_changes $repo $OPTS[-title] $body $OPTS[-base]
     print
