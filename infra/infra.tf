@@ -147,7 +147,7 @@ resource "aws_instance" "mongo" {
   key_name               = var.key_name
   subnet_id              = module.vpc.private_subnets[0]
   vpc_security_group_ids = [aws_security_group.mongo.id, aws_security_group.ssh.id, aws_security_group.egress-all.id]
-  user_data_base64       = data.template_cloudinit_config.mongo_noauth.rendered
+  user_data              = file("scripts/mongo-setup.sh")
 
   tags = local.common_tags
 }
@@ -171,16 +171,6 @@ data "aws_ami" "mongo" {
   filter {
     name   = "virtualization-type"
     values = ["hvm"]
-  }
-}
-
-data "template_cloudinit_config" "mongo_noauth" {
-  gzip          = true
-  base64_encode = true
-
-  part {
-    content_type = "text/x-shellscript"
-    content      = "sed -i.orig -e '/security:/,+3 s/^/#/' /opt/bitnami/mongodb/conf/mongodb.conf"
   }
 }
 
@@ -218,11 +208,7 @@ data "template_cloudinit_config" "bastion" {
 
   part {
     content_type = "text/x-shellscript"
-    content = <<EOC
-cat >> ~ec2-user/.ssh/authorized_keys  <<EOF
-ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC8ALCOd33gsB8vao1eFdiwsTg9hDqnHHVEKWrfMGJGB7ZXvUfc97ge3Lz9GroSjVZvx94uLWCoGO886RGJ35dHFcLztpa1x1gf6QeK2GqtFU2+CVJ8es0QP0//ADcGoEYawSSrcfBDCHx/DQLrIN/d48G20vNZ0JSdqPN26seZeRhe33nSZZ+j55O+Ss4R43N90o32r9WvbYqUHoe+qzpvInz2RWSjx2xF457FeMNbeKujq9pZewmRnIZ/QmiMfVki/W61PQK/20sMFn+pad83wtmzivJjnMd3I7xKWBJMEKrnP2KfqXmFIYDPg/pmDCt/Huz4dy4I9dOqUQz7I5iv ilijabojanovic@Ilijas-MacBook-Pro.local
-EOF
-EOC
+    content      = file("scripts/bastion-setup.sh")
   }
 }
 
