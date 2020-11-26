@@ -1,0 +1,61 @@
+name: New gromit
+
+on:
+  repository_dispatch:
+    types: [new-gromit]
+  workflow_dispatch:
+    inputs:
+      ref:
+        default: ''
+        description: 'Gromit version ref to use'
+        required: true
+
+defaults:
+  run:
+    working-directory: ./infra
+    
+jobs:
+  update:
+    env:
+      TF_CLI_ARGS: -no-color
+      TF_WORKSPACE: prod
+      GROMIT_REF: ${{ github.event.client_payload.ref || github.event.inputs.ref }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+    runs-on: ubuntu-latest
+    
+    steps:
+      - uses: actions/checkout@v2
+          
+      - uses: hashicorp/setup-terraform@v1
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+      
+      - name: Configure AWS credentials for use
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+          aws-region: eu-central-1
+          
+      - name:  validate
+        id: validate
+        run: |
+          sed -i.orig -e "s#\(tykio\/gromit\):.*\"#\1:${GROMIT_REF##*/}\"#" ${TF_WORKSPACE}.tfvars
+          diff ${TF_WORKSPACE}.tfvars.orig ${TF_WORKSPACE}.tfvars && exit 1
+          terraform init
+          terraform validate
+        
+      - name: plan
+        id: plan
+        run: |
+          rm ${TF_WORKSPACE}.tfvars.orig
+          terraform plan -var-file ${TF_WORKSPACE}.tfvars
+        
+      - name: Make PR
+        uses: peter-evans/create-pull-request@v3
+        with:
+          title: "A new Gromit"
+          body: "A new version ${{ github.event.client_payload.ref }} has arrived. Merge this to deploy.\n#Validate\n${{steps.validate.outputs.stdout}}\n\n# Plan\n${{ steps.plan.outputs.stdout }}"
+          committer: Bender <tip@gromit>
+          delete-branch: true
+          reviewers: TykTechnologies/devops

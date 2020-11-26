@@ -27,3 +27,11 @@ output "tfstate_lock_table" {
   value = aws_dynamodb_table.devenv_lock.id
   description = "Table for tfstate locks for devenv remote backend"
 }
+
+output "cd" {
+  value = map(
+    "key", aws_iam_access_key.deployment.id,
+    "secret", aws_iam_access_key.deployment.secret
+    )
+  description = "Service account for continuous deployment"
+}

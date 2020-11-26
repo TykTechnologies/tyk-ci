@@ -1,14 +1,3 @@
-terraform {
-  backend "remote" {
-    hostname     = "app.terraform.io"
-    organization = "Tyk"
-
-    workspaces {
-      prefix = "infra-"
-    }
-  }
-}
-
 provider "aws" {
   region = var.region
 }
@@ -32,6 +21,11 @@ locals {
     "AWSCloudMapFullAccess",
     "AmazonS3FullAccess",
     "AmazonEC2FullAccess"
+  ]
+  # Deployment policies, max 10 policies can be attached to a user
+  deployment_policies = [
+    "AmazonElasticFileSystemFullAccess",
+    "IAMReadOnlyAccess"
   ]
   common_tags = {
     "managed" = "automation",

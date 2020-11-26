@@ -1,10 +1,5 @@
 # Runtime permissions
 
-data "aws_iam_policy" "gromit_tr" {
-  for_each = toset(local.policies)
-  arn      = "arn:aws:iam::aws:policy/${each.value}"
-}
-
 data "aws_iam_policy_document" "gromit_tr" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -41,7 +36,51 @@ resource "aws_iam_role_policy_attachment" "gromit_tr" {
   for_each = toset(local.policies)
 
   role       = aws_iam_role.gromit_tr.id
-  policy_arn = data.aws_iam_policy.gromit_tr[each.value].arn
+  policy_arn = "arn:aws:iam::aws:policy/${each.value}"
+}
+
+# Deployment automation user
+
+resource "aws_iam_access_key" "deployment" {
+  user = aws_iam_user.deployment.name
+}
+
+resource "aws_iam_user" "deployment" {
+  name = "github-actions"
+
+  tags = local.common_tags
+}
+
+resource "aws_iam_user_policy_attachment" "deployment1" {
+  for_each = toset(local.policies)
+
+  user       = aws_iam_user.deployment.id
+  policy_arn = "arn:aws:iam::aws:policy/${each.value}"
+}
+
+resource "aws_iam_user_policy" "deployment" {
+  name = "deployment"
+  user = aws_iam_user.deployment.id
+
+  policy = data.aws_iam_policy_document.deployment.json
+}
+
+# Extra permissions required for deployment via CD
+resource "aws_iam_user_policy_attachment" "deployment2" {
+  for_each = toset(local.deployment_policies)
+
+  user       = aws_iam_user.deployment.id
+  policy_arn = "arn:aws:iam::aws:policy/${each.value}"
+}
+
+data "aws_iam_policy_document" "deployment" {
+  statement {
+    actions = [
+      "logs:*",
+      "events:*"
+    ]
+    resources = ["*"]
+  }
 }
 
 # Init time permissions

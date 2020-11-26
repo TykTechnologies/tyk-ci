@@ -17,7 +17,7 @@
             "ecr:BatchGetImage",
             "ecr:BatchCheckLayerAvailability"
          ],
-         "Resource": ${jsonencode([ for r in resources: "${r}" ])}
+         "Resource": ${jsonencode([ for r in ecrs: "${r}" ])}
        },
        {
          "Sid":"AllowPush",
@@ -31,7 +31,19 @@
             "ecr:UploadLayerPart",
             "ecr:CompleteLayerUpload"
          ],
-         "Resource": ${jsonencode([ for r in resources: "${r}" ])}
+         "Resource": ${jsonencode([ for r in ecrs: "${r}" ])}
+       },
+       {
+         "Sid":"AllowKMS",
+         "Effect":"Allow",
+         "Action":[
+	    "kms:Encrypt",
+	    "kms:Decrypt",
+	    "kms:ReEncrypt*",
+	    "kms:GenerateDataKey*",
+	    "kms:DescribeKey"
+         ],
+         "Resource": "${kms_key}"
       }
    ]
 }

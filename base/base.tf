@@ -124,8 +124,19 @@ resource "aws_iam_user_policy" "integration" {
 data "template_file" "per_repo_access" {
   for_each = toset(local.tyk_repos)
   
-  template = templatefile("templates/ecr-push-pull.tpl",
-                          {resources = [ aws_ecr_repository.integration[each.value].arn ]})
+  template = templatefile("templates/deployment.tpl",
+    {
+      ecrs = [ aws_ecr_repository.integration[each.value].arn ],
+      kms_key = aws_kms_key.sops.arn
+    })
+}
+
+# sops
+
+resource "aws_kms_key" "sops" {
+  description             = "For SOPS in gromit and tyk-ci"
+
+  tags = local.common_tags
 }
 
 # shared dev access key
