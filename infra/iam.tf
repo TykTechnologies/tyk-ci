@@ -77,7 +77,9 @@ data "aws_iam_policy_document" "deployment" {
   statement {
     actions = [
       "logs:*",
-      "events:*"
+      "events:*",
+      "iam:PassRole",
+      "iam:PutUserPolicy"
     ]
     resources = ["*"]
   }
