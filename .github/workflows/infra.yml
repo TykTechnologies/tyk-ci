@@ -2,6 +2,9 @@ name: Infra Apply
 
 on:
   push:
+    paths:
+      - 'infra/**'
+      - '!**/*.md'
     branches:
       - master
 
@@ -24,8 +27,7 @@ jobs:
         with:
           cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
         
-      - name: Configure AWS credentials for use
-        uses: aws-actions/configure-aws-credentials@v1
+      - uses: aws-actions/configure-aws-credentials@v1
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}

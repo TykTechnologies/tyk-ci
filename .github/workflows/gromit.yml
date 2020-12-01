@@ -55,7 +55,18 @@ jobs:
         uses: peter-evans/create-pull-request@v3
         with:
           title: "A new Gromit"
-          body: "A new version ${{ github.event.client_payload.ref }} has arrived. Merge this to deploy.\n#Validate\n${{steps.validate.outputs.stdout}}\n\n# Plan\n${{ steps.plan.outputs.stdout }}"
+          body: >
+            New version ${{ env.GROMIT_REF }} has arrived. Merging this PR will deploy this version.
+
+            # Validate
+            ```shell
+            ${{ steps.validate.outputs.stdout }}
+            ```
+
+            # Plan
+            ```shell
+            ${{ steps.plan.outputs.stdout }}
+            ```
           committer: Bender <tip@gromit>
           delete-branch: true
           reviewers: TykTechnologies/devops
