@@ -43,8 +43,6 @@ resource "aws_efs_file_system" "config" {
   tags = local.common_tags
 }
 
-# TODO: Lifecycle management for ECR images
-
 resource "aws_ecr_repository" "integration" {
   for_each = toset(local.tyk_repos)
   

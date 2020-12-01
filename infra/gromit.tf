@@ -92,7 +92,7 @@ module "licenser" {
     ],
     env = [],
     secrets = [
-      { name = "GROMIT_LICENSE_TOKEN", from = local.gromit.dashtrial_token }
+      { name = "GROMIT_LICENSER_TOKEN", from = local.gromit.dashtrial_token }
     ],
     region = var.region
   }
