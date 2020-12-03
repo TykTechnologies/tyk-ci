@@ -103,3 +103,30 @@ module "licenser" {
   volume_map  = { config = var.config_efs }
   common_tags = local.common_tags
 }
+
+
+# Keep DNS refreshed
+module "chitragupta" {
+  source = "../modules/fg-sched-task"
+
+  schedule = "rate(13 minutes)"
+  cluster  = aws_ecs_cluster.internal.arn
+  cdt      = "templates/cd-awsvpc.tpl"
+  # Container definition
+  cd = {
+    name      = "chitragupta",
+    log_group = "internal",
+    image     = var.gromit_image,
+    command   = ["cluster", "expose", "-a"],
+    mounts = [],
+    env = [],
+    secrets = [],
+    region = var.region
+  }
+  trarn       = aws_iam_role.gromit_tr.arn
+  tearn       = aws_iam_role.gromit_ter.arn
+  vpc         = module.vpc.vpc_id
+  subnets     = module.vpc.private_subnets
+  volume_map  = { config = var.config_efs }
+  common_tags = local.common_tags
+}
