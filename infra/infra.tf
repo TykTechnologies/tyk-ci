@@ -35,6 +35,17 @@ locals {
   }
 }
 
+data "terraform_remote_state" "base" {
+  backend = "remote"
+
+  config = {
+    organization = "Tyk"
+    workspaces = {
+      name = var.base
+    }
+  }
+}
+
 data "aws_availability_zones" "available" {
   state = "available"
 }
@@ -173,7 +184,7 @@ data "aws_ami" "mongo" {
 data "template_file" "mount_config" {
   template = file("scripts/setup-efs.sh")
   vars = {
-    efs_id      = var.config_efs
+    efs_id      = data.terraform_remote_state.base.outputs.config_efs
     mount_point = "/config"
   }
 }
@@ -181,7 +192,7 @@ data "template_file" "mount_config" {
 data "template_file" "mount_cfssl_keys" {
   template = file("scripts/setup-efs.sh")
   vars = {
-    efs_id      = var.cfssl_efs
+    efs_id      = data.terraform_remote_state.base.outputs.cfssl_efs
     mount_point = "/cfssl"
   }
 }
@@ -209,7 +220,7 @@ data "template_cloudinit_config" "bastion" {
 resource "aws_efs_mount_target" "cfssl" {
   for_each = toset(module.vpc.public_subnets)
 
-  file_system_id  = var.cfssl_efs
+  file_system_id  = data.terraform_remote_state.base.outputs.cfssl_efs
   subnet_id       = each.value
   security_groups = [aws_security_group.efs.id]
 }
@@ -217,7 +228,7 @@ resource "aws_efs_mount_target" "cfssl" {
 resource "aws_efs_mount_target" "config" {
   for_each = toset(module.vpc.public_subnets)
 
-  file_system_id  = var.config_efs
+  file_system_id  = data.terraform_remote_state.base.outputs.config_efs
   subnet_id       = each.value
   security_groups = [aws_security_group.efs.id]
 }

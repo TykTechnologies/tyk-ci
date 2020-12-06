@@ -23,7 +23,7 @@ module "cfssl" {
   tearn       = aws_iam_role.tr.arn
   vpc         = module.vpc.vpc_id
   subnets     = module.vpc.public_subnets
-  volume_map  = { cfssl = var.cfssl_efs }
+  volume_map  = { cfssl = data.terraform_remote_state.base.outputs.cfssl_efs }
   common_tags = local.common_tags
 }
 

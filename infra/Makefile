@@ -1,9 +1,18 @@
 # Use to this to bring up the infra from scratch
 
-prod:
-	@echo Generating plan upto vpc setup so that mount targets can be computed
-	terraform plan -var-file=$(@).tfvars -target=module.vpc -target=aws_route53_zone.dev_tyk_tech -out=out.plan
-	terraform apply out.plan
+# Only one of these buckets should exist in the known universe
+DEVENV_STATE_BUCKET := terraform-state-devenv
+
+.PHONY: prod devenv-euc1-test state-bucket
+state-bucket:
+	test -n "$AWS_PROFILE"
+	aws s3api head-bucket --bucket $(DEVENV_STATE_BUCKET) \
+		|| aws s3api create-bucket --bucket $(DEVENV_STATE_BUCKET)
+
+prod devenv-euc1-test:
+	@echo Generating plan upto vpc (for mount targets) and r53 (for cloudflare NS entries)
+	terraform plan -var-file=$(@).tfvars -target=module.vpc -target=aws_route53_zone.dev_tyk_tech -out=$(@).plan
+	terraform apply $(@).plan
 	@echo Generating plan for remaining resouces
-	terraform plan -var-file=$(@).tfvars -out=out.plan
-	terraform apply out.plan
+	terraform plan -var-file=$(@).tfvars -out=$(@).plan
+	terraform apply $(@).plan

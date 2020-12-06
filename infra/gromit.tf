@@ -38,7 +38,7 @@ module "gromit-run" {
   tearn       = aws_iam_role.gromit_ter.arn
   vpc         = module.vpc.vpc_id
   subnets     = module.vpc.private_subnets
-  volume_map  = { config = var.config_efs }
+  volume_map  = { config = data.terraform_remote_state.base.outputs.config_efs }
   common_tags = local.common_tags
 }
 
@@ -70,7 +70,7 @@ module "gromit-serve" {
   tearn       = aws_iam_role.gromit_ter.arn
   vpc         = module.vpc.vpc_id
   subnets     = module.vpc.public_subnets
-  volume_map  = { cfssl = var.cfssl_efs }
+  volume_map  = { cfssl = data.terraform_remote_state.base.outputs.cfssl_efs }
   common_tags = local.common_tags
 }
 
@@ -100,7 +100,7 @@ module "licenser" {
   tearn       = aws_iam_role.gromit_ter.arn
   vpc         = module.vpc.vpc_id
   subnets     = module.vpc.private_subnets
-  volume_map  = { config = var.config_efs }
+  volume_map  = { config = data.terraform_remote_state.base.outputs.config_efs }
   common_tags = local.common_tags
 }
 
@@ -127,6 +127,6 @@ module "chitragupta" {
   tearn       = aws_iam_role.gromit_ter.arn
   vpc         = module.vpc.vpc_id
   subnets     = module.vpc.private_subnets
-  volume_map  = { config = var.config_efs }
+  volume_map  = { config = data.terraform_remote_state.base.outputs.config_efs }
   common_tags = local.common_tags
 }
