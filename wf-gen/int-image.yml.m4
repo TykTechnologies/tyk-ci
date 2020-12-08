@@ -12,7 +12,8 @@ on:
   push:
     branches:
       - master
-      - integration**
+      - integration/*
+      - feature/*
 ifdef(`xRELEASE_BRANCHES', `      - release-**',)dnl
 ifdef(`xPATH_TRIGGERED',`    paths:
       - xREPO/**',)dnl
@@ -45,7 +46,7 @@ ifelse(xREPO, `tyk-analytics', `
             terraform init -input=false -lock=false
             terraform refresh
             eval $(terraform output -json xREPO | jq -r 'to_entries[] | [.key,.value] | join("=")')
-            region=$(terraform output region)
+            region=$(terraform output region | xargs)
             [ -z "$key" -o -z "$secret" -o -z "$region" -o -z "$ecr" ] && exit 1
             echo "::set-output name=secret::$secret"
             echo "::add-mask::$secret"
