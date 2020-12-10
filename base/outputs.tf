@@ -34,6 +34,13 @@ output "tyk-pump" {
   description = "pump"
 }
 
+output "tyk-sink" {
+  value = map("key", aws_iam_access_key.integration["tyk-sink"].id,
+    "secret", aws_iam_access_key.integration["tyk-sink"].secret,
+  "ecr", aws_ecr_repository.integration["tyk-sink"].repository_url)
+  description = "mdcb"
+}
+
 output "devshared" {
   value = map("key", aws_iam_access_key.devshared.id,
   "secret", aws_iam_access_key.devshared.secret)

@@ -17,7 +17,7 @@ locals {
   # name should match the tf workspace name
   name = "base-prod"
   # Repositories to create
-  tyk_repos = ["tyk", "tyk-analytics", "tyk-pump" ]
+  tyk_repos = ["tyk", "tyk-analytics", "tyk-pump", "tyk-sink" ]
   common_tags = {
     "managed" = "automation",
     "ou"      = "devops",
@@ -125,16 +125,7 @@ data "template_file" "per_repo_access" {
   template = templatefile("templates/deployment.tpl",
     {
       ecrs = [ aws_ecr_repository.integration[each.value].arn ],
-      kms_key = aws_kms_key.sops.arn
     })
-}
-
-# sops
-
-resource "aws_kms_key" "sops" {
-  description             = "For SOPS in gromit and tyk-ci"
-
-  tags = local.common_tags
 }
 
 # shared dev access key
