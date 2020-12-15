@@ -1,5 +1,6 @@
 base            = "base-devenv-euc1-test"
 name_prefix     = "test"
+domain          = "test"
 cidr            = "10.13.0.0/16"
 region          = "eu-central-1"
 key_name        = "alok"

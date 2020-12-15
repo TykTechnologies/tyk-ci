@@ -6,7 +6,6 @@ DEVENV_STATE_BUCKET := terraform-state-devenv
 .PHONY: prod devenv-euc1-test state-bucket
 
 state-bucket:
-	test -n "$AWS_PROFILE"
 	aws s3api head-bucket --bucket $(DEVENV_STATE_BUCKET) \
 		|| aws s3api create-bucket --bucket $(DEVENV_STATE_BUCKET)
 

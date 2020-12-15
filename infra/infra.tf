@@ -8,7 +8,7 @@ locals {
   gromit = {
     table           = "DeveloperEnvironments"
     repos           = "tyk,tyk-analytics,tyk-pump,tyk-sink"
-    domain          = "dev.tyk.technology"
+    domain          = "${var.domain}.tyk.technology"
     dashtrial_token = "arn:aws:secretsmanager:eu-central-1:754489498669:secret:DashTrialToken-BfNk9B"
     tfcloud         = "arn:aws:secretsmanager:eu-central-1:754489498669:secret:TFCloudAPI-1UnG8y"
   }
