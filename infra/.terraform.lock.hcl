@@ -1,6 +1,19 @@
 # This file is maintained automatically by "terraform init".
 # Manual edits may be lost in future updates.
 
+provider "registry.terraform.io/carlpett/sops" {
+  version     = "0.5.3"
+  constraints = "0.5.3"
+  hashes = [
+    "h1:5gTQQdEQxkd839YiWZiX3IuFSi+yIUg6RyJj4AWcMu8=",
+    "zh:4866bb013a028438295041e3a18e4776835d5a85bc136fba5524c60aeb46d451",
+    "zh:9fd6a3b84aa3c61a7facfcdb85aca219b856b473d236e8c35d681fda720b0d9e",
+    "zh:eee43a161635eda56984dfd764014c44bdbc4adf2e44068e466ae8455f6f58ff",
+    "zh:f120f0d4a40ab4497e598eb7ff02cf82b06646868a52f67c784d39ddf844661d",
+    "zh:fe2330249b6da5c4a53d9d46a1d3be7203556d2064b2ccf1865da9e084b5cedf",
+  ]
+}
+
 provider "registry.terraform.io/cloudflare/cloudflare" {
   version = "2.14.0"
   hashes = [
