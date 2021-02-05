@@ -4,13 +4,14 @@ setopt no_continue_on_error warn_nested_var warn_create_global no_clobber pipefa
 #setopt verbose
 
 # Files to update for each repo
-TARGETS=(.github/workflows/int-image.yml .github/workflows/del-env.yml integration/terraform/outputs.tf integration/image/Dockerfile .github/workflows/sync-automation.yml)
+TARGETS=(.goreleaser.yml Dockerfile aws/byol.pkr.hcl .github/workflows/release.yml .github/workflows/del-env.yml integration/terraform/outputs.tf .github/workflows/sync-automation.yml)
 # For each TARGETS, add SOURCE_SUFFIX to the basename to obtain the source file for that target
 SOURCE_SUFFIX=m4
 typeset -A RELEASE_BRANCHES
 # Release branches for known repos, all automation will be sync'd to these branches when pushed to master by sync-automation.yml
-RELEASE_BRANCHES[tyk]='release-2.9, release-3, release-3-lts, release-3.0.2, release-3.0.2-update, release-3.0.3, release-3.1, release-3.1.0, release-3.1.1, release-3.1.2'
-RELEASE_BRANCHES[tyk-analytics]='release-1.9, release-1.9.3.1, release-2.9, release-3, release-3-lts, release-3.0.2, release-3.0.3, release-3.1, release-3.1.0, release-3.1.1, release-3.1.2'
+# Needs to be a comma-separated list as it it goes into a YAML array.
+RELEASE_BRANCHES[tyk]='release-2.9, release-3, release-3-lts, release-3.0.2, release-3.0.2-update, release-3.0.3, release-3.0.4, release-3.1, release-3.1.0, release-3.1.1, release-3.1.2'
+RELEASE_BRANCHES[tyk-analytics]='release-1.9, release-1.9.3.1, release-2.9, release-3, release-3-lts, release-3.0.2, release-3.0.3, release-3.0.4, release-3.1, release-3.1.0, release-3.1.1, release-3.1.2'
 RELEASE_BRANCHES[tyk-pump]='release-0.8, release-1.0'
 RELEASE_BRANCHES[tyk-sink]=''
 
@@ -76,28 +77,31 @@ function process_repo {
     local r=${1?"repo undefined for process"}
     local file cmd
     
+    # The sync worklow itself need not be sync'd, it lives on master
+    local auto_files=${TARGETS:#.github/workflows/sync-automation.yml}
+    
     for file in $TARGETS
     do
 	local target="${r}/${file}"
 	# Dir of the target, rooted from wf-gen
 	local dirpath=$(dirname $target)
-	# Get extension of $target
-	local type=${target:t:e}
-	# Use whole filename if there is no extension (eg. Dockerfile)
-	[[ -z $type ]] && type=${target:t}
-	
 	# :t is basename
 	local src="${target:t}.${SOURCE_SUFFIX}"
-	# The sync worklow itself need not be sync'd, it lives on master
-	local auto_files=${TARGETS:#.github/workflows/sync-automation.yml}
-	# Command to generate file from template
-	cmd="m4 -E -DxREPO=${r} -DxRELEASE_BRANCHES='${RELEASE_BRANCHES[$r]}' -DxAUTO_FILES='${auto_files}'"
+	# Extend this for more special conditions. Associative arrays have limitations.
+	case $file in
+	    *sync-automation.yml)
+		cmd="m4 -E -DxRELEASE_BRANCHES='${RELEASE_BRANCHES[$r]}' -DxAUTO_FILES='${auto_files}'"
+		;;
+	    *)
+		cmd="m4 -E -DxREPO=${r}"
+		;;
+	esac
 	
 	if [[ ${+force} || $target -ot $src || ! -s $target ]]; then
 	    print Running: $cmd $src with output to $target
 	    print $dirpath $file
 	    mkdir -p $dirpath || exit 1
-	    eval "$cmd $src >! $target"
+	    eval "$cmd -DxM4_CMD_LINE=\"$cmd\" -DxPR_CMD_LINE='$PROGNAME $CMD_LINE' $src >! $target"
 	    (cd $r && git add $file)
 	else
 	    print $target newer than $src
@@ -156,6 +160,7 @@ function commit_changes {
 #
 # Start here
 PROGNAME=$0
+CMD_LINE=$*
 typeset -g -a repos
 typeset -g branch base_branch body force title push_only
 parse_options $*
