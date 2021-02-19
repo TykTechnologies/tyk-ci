@@ -7,15 +7,13 @@ name: xREPO image
 on:
   push:
     branches:
-      - master
       - integration/*
-      - feature/*
-      - release-**
 
 jobs:
   xREPO:
     runs-on: ubuntu-latest
     container: tykio/tyk-build-env:ga
+    if: ${{ false }}
 
     steps:
       - name: checkout xREPO

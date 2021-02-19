@@ -19,9 +19,8 @@ on:
       - 'v*'
 
 jobs:
-  goreleaser:
+  int-image:
     runs-on: ubuntu-latest
-    container: tykio/golang-cross:1.12
 
     steps:
       - name: Checkout xREPO
@@ -48,11 +47,9 @@ ifelse(xREPO, <<tyk-analytics>>,
             region=$(terraform output region | xargs)
             [ -z "$key" -o -z "$secret" -o -z "$region" -o -z "$ecr" ] && exit 1
             echo "::set-output name=secret::$secret"
-            echo "::add-mask::$secret"
             echo "::set-output name=key::$key"
             echo "::set-output name=ecr::$ecr"
             echo "::set-output name=region::$region"
-            echo "::set-output name=image_tag::${GITHUB_REF##*/}"
 
       - name: Configure AWS credentials for use
         uses: aws-actions/configure-aws-credentials@v1
@@ -65,6 +62,45 @@ ifelse(xREPO, <<tyk-analytics>>,
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v1
 
+      - name: Build integration tarball
+        run: |
+            if [ -x bin/integration_build.sh ]; then
+               SIGNPKGS=0 BUILDPKGS=0 BUILDWEB=0 ARCH=amd64 bin/integration_build.sh
+               cp xREPO-amd64-*.tar.gz integration/image/xREPO.tar.gz
+            fi
+
+      - name: Build, tag, and push image to Amazon ECR
+        env:
+          ECR_REGISTRY: ${{ steps.aws-creds.outputs.ecr }}
+        run: |
+            docker build -t ${ECR_REGISTRY}:${GITHUB_REF##*/} \
+                         -t ${ECR_REGISTRY}:latest \
+                         -t ${ECR_REGISTRY}:${GITHUB_SHA} \
+                         integration/image
+            docker push --all-tags $ECR_REGISTRY
+
+      - name: Tell gromit about new build
+        run: |
+            curl -fsSL -H "Authorization: ${{secrets.GROMIT_TOKEN}}" 'https://domu-kun.cloud.tyk.io/gromit/newbuild' \
+                 -X POST -d '{ "repo": "${{ github.repository}}", "ref": "${{ github.ref }}", "sha": "${{ github.sha }}" }'
+
+      - name: Logout of Amazon ECR
+        if: always()
+        run: docker logout ${{ steps.login-ecr.outputs.registry }}
+
+  goreleaser:
+    runs-on: ubuntu-latest
+    container: tykio/golang-cross:1.15.8
+
+    steps:
+      - name: Checkout xREPO
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+ifelse(xREPO, <<tyk-analytics>>,
+<<          token: ${{ secrets.repo_token }}
+          submodules: true
+>>)
       - name: Login to DockerHub
         if: startsWith(github.ref, 'refs/tags')
         uses: docker/login-action@v1
@@ -72,13 +108,27 @@ ifelse(xREPO, <<tyk-analytics>>,
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-      - name: Unlock agent
+      - name: Unlock agent and set targets
         env:
           NFPM_STD_PASSPHRASE: ${{ secrets.SIGNING_KEY_PASSPHRASE }}
           GPG_FINGERPRINT: 12B5D62C28F57592D1575BD51ED14C59E37DAC20
           PKG_SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
         run: |
           /unlock-agent.sh
+          current_tag=$(git describe --tags)
+          if [[ $current_tag =~ ".+-(qa|rc).*" ]]; then
+                  echo "::set-output name=upload::true"
+                  echo "::set-output name=pc::xPC_REPO-unstable"
+                  echo "::set-output name=hub::unstable"
+          # From https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
+          elif [[ $current_tag =~ "v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?" ]]; then
+                  echo "::set-output name=upload::true"
+                  echo "::set-output name=pc::xPC_REPO"
+                  echo "::set-output name=hub::stable"
+          else
+                  echo "::set-output name=upload::false"
+                  echo "::set-output name=hub::unstable"
+          fi
 
       - uses: goreleaser/goreleaser-action@v2
         with:
@@ -91,30 +141,16 @@ ifelse(xREPO, <<tyk-analytics>>,
           NFPM_PAYG_PASSPHRASE: ${{ secrets.SIGNING_KEY_PASSPHRASE }}
           GPG_FINGERPRINT: 12B5D62C28F57592D1575BD51ED14C59E37DAC20
           PKG_SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-          IMAGE_TAG: ${{ steps.aws-creds.outputs.image_tag }}
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          HUB_TAG: ${{ steps.targets.outputs.hub }}
 
-      - name: Push to xCOMPATIBILITY_NAME-unstable
-        if: startsWith(github.ref, 'refs/heads')
+      - name: Push to packagecloud
+        if: steps.targets.outputs.upload == true
         uses: TykTechnologies/packagecloud-action@main
         env:
           PACKAGECLOUD_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
         with:
-          repo: 'tyk/xCOMPATIBILITY_NAME-unstable'
+          repo: tyk/${{ steps.targets.outputs.pc }}
           dir: 'dist'
-
-      - name: Push to xCOMPATIBILITY_NAME
-        if: startsWith(github.ref, 'refs/tags')
-        uses: TykTechnologies/packagecloud-action@v1
-        env:
-          PACKAGECLOUD_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
-        with:
-          repo: 'tyk/xCOMPATIBILITY_NAME'
-          dir: 'dist'
-
-      - name: Logout of Amazon ECR
-        if: always()
-        run: docker logout ${{ steps.login-ecr.outputs.registry }}
 
 # AWS mktplace update only for LTS releases
   aws-mktplace-byol:

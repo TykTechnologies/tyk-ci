@@ -5,7 +5,7 @@ RUN apt-get update \
  && apt-get autoremove -y
 
 COPY *.deb /
-RUN dpkg -i /*.deb && ln -s /opt/tyk /opt/xCOMPATIBILITY_NAME && rm /*.deb
+RUN dpkg -i /*.deb && rm /*.deb
 
 ARG PORTS
 
