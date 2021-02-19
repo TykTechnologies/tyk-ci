@@ -2,7 +2,7 @@ include(header.m4)
 dnl xPKG_NAME is the package in which version.go lives
 define(<<xPKG_NAME>>, <<ifelse(xREPO, <<tyk>>, <<gateway>>, xREPO, <<tyk-analytics>>, <<dashboard>>, xREPO, <<tyk-pump>>, <<main>>)>>)dnl
 define(<<xPKG_DESC>>, <<ifelse(xREPO, <<tyk>>, <<Tyk API Gateway>>, xREPO, <<tyk-analytics>>, <<Dashboard for the Tyk API gateway>>, xREPO, <<tyk-pump>>, <<Archive analytics for the Tyk API gateway>>)>>)dnl
-define(<<xPORTS>>, <<ifelse(xREPO, <<tyk>>, <<8080>>, xREPO, <<tyk-analytics>>, <<3000 5000>>, xREPO)>>)dnl
+define(<<xPORTS>>, <<ifelse(xREPO, <<tyk>>, <<8080>>, xREPO, <<tyk-analytics>>, <<3000 5000>>, <<80>>)>>)dnl
 
 # Check the documentation at http://goreleaser.com
 # This project needs CGO_ENABLED=1 and the cross-compiler toolchains for
@@ -62,46 +62,78 @@ ifelse(xREPO, <<tyk-analytics>>, <<
 
 dockers:
   - ids:
-      - std-linux
+      - std
     image_templates:
       - "tykio/xCOMPATIBILITY_NAME:{{ .Tag }}"
       - "tykio/xCOMPATIBILITY_NAME:v{{ .Major }}.{{ .Minor }}"
-      - {{ .Env.ECR_REGISTRY }}:xREPO:{{ .Branch }}
-      - {{ .Env.ECR_REGISTRY }}:xREPO:{{ .Commit }}
-      - {{ .Env.ECR_REGISTRY }}:xREPO:latest
+      - "{{ .Env.ECR_REGISTRY }}:{{ .Env.IMAGE_TAG }}"
+      - "{{ .Env.ECR_REGISTRY }}:{{ .Commit }}"
+      - "{{ .Env.ECR_REGISTRY }}:latest"
     build_flag_templates:
-      - "--build-arg BASE_IMAGE=debian:buster-slim TARBALL={{.ArtifactPath}} PORTS=xPORTS"
+      - "--build-arg=PORTS=xPORTS"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title={{.ProjectName}}"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
     goarch: amd64
     goos: linux
-    dockerfile: Dockerfile
+    dockerfile: Dockerfile.std
     extra_files:
-      - "tyk_config_sample.config"
+      - "install"
+ifelse(xREPO, <<tyk-analytics>>,
+<<      - "EULA.md"
       - "portal"
       - "schemas"
       - "webclient/lang"
+      - "tyk_config_sample.config"
+>>, xREPO, <<tyk>>,
+<<      - "LICENSE.md"
+      - "apps/app_sample.json"
+      - "templates"
+      - "middleware"
+      - "event_handlers/sample"
+      - "policies"
+      - "coprocess"
+      - "tyk.conf.example"
+>>, xREPO, <<tyk-pump>>,
+<<      - "LICENSE.md"
+      - "pump.example.conf"
+>>)dnl
   - ids:
       - static-amd64
     image_templates:
-      - "tykio/xCOMPATIBILITY_NAME:slim"
-      - "tykio/xCOMPATIBILITY_NAME:s{{ .Major }}.{{ .Minor }}"
+      - "tykio/xDH_REPO:slim"
+      - "tykio/xDH_REPO:s{{ .Major }}.{{ .Minor }}"
     build_flag_templates:
-      - "--build-arg BASE_IMAGE=gcr.io/distroless/static-debian10 TARBALL={{.ArtifactPath}} PORTS=xPORTS"
+      - "--build-arg=PORTS=xPORTS"
       - "--label=org.opencontainers.image.created={{.Date}}"
       - "--label=org.opencontainers.image.title={{.ProjectName}}-slim"
       - "--label=org.opencontainers.image.revision={{.FullCommit}}"
       - "--label=org.opencontainers.image.version={{.Version}}"
     goarch: amd64
     goos: linux
-    dockerfile: Dockerfile
+    dockerfile: Dockerfile.slim
     extra_files:
-      - "tyk_config_sample.config"
+      - "install"
+ifelse(xREPO, <<tyk-analytics>>,
+<<      - "EULA.md"
       - "portal"
       - "schemas"
       - "webclient/lang"
+      - "tyk_config_sample.config"
+>>, xREPO, <<tyk>>,
+<<      - "LICENSE.md"
+      - "apps/app_sample.json"
+      - "templates"
+      - "middleware"
+      - "event_handlers/sample"
+      - "policies"
+      - "coprocess"
+      - "tyk.conf.example"
+>>, xREPO, <<tyk-pump>>,
+<<      - "LICENSE.md"
+      - "pump.example.conf"
+>>)
 
 nfpms:
   - id: std
@@ -109,6 +141,8 @@ nfpms:
     homepage: "https://tyk.io"
     maintainer: "Tyk <info@tyk.io>"
     description: xPKG_DESC
+    package_name: xCOMPATIBILITY_NAME
+    version_metadata: git
     builds:
       - std-linux
       - std-arm64
@@ -116,11 +150,14 @@ nfpms:
       - deb
       - rpm
     contents:
-      - src: "README*"
-        dst: "/opt/xREPO/"
+      - src: "README.md"
+        dst: "/opt/share/docs/xREPO/README.md"
 ifelse(xREPO, <<tyk-analytics>>,
 <<      - src: "EULA.md"
-        dst: "/opt/xREPO"
+        dst: "/opt/share/docs/xREPO/EULA.md"
+      - src: "/opt/xREPO"
+        dst: "/opt/xCOMPATIBILITY_NAME"
+        type: "symlink"
       - src: "portal/*"
         dst: "/opt/xREPO/portal"
       - src: "schemas/*"
@@ -134,7 +171,10 @@ ifelse(xREPO, <<tyk-analytics>>,
         type: "config|noreplace"
 >>, xREPO, <<tyk>>,
 <<      - src: "LICENSE.md"
-        dst: "/opt/xREPO"
+        dst: "/opt/share/docs/xREPO/LICENSE.md"
+      - src: "/opt/xREPO"
+        dst: "/opt/xCOMPATIBILITY_NAME"
+        type: "symlink"
       - src: "apps/app_sample.json"
         dst: "/opt/xREPO/apps"
       - src: "templates/*.json"
@@ -153,19 +193,23 @@ ifelse(xREPO, <<tyk-analytics>>,
         dst: /opt/xREPO/tyk.conf
         type: "config|noreplace"
 >>, xREPO, <<tyk-pump>>,
-<<      - src: "EULA.md"
-        dst: "/opt/xREPO"
+<<      - src: "LICENSE.md"
+        dst: "/opt/share/docs/xREPO/LICENSE.md"
       - src: "install/*"
         dst: "/opt/xREPO/install"
       - src: pump.example.conf
         dst: /opt/xREPO/pump.conf
         type: "config|noreplace"
+>>, xREPO, <<tyk-sink>>,
+<<      - src: "/opt/xREPO"
+        dst: "/opt/xCOMPATIBILITY_NAME"
+        type: "symlink"
 >>)dnl
     scripts:
       preinstall: "install/before_install.sh"
       postinstall: "install/post_install.sh"
       postremove: "install/post_remove.sh"
-    bindir: "/opt/xCOMPATIBILITY_NAME"
+    bindir: "/opt/xREPO"
     overrides:
       rpm:
         replacements:
@@ -224,9 +268,9 @@ archives:
     - std-linux
   files:
     - README.md
-    - CHANGELOG.md
 ifelse(xREPO, <<tyk-analytics>>,
 <<    - EULA.md
+    - CHANGELOG.md
     - portal/*
     - schemas/*
     - lang/*
@@ -242,7 +286,8 @@ ifelse(xREPO, <<tyk-analytics>>,
     - "coprocess/*"
     - tyk.conf.example
 >>, xREPO, <<tyk-pump>>,
-<<    - "EULA.md"
+<<    - "LICENSE.md"
+    - CHANGELOG.md
     - "install/*"
     - pump.example.conf
 >>)
@@ -251,9 +296,9 @@ ifelse(xREPO, <<tyk-analytics>>,
     - std-arm64
   files:
     - README.md
-    - CHANGELOG.md
 ifelse(xREPO, <<tyk-analytics>>,
 <<    - EULA.md
+    - CHANGELOG.md
     - portal/*
     - schemas/*
     - lang/*
@@ -269,20 +314,20 @@ ifelse(xREPO, <<tyk-analytics>>,
     - "coprocess/*"
     - tyk.conf.example
 >>, xREPO, <<tyk-pump>>,
-<<    - "EULA.md"
+<<    - "LICENSE.md"
+    - CHANGELOG.md
     - "install/*"
     - pump.example.conf
 >>)dnl
-
 - id: static-amd64
   name_template: "{{ .ProjectName }}_{{ .Version }}_static_{{ .Os }}_{{ .Arch }}"
   builds:
     - static-amd64
   files:
     - README.md
-    - CHANGELOG.md
 ifelse(xREPO, <<tyk-analytics>>,
 <<    - EULA.md
+    - CHANGELOG.md
     - portal/*
     - schemas/*
     - lang/*
@@ -297,7 +342,8 @@ ifelse(xREPO, <<tyk-analytics>>,
     - "coprocess/*"
     - tyk.conf.example
 >>, xREPO, <<tyk-pump>>,
-<<    - "EULA.md"
+<<    - "LICENSE.md"
+    - CHANGELOG.md
     - "install/*"
     - pump.example.conf
 >>)

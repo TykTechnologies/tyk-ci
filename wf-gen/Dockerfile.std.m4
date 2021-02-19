@@ -1,17 +1,13 @@
 include(header.m4)
-
-ARG BASE_IMAGE=debian:buster-slim
-ARG PORTS
-ARG TARBALL
-
-FROM $BASE_IMAGE
-
+FROM debian:buster-slim
 RUN apt-get update \
  && apt-get dist-upgrade -y ca-certificates \
  && apt-get autoremove -y
 
-WORKDIR /opt/xCOMPATIBILITY_NAME
-COPY $TARBALL .
+COPY *.deb /
+RUN dpkg -i /*.deb && ln -s /opt/tyk /opt/xCOMPATIBILITY_NAME && rm /*.deb
+
+ARG PORTS
 
 EXPOSE $PORTS
 

@@ -21,16 +21,16 @@ on:
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
-    container: tykio/golang-cross:1.15
+    container: tykio/golang-cross:1.12
 
     steps:
       - name: Checkout xREPO
         uses: actions/checkout@v2
         with:
-          fetch-depth: 0
-          token: ${{ secrets.repo_token }}
+          fetch-depth: 1
 ifelse(xREPO, <<tyk-analytics>>,
-<<          submodules: true
+<<          token: ${{ secrets.repo_token }}
+          submodules: true
 >>)
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v1
@@ -52,6 +52,7 @@ ifelse(xREPO, <<tyk-analytics>>,
             echo "::set-output name=key::$key"
             echo "::set-output name=ecr::$ecr"
             echo "::set-output name=region::$region"
+            echo "::set-output name=image_tag::${GITHUB_REF##*/}"
 
       - name: Configure AWS credentials for use
         uses: aws-actions/configure-aws-credentials@v1
@@ -90,6 +91,7 @@ ifelse(xREPO, <<tyk-analytics>>,
           NFPM_PAYG_PASSPHRASE: ${{ secrets.SIGNING_KEY_PASSPHRASE }}
           GPG_FINGERPRINT: 12B5D62C28F57592D1575BD51ED14C59E37DAC20
           PKG_SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          IMAGE_TAG: ${{ steps.aws-creds.outputs.image_tag }}
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
 
       - name: Push to xCOMPATIBILITY_NAME-unstable
