@@ -3,6 +3,8 @@
   image_templates:
     - "tykio/xCOMPATIBILITY_NAME:slim"
     - "tykio/xCOMPATIBILITY_NAME:s{{ .Major }}.{{ .Minor }}"
+    - "docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:slim"
+    - "docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:v{{ .Major }}.{{ .Minor }}"
   build_flag_templates:
     - "--build-arg=PORTS=xPORTS"
     - "--label=org.opencontainers.image.created={{.Date}}"

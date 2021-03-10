@@ -6,6 +6,7 @@ include(header.m4)
 # - docker hub
 # - devenv ECR
 # - AWS mktplace
+# - Cloudsmith
 
 name: Release
 
@@ -107,6 +108,12 @@ ifelse(xREPO, <<tyk-analytics>>,
         with:
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Login to Cloudsmith
+        if: startsWith(github.ref, 'refs/tags')
+        uses: cloudsmith-io/action@master
+        with:
+          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
 
       - name: Unlock agent and set targets
         env:
