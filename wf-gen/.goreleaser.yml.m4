@@ -39,6 +39,11 @@ changelog:
     - '^utils:'
     - (?i)typo
     - 'Merge (pull request|branch)'
+    - '\[CI\]'
+    - '(?i)\[Buddy\]'
+    - 'cherry picked'
+    - '^rel-eng:'
+    - '^minor:'
 
 release:
   github:
@@ -46,4 +51,4 @@ release:
     name: xREPO
   prerelease: auto
   draft: true
-  name_template: "{{.ProjectName}}-v{{.Version}} {{.Env.USER}}"
+  name_template: "{{.ProjectName}}-v{{.Version}}"

@@ -11,6 +11,7 @@ on:
     paths:
       - .github/workflows/*
       - integration/*
+      - .goreleaser.yml
 
 env:
   FILES: xAUTO_FILES

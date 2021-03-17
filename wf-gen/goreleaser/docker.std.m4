@@ -1,9 +1,9 @@
 - ids:
     - std
   image_templates:
-    - "tykio/xCOMPATIBILITY_NAME:latest"
-    - "tykio/xCOMPATIBILITY_NAME:{{ .Tag }}"
-    - "tykio/xCOMPATIBILITY_NAME:v{{ .Major }}.{{ .Minor }}"
+    - "tykio/xDH_REPO:latest"
+    - "tykio/xDH_REPO:{{ .Tag }}"
+    - "tykio/xDH_REPO:v{{ .Major }}.{{ .Minor }}"
   build_flag_templates:
     - "--build-arg=PORTS=xPORTS"
     - "--label=org.opencontainers.image.created={{.Date}}"
