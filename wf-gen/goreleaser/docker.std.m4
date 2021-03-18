@@ -1,12 +1,12 @@
 - ids:
     - std
   image_templates:
-    - "tykio/xCOMPATIBILITY_NAME:latest"
-    - "tykio/xCOMPATIBILITY_NAME:{{ .Tag }}"
-    - "tykio/xCOMPATIBILITY_NAME:v{{ .Major }}.{{ .Minor }}"
-    - "docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:latest"
-    - "docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:{{ .Tag }}"
-    - "docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:v{{ .Major }}.{{ .Minor }}"
+    - "tykio/xDH_REPO:latest"
+    - "tykio/xDH_REPO:{{ .Tag }}"
+    - "tykio/xDH_REPO:v{{ .Major }}.{{ .Minor }}"
+    - "docker.cloudsmith.io/tyk/xDH_REPO/xDH_REPO:latest"
+    - "docker.cloudsmith.io/tyk/xDH_REPO/xDH_REPO:{{ .Tag }}"
+    - "docker.cloudsmith.io/tyk/xDH_REPO/xDH_REPO:v{{ .Major }}.{{ .Minor }}"
   build_flag_templates:
     - "--build-arg=PORTS=xPORTS"
     - "--label=org.opencontainers.image.created={{.Date}}"

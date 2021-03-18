@@ -168,5 +168,4 @@ do
     fetch_branch $repo $branch $base_branch
     print Generating files for $repo
     process_repo $repo && commit_changes $repo $title $body $base_branch
-    cat prs.list
 done

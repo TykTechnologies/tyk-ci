@@ -116,26 +116,47 @@ ifelse(xREPO, <<tyk-analytics>>,
           api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
 
       - name: Unlock agent and set targets
+        id: targets
+        shell: bash
         env:
           NFPM_STD_PASSPHRASE: ${{ secrets.SIGNING_KEY_PASSPHRASE }}
           GPG_FINGERPRINT: 12B5D62C28F57592D1575BD51ED14C59E37DAC20
           PKG_SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
         run: |
           /unlock-agent.sh
-          current_tag=$(git describe --tags)
-          if [[ $current_tag =~ ".+-(qa|rc).*" ]]; then
+          current_tag=${GITHUB_REF##*/}
+          if [[ $current_tag =~ .+-(qa|rc).* ]]; then
                   echo "::set-output name=upload::true"
                   echo "::set-output name=pc::xPC_REPO-unstable"
                   echo "::set-output name=hub::unstable"
+                  echo "::warning file=.goreleaser.yml::Pushing to unstable repos"
           # From https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
-          elif [[ $current_tag =~ "v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-((?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\.(?:0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\+([0-9a-zA-Z-]+(?:\.[0-9a-zA-Z-]+)*))?" ]]; then
+          # If this is a public release, the tag is of the form vX.Y.Z where X, Y, Z ∈ ℤ
+          elif [[ $current_tag =~ v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*) ]]; then
                   echo "::set-output name=upload::true"
                   echo "::set-output name=pc::xPC_REPO"
                   echo "::set-output name=hub::stable"
+                  echo "::warning file=.goreleaser.yml::Pushing to stable repos"
           else
                   echo "::set-output name=upload::false"
                   echo "::set-output name=hub::unstable"
+                  echo "::warning file=.goreleaser.yml::No uploads"
           fi
+
+      - name: Delete old release assets
+        if: startsWith(github.ref, 'refs/tags')
+        uses: mknejp/delete-release-assets@v1
+        with:
+          token: ${{ github.token }}
+          tag: ${{ github.ref }}
+          fail-if-no-assets: false
+          fail-if-no-release: false
+          assets: |
+            *.deb
+            *.rpm
+            *.tar.gz
+            *.txt.sig
+            *.txt
 
       - uses: goreleaser/goreleaser-action@v2
         with:
@@ -151,13 +172,20 @@ ifelse(xREPO, <<tyk-analytics>>,
           HUB_TAG: ${{ steps.targets.outputs.hub }}
 
       - name: Push to packagecloud
-        if: steps.targets.outputs.upload == true
+        if: steps.targets.outputs.upload == 'true'
         uses: TykTechnologies/packagecloud-action@main
         env:
           PACKAGECLOUD_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
         with:
           repo: tyk/${{ steps.targets.outputs.pc }}
           dir: 'dist'
+
+      - name: Push unstable docker image
+        if: steps.targets.outputs.hub == 'unstable' && steps.targets.outputs.upload == 'true'
+        run: |
+          docker tag tykio/xDH_REPO tykio/xDH_REPO:${{ steps.targets.outputs.hub }}
+          docker tag tykio/xDH_REPO tykio/xDH_REPO:${GITHUB_REF##*/}
+          docker push --all-tags tykio/xDH_REPO
 
 # AWS mktplace update only for LTS releases
   aws-mktplace-byol:

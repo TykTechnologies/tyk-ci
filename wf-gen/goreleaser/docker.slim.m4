@@ -1,10 +1,10 @@
 - ids:
     - static-amd64
   image_templates:
-    - "tykio/xCOMPATIBILITY_NAME:slim"
-    - "tykio/xCOMPATIBILITY_NAME:s{{ .Major }}.{{ .Minor }}"
-    - "docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:slim"
-    - "docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:v{{ .Major }}.{{ .Minor }}"
+    - "tykio/xDH_REPO:slim"
+    - "tykio/xDH_REPO:s{{ .Major }}.{{ .Minor }}"
+    - "docker.cloudsmith.io/tyk/xDH_REPO/xDH_REPO:slim"
+    - "docker.cloudsmith.io/tyk/xDH_REPO/xDH_REPO:v{{ .Major }}.{{ .Minor }}"
   build_flag_templates:
     - "--build-arg=PORTS=xPORTS"
     - "--label=org.opencontainers.image.created={{.Date}}"
