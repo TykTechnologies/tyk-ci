@@ -6,6 +6,7 @@ include(header.m4)
 # - docker hub
 # - devenv ECR
 # - AWS mktplace
+# - Cloudsmith
 
 name: Release
 
@@ -108,6 +109,12 @@ ifelse(xREPO, <<tyk-analytics>>,
           username: ${{ secrets.DOCKER_USERNAME }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
+      - name: Login to Cloudsmith
+        if: startsWith(github.ref, 'refs/tags')
+        uses: cloudsmith-io/action@master
+        with:
+          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
+
       - name: Unlock agent and set targets
         id: targets
         shell: bash
@@ -179,6 +186,8 @@ ifelse(xREPO, <<tyk-analytics>>,
           docker tag tykio/xDH_REPO tykio/xDH_REPO:${{ steps.targets.outputs.hub }}
           docker tag tykio/xDH_REPO tykio/xDH_REPO:${GITHUB_REF##*/}
           docker push --all-tags tykio/xDH_REPO
+          docker tag tykio/xDH_REPO docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:${GITHUB_REF##*/}
+          docker push --all-tags docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:${GITHUB_REF##*/}
 
 # AWS mktplace update only for LTS releases
   aws-mktplace-byol:
@@ -213,7 +222,7 @@ ifelse(xREPO, <<tyk-analytics>>, <<
           - ONE_GW
           - TWO_GW
           - UNLIMITED_GW
-          
+
     steps:
       - name: Packer build
         working-directory: ./aws

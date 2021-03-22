@@ -1,4 +1,4 @@
-#!/usr/bin/zsh
+#!/usr/bin/env zsh
 
 setopt no_continue_on_error warn_nested_var warn_create_global no_clobber pipefail
 #setopt verbose
@@ -18,9 +18,9 @@ RELEASE_BRANCHES[tyk-sink]=''
 function usage {
     print ${1:-did not understand what you wanted}
     cat <<EOF
-Usage: 
+Usage:
 
-    $PROGNAME	-${o_repos} \\ 
+    $PROGNAME	-${o_repos} \\
        		-${o_base} \\
        		-branch <branch that will be pushed> \\
        		-title "title" \\
@@ -59,7 +59,7 @@ function parse_options {
     typeset -g -a repos=("${(@s/,/)o_repos[2]}")
 
     [[ -n $title && -n $branch ]] || usage "title or branch missing"
-    
+
     if [[ -r ${o_body[2]} ]]; then
 	typeset -g body=$(<${o_body[2]})
     else
@@ -76,10 +76,10 @@ function parse_options {
 function process_repo {
     local r=${1?"repo undefined for process"}
     local file cmd
-    
+
     # The sync worklow itself need not be sync'd, it lives on master
     local auto_files=${TARGETS:#.github/workflows/sync-automation.yml}
-    
+
     for file in $TARGETS
     do
 	local target="${r}/${file}"
@@ -96,7 +96,7 @@ function process_repo {
 		cmd="m4 -E -DxREPO=${r}"
 		;;
 	esac
-	
+
 	if [[ ${+force} || $target -ot $src || ! -s $target ]]; then
 	    print Running: $cmd $src with output to $target
 	    print $dirpath $file
@@ -120,7 +120,7 @@ function fetch_branch {
 	[[ -d $r ]] && rm -rf $r
 	git clone git@github.com:TykTechnologies/$r --depth 1 -b $base
 	cd $r
-	if [[ $push_only == "yes" ]]; then 
+	if [[ $push_only == "yes" ]]; then
 	    git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
 	    #git fetch origin refs/heads/${b}:refs/remotes/origin/${b}
 	    git pull origin $b
