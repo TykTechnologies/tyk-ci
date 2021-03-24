@@ -3,44 +3,11 @@
 setopt no_continue_on_error warn_nested_var warn_create_global no_clobber pipefail
 #setopt verbose
 
-# Files to update for each repo
-TARGETS=(.goreleaser.yml Dockerfile.std Dockerfile.slim aws/byol.pkr.hcl .github/workflows/release.yml .github/workflows/del-env.yml integration/terraform/outputs.tf .github/workflows/sync-automation.yml)
-# For each TARGETS, add SOURCE_SUFFIX to the basename to obtain the source file for that target
-SOURCE_SUFFIX=m4
-typeset -A RELEASE_BRANCHES
-# Release branches for known repos, all automation will be sync'd to these branches when pushed to master by sync-automation.yml
-# Needs to be a comma-separated list as it it goes into a YAML array.
-RELEASE_BRANCHES[tyk]='release-3, release-3-lts, release-3.2'
-RELEASE_BRANCHES[tyk-analytics]='release-3, release-3-lts, release-3.2'
-RELEASE_BRANCHES[tyk-pump]='release-0.8, release-1.0'
-RELEASE_BRANCHES[tyk-sink]=''
-
-function usage {
-    print ${1:-did not understand what you wanted}
-    cat <<EOF
-Usage:
-
-    $PROGNAME	-${o_repos} \\
-       		-${o_base} \\
-       		-branch <branch that will be pushed> \\
-       		-title "title" \\
-        	-${o_body} \\
-       		[-f] [-p]
-
-The same body is used for all PRs. There is no parameter expansion in the body.
--base is the base branch of the PR
--branch is the branch that will be pushed, same name for all repos
--f will ignore timestamps when deciding whether to (re-)generate a file
--p will only push and not create a PR
-Any omitted options will use the values above
-GNU style long/short options not supported
-EOF
-    exit 1
-}
+source common.zsh
 
 function parse_options {
     # Defaults
-    local -a o_repos=(repos tyk,tyk-analytics,tyk-pump,tyk-sink)
+    local -a o_repos=(repos $REPOS)
     local -a o_base=(base master)
     local -a o_body=(body pr.md)
     local o_help o_push_only o_force="yes"
@@ -70,16 +37,59 @@ function parse_options {
     print Will use $base_branch as the base branch and will push a branch named $branch to origin. The PR below will be pushed to $repos
     print -l $title $body
     local c
-    read -q "?C-c to cancel. Any key to confirm." c
+    read -q "?Control-C to cancel. Any key to confirm." c
+}
+
+function usage {
+    print ${1:-did not understand what you wanted}
+    cat <<EOF
+Usage: 
+
+    $PROGNAME	-${o_repos} \\ 
+       		-${o_base} \\
+       		-branch <branch that will be pushed> \\
+       		-title "title" \\
+        	-${o_body} \\
+       		[-f] [-p]
+
+The same body is used for all PRs. There is no parameter expansion in the body.
+-base is the base branch of the PR
+-branch is the branch that will be pushed, same name for all repos
+-f will ignore timestamps when deciding whether to (re-)generate a file
+-p will only push and not create a PR
+Any omitted options will use the values above
+GNU style long/short options not supported
+EOF
+    exit 1
+}
+
+function fetch_branch {
+    local r=${1?"repo undefined for fetch"}
+    local b=${2?"branch undefined for fetch"}
+    local base=${3?"base branch undefined for fetch"}
+
+    # Since the work is done in subshell, failures are not fatal
+    (
+	# Clean up old stale directories
+	[[ -d $r ]] && rm -rf $r
+	git clone git@github.com:TykTechnologies/$r --depth 1 -b $base
+	cd $r
+	if [[ $push_only == "yes" ]]; then 
+	    git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
+	    #git fetch origin refs/heads/${b}:refs/remotes/origin/${b}
+	    git pull origin $b
+	    git checkout $b
+	else
+	    git checkout -b $b
+	fi
+    )
+    return $?
 }
 
 function process_repo {
     local r=${1?"repo undefined for process"}
     local file cmd
-
-    # The sync worklow itself need not be sync'd, it lives on master
-    local auto_files=${TARGETS:#.github/workflows/sync-automation.yml}
-
+    
     for file in $TARGETS
     do
 	local target="${r}/${file}"
@@ -89,9 +99,6 @@ function process_repo {
 	local src="${target:t}.${SOURCE_SUFFIX}"
 	# Extend this for more special conditions. Associative arrays have limitations.
 	case $file in
-	    *sync-automation.yml)
-		cmd="m4 -E -DxRELEASE_BRANCHES='${RELEASE_BRANCHES[$r]}' -DxAUTO_FILES='${auto_files}'"
-		;;
 	    *)
 		cmd="m4 -E -DxREPO=${r}"
 		;;
@@ -109,29 +116,6 @@ function process_repo {
     done
 }
 
-function fetch_branch {
-    local r=${1?"repo undefined for fetch"}
-    local b=${2?"branch undefined for fetch"}
-    local base=${3?"base branch undefined for fetch"}
-
-    # Since the work is done in subshell, failures are not fatal
-    (
-	# Clean up old stale directories
-	[[ -d $r ]] && rm -rf $r
-	git clone git@github.com:TykTechnologies/$r --depth 1 -b $base
-	cd $r
-	if [[ $push_only == "yes" ]]; then
-	    git config remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
-	    #git fetch origin refs/heads/${b}:refs/remotes/origin/${b}
-	    git pull origin $b
-	    git checkout $b
-	else
-	    git checkout -b $b
-	fi
-    )
-    return $?
-}
-
 function commit_changes {
     local r=${1?"repo undefined for commit"}
     local t=${2?"title undefined for commit"}
@@ -143,9 +127,9 @@ function commit_changes {
 	cd $r
 	print Start of diff for ${r}, comments ignored
 	git diff --staged -G'(^[^#])'
-	read -q "?End of diff for $r. C-c to cancel. Any key to confirm." c
+	read -q "?End of diff for $r. Control-C to cancel. Any key to confirm." c
 	# commit if there are changes
-	git commit -m $t -m "Sync by tyk-ci/wf-gen/pr.zsh. This commit was generated by code© and reviewed by humans™."
+	git commit -m $t -m "Sync by tyk-ci/wf-gen. This commit was generated by code© and reviewed by humans™."
 	git push origin $branch
 	if [[ -z $push_only ]]; then
 	    gh pr create --draft --title $t --base $base --reviewer TykTechnologies/devops --body $body
