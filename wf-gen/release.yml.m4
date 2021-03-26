@@ -111,9 +111,11 @@ ifelse(xREPO, <<tyk-analytics>>,
 
       - name: Login to Cloudsmith
         if: startsWith(github.ref, 'refs/tags')
-        uses: cloudsmith-io/action@master
+        uses: docker/login-action@v1
         with:
-          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
+          registry: docker.cloudsmith.io
+          username: ${{ secrets.CLOUDSMITH_USERNAME }}
+          password: ${{ secrets.CLOUDSMITH_API_KEY }}
 
       - name: Unlock agent and set targets
         id: targets
