@@ -111,9 +111,11 @@ ifelse(xREPO, <<tyk-analytics>>,
 
       - name: Login to Cloudsmith
         if: startsWith(github.ref, 'refs/tags')
-        uses: cloudsmith-io/action@master
+        uses: docker/login-action@v1
         with:
-          api-key: ${{ secrets.CLOUDSMITH_API_KEY }}
+          registry: docker.cloudsmith.io
+          username: ${{ secrets.CLOUDSMITH_USERNAME }}
+          password: ${{ secrets.CLOUDSMITH_API_KEY }}
 
       - name: Unlock agent and set targets
         id: targets
@@ -187,8 +189,8 @@ ifelse(xREPO, <<tyk-analytics>>,
           docker tag tykio/xDH_REPO tykio/xDH_REPO:${{ steps.targets.outputs.hub }}
           docker tag tykio/xDH_REPO tykio/xDH_REPO:${tag}
           docker push --all-tags tykio/xDH_REPO
-          docker tag tykio/xDH_REPO docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:${tag}
-          docker push --all-tags docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:${tag} || true
+          docker tag tykio/xDH_REPO:${tag} docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:${tag}
+          docker push docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:${tag}
 ifelse(xREPO, <<tyk>>,
 <<          docker tag tykio/tyk-plugin-compiler tykio/tyk-plugin-compiler:${tag}
           docker push tykio/tyk-plugin-compiler:${tag}
