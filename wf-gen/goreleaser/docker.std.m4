@@ -16,4 +16,24 @@
   dockerfile: Dockerfile.std
   skip_push: auto
   extra_files:
-    - "install/data"
+    - "install/"
+    - "README.md"
+ifelse(xREPO, <<tyk-analytics>>,<<
+    - "EULA.md"
+    - "portal"
+    - "schemas"
+    - "webclient/lang"
+    - "tyk_config_sample.config"
+>>, xREPO, <<tyk>>,<<
+    - "LICENSE.md"
+    - "apps/app_sample.json"
+    - "templates"
+    - "middleware"
+    - "event_handlers/sample"
+    - "policies"
+    - "coprocess"
+    - "tyk.conf.example"
+>>, xREPO, <<tyk-pump>>,<<
+    - "LICENSE.md"
+    - "pump.example.conf"
+>>)dnl
