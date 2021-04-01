@@ -17,7 +17,7 @@ locals {
   # name should match the tf workspace name
   name = "base-prod"
   # Repositories to create
-  tyk_repos = ["tyk", "tyk-analytics", "tyk-pump", "tyk-sink" ]
+  tyk_repos = ["tyk", "tyk-analytics", "tyk-pump", "tyk-sink", "tyk-identity-broker", "raava" ]
   common_tags = {
     "managed" = "automation",
     "ou"      = "devops",

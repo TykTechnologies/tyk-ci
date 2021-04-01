@@ -34,6 +34,20 @@ output "tyk-pump" {
   description = "pump"
 }
 
+output "raava" {
+  value = map("key", aws_iam_access_key.integration["raava"].id,
+    "secret", aws_iam_access_key.integration["raava"].secret,
+  "ecr", aws_ecr_repository.integration["raava"].repository_url)
+  description = "mdcb"
+}
+
+output "tyk-identity-broker" {
+  value = map("key", aws_iam_access_key.integration["tyk-identity-broker"].id,
+    "secret", aws_iam_access_key.integration["tyk-identity-broker"].secret,
+  "ecr", aws_ecr_repository.integration["tyk-identity-broker"].repository_url)
+  description = "mdcb"
+}
+
 output "tyk-sink" {
   value = map("key", aws_iam_access_key.integration["tyk-sink"].id,
     "secret", aws_iam_access_key.integration["tyk-sink"].secret,
