@@ -186,15 +186,13 @@ ifelse(xREPO, <<tyk-analytics>>,
         if: steps.targets.outputs.hub == 'unstable' && steps.targets.outputs.upload == 'true'
         run: |
           tag=${GITHUB_REF##*/}
-          docker tag tykio/xDH_REPO tykio/xDH_REPO:${{ steps.targets.outputs.hub }}
-          docker tag tykio/xDH_REPO tykio/xDH_REPO:${tag}
-          docker push --all-tags tykio/xDH_REPO
+          docker tag tykio/xDH_REPO:${tag} tykio/xDH_REPO:${{ steps.targets.outputs.hub }}
+          docker push tykio/xDH_REPO:${{ steps.targets.outputs.hub }}
+          docker push tykio/xDH_REPO:${tag}
           docker tag tykio/xDH_REPO:${tag} docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:${tag}
           docker push docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:${tag}
 ifelse(xREPO, <<tyk>>,
-<<          docker tag tykio/tyk-plugin-compiler tykio/tyk-plugin-compiler:${tag}
-          docker push tykio/tyk-plugin-compiler:${tag}
-          docker tag tykio/tyk-hybrid-docker tykio/tyk-hybrid-docker:${tag}
+<<          docker push tykio/tyk-plugin-compiler:${tag}
           docker push tykio/tyk-hybrid-docker:${tag}
 >>)
 

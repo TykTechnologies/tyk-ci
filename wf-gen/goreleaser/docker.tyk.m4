@@ -20,7 +20,7 @@
     - "tykio/tyk-plugin-compiler:{{ .Tag }}"
     - "tykio/tyk-plugin-compiler:v{{ .Major }}.{{ .Minor }}"
   build_flag_templates:
-    - "--build-arg=TYK_GW_TAG={{ .Branch }}"
+    - "--build-arg=TYK_GW_TAG={{ .Tag }}"
     - "--label=org.opencontainers.image.created={{.Date}}"
     - "--label=org.opencontainers.image.title={{.ProjectName}}-plugin-compiler"
     - "--label=org.opencontainers.image.revision={{.FullCommit}}"
