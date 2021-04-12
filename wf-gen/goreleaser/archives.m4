@@ -15,6 +15,8 @@ ifelse(xREPO, <<tyk-analytics>>,
 <<    - "LICENSE.md"
     - "apps/app_sample.json"
     - "templates/*.json"
+    - "templates/playground/index.html"
+    - "templates/playground/playground.js"
     - "install/*"
     - "middleware/*.js"
     - "event_handlers/sample/*.js"
