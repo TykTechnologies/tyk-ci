@@ -40,4 +40,4 @@ jobs:
           done
           git commit -a -m "[CI] Syncing release automation from xSRC_BRANCH"
           git push origin
-          echo "::warning::${FILES} syncd for ${{matrix.branch}}"
+          echo "::debug::${FILES} syncd for ${{matrix.branch}}"

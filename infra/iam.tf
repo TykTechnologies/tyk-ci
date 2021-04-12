@@ -5,25 +5,26 @@ data "aws_iam_policy_document" "gromit_tr" {
     actions = ["sts:AssumeRole"]
     principals {
       type = "Service"
-      identifiers = ["ecs-tasks.amazonaws.com"]
+      identifiers = ["ecs-tasks.amazonaws.com", "chatbot.amazonaws.com"]
     }
   }
 }
 
-data "aws_iam_policy_document" "logs" {
+data "aws_iam_policy_document" "chatops" {
   statement {
     actions = [
-      "logs:*"
+      "logs:*",
+      "chatbot:DescribeSlackChannelConfigurations"
     ]
     resources = ["*"]
   }
 }
 
-resource "aws_iam_role_policy" "logs" {
-  name = "cw-logs"
+resource "aws_iam_role_policy" "chatops" {
+  name = "chatops"
   role = aws_iam_role.gromit_tr.id
 
-  policy = data.aws_iam_policy_document.logs.json
+  policy = data.aws_iam_policy_document.chatops.json
 }
 
 resource "aws_iam_role" "gromit_tr" {

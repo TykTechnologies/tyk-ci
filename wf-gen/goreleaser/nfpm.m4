@@ -13,70 +13,61 @@ nfpms:
       - rpm
     contents:
       - src: "README.md"
-        dst: "/opt/share/docs/xREPO/README.md"
+        dst: "/opt/share/docs/xCOMPATIBILITY_NAME/README.md"
 ifelse(xREPO, <<tyk-analytics>>,<<
-      - src: /opt/xREPO
-        dst: /opt/xCOMPATIBILITY_NAME
-        type: "symlink"
       - src: "EULA.md"
-        dst: "/opt/share/docs/xREPO/EULA.md"
+        dst: "/opt/share/docs/xCOMPATIBILITY_NAME/EULA.md"
       - src: "portal/*"
-        dst: "/opt/xREPO/portal"
+        dst: "/opt/xCOMPATIBILITY_NAME/portal"
       - src: "schemas/*"
-        dst: "/opt/xREPO/schemas"
+        dst: "/opt/xCOMPATIBILITY_NAME/schemas"
       - src: "webclient/lang/*"
-        dst: "/opt/xREPO/lang"
+        dst: "/opt/xCOMPATIBILITY_NAME/lang"
       - src: "install/inits/*"
-        dst: "/opt/xREPO/install/inits"
+        dst: "/opt/xCOMPATIBILITY_NAME/install/inits"
       - src: tyk_config_sample.config
-        dst: /opt/xREPO/tyk_analytics.conf
+        dst: /opt/xCOMPATIBILITY_NAME/tyk_analytics.conf
         type: "config|noreplace"
 >>, xREPO, <<tyk>>,<<
-      - src: /opt/xREPO
-        dst: /opt/xCOMPATIBILITY_NAME
-        type: "symlink"
       - src: "LICENSE.md"
-        dst: "/opt/share/docs/xREPO/LICENSE.md"
+        dst: "/opt/share/docs/xCOMPATIBILITY_NAME/LICENSE.md"
       - src: "apps/app_sample.json"
-        dst: "/opt/xREPO/apps"
+        dst: "/opt/xCOMPATIBILITY_NAME/apps"
       - src: "templates/*.json"
-        dst: "/opt/xREPO/templates"
+        dst: "/opt/xCOMPATIBILITY_NAME/templates"
       - src: "install/*"
-        dst: "/opt/xREPO/install"
+        dst: "/opt/xCOMPATIBILITY_NAME/install"
       - src: "middleware/*.js"
-        dst: "/opt/xREPO/middleware"
+        dst: "/opt/xCOMPATIBILITY_NAME/middleware"
       - src: "event_handlers/sample/*.js"
-        dst: "/opt/xREPO/event_handlers/sample"
+        dst: "/opt/xCOMPATIBILITY_NAME/event_handlers/sample"
       - src: "policies/*.json"
-        dst: "/opt/xREPO/policies"
+        dst: "/opt/xCOMPATIBILITY_NAME/policies"
       - src: "coprocess/*"
-        dst: "/opt/xREPO/coprocess"
+        dst: "/opt/xCOMPATIBILITY_NAME/coprocess"
       - src: tyk.conf.example
-        dst: /opt/xREPO/tyk.conf
+        dst: /opt/xCOMPATIBILITY_NAME/tyk.conf
         type: "config|noreplace"
 >>, xREPO, <<tyk-pump>>,<<
       - src: "LICENSE.md"
-        dst: "/opt/share/docs/xREPO/LICENSE.md"
+        dst: "/opt/share/docs/xCOMPATIBILITY_NAME/LICENSE.md"
       - src: "install/*"
-        dst: "/opt/xREPO/install"
+        dst: "/opt/xCOMPATIBILITY_NAME/install"
       - src: pump.example.conf
-        dst: /opt/xREPO/pump.conf
+        dst: /opt/xCOMPATIBILITY_NAME/pump.conf
         type: "config|noreplace"
 >>, xREPO, <<tyk-sink>>, <<
-      - src: /opt/xREPO
-        dst: /opt/xCOMPATIBILITY_NAME
-        type: "symlink"
       - src: "install/inits/*"
-        dst: "/opt/xREPO/install/inits"
+        dst: "/opt/xCOMPATIBILITY_NAME/install/inits"
       - src: tyk_sink_sample.conf
-        dst: /opt/xREPO/xREPO.conf
+        dst: /opt/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME.conf
         type: "config|noreplace"
 >>)dnl
     scripts:
       preinstall: "install/before_install.sh"
       postinstall: "install/post_install.sh"
       postremove: "install/post_remove.sh"
-    bindir: "/opt/xREPO"
+    bindir: "/opt/xCOMPATIBILITY_NAME"
     overrides:
       rpm:
         replacements:
@@ -105,19 +96,19 @@ ifelse(xREPO, <<tyk-analytics>>, <<
       - rpm
     contents:
       - src: "README*"
-        dst: "/opt/xREPO/"
+        dst: "/opt/xCOMPATIBILITY_NAME/"
       - src: "EULA.md"
-        dst: "/opt/xREPO"
+        dst: "/opt/xCOMPATIBILITY_NAME"
       - src: "portal/*"
-        dst: "/opt/xREPO/portal"
+        dst: "/opt/xCOMPATIBILITY_NAME/portal"
       - src: "schemas/*"
-        dst: "/opt/xREPO/schemas"
+        dst: "/opt/xCOMPATIBILITY_NAME/schemas"
       - src: "webclient/lang/*"
-        dst: "/opt/xREPO/lang"
+        dst: "/opt/xCOMPATIBILITY_NAME/lang"
       - src: "install/inits/*"
-        dst: "/opt/xREPO/install/inits"
+        dst: "/opt/xCOMPATIBILITY_NAME/install/inits"
       - src: tyk_config_sample.config
-        dst: /opt/xREPO/tyk_analytics.conf
+        dst: /opt/xCOMPATIBILITY_NAME/tyk_analytics.conf
         type: "config|noreplace"
     scripts:
       preinstall: "install/before_install.sh"

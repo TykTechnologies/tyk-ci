@@ -29,7 +29,7 @@ jobs:
         with:
           fetch-depth: 1
 ifelse(xREPO, <<tyk-analytics>>,
-<<          token: ${{ secrets.repo_token }}
+<<          token: ${{ secrets.REPO_TOKEN }}
           submodules: true
 >>)
       - name: Setup Terraform
@@ -92,6 +92,8 @@ ifelse(xREPO, <<tyk-analytics>>,
   goreleaser:
     runs-on: ubuntu-latest
     container: tykio/golang-cross:1.15.8
+    outputs:
+      tag: ${{ steps.targets.outputs.tag }}
 
     steps:
       - name: Checkout xREPO
@@ -99,7 +101,7 @@ ifelse(xREPO, <<tyk-analytics>>,
         with:
           fetch-depth: 0
 ifelse(xREPO, <<tyk-analytics>>,
-<<          token: ${{ secrets.repo_token }}
+<<          token: ${{ secrets.REPO_TOKEN }}
           submodules: true
 >>)
       - name: Login to DockerHub
@@ -127,22 +129,23 @@ ifelse(xREPO, <<tyk-analytics>>,
         run: |
           /unlock-agent.sh
           current_tag=${GITHUB_REF##*/}
+          echo "::set-output name=tag::${current_tag}"
           if [[ $current_tag =~ .+-(qa|rc).* ]]; then
                   echo "::set-output name=upload::true"
                   echo "::set-output name=pc::xPC_REPO-unstable"
                   echo "::set-output name=hub::unstable"
-                  echo "::warning file=.goreleaser.yml::Pushing to unstable repos"
+                  echo "::debug file=.goreleaser.yml::Pushing to unstable repos"
           # From https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
           # If this is a public release, the tag is of the form vX.Y.Z where X, Y, Z ∈ ℤ
           elif [[ $current_tag =~ v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*) ]]; then
                   echo "::set-output name=upload::true"
                   echo "::set-output name=pc::xPC_REPO"
                   echo "::set-output name=hub::stable"
-                  echo "::warning file=.goreleaser.yml::Pushing to stable repos"
+                  echo "::debug file=.goreleaser.yml::Pushing to stable repos"
           else
                   echo "::set-output name=upload::false"
                   echo "::set-output name=hub::unstable"
-                  echo "::warning file=.goreleaser.yml::No uploads"
+                  echo "::debug file=.goreleaser.yml::No uploads"
           fi
 
       - name: Delete old release assets
@@ -185,21 +188,19 @@ ifelse(xREPO, <<tyk-analytics>>,
       - name: Push unstable docker image
         if: steps.targets.outputs.hub == 'unstable' && steps.targets.outputs.upload == 'true'
         run: |
-          tag=${GITHUB_REF##*/}
-          docker tag tykio/xDH_REPO:${tag} tykio/xDH_REPO:${{ steps.targets.outputs.hub }}
+          docker tag tykio/xDH_REPO:${{ steps.targets.outputs.tag }} tykio/xDH_REPO:${{ steps.targets.outputs.hub }}
           docker push tykio/xDH_REPO:${{ steps.targets.outputs.hub }}
-          docker push tykio/xDH_REPO:${tag}
-          docker tag tykio/xDH_REPO:${tag} docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:${tag}
-          docker push docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:${tag}
+          docker push tykio/xDH_REPO:${{ steps.targets.outputs.tag }}
+          docker tag tykio/xDH_REPO:${{ steps.targets.outputs.tag }} docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:${{ steps.targets.outputs.tag }}
+          docker push docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:${{ steps.targets.outputs.tag }}
 ifelse(xREPO, <<tyk>>,
-<<          docker push tykio/tyk-plugin-compiler:${tag}
-          docker push tykio/tyk-hybrid-docker:${tag}
->>)
+<<          docker push tykio/tyk-plugin-compiler:${{ steps.targets.outputs.tag }}
+          docker push tykio/tyk-hybrid-docker:${{ steps.targets.outputs.tag }}
+>>)dnl
 
 # AWS mktplace update only for LTS releases
   aws-mktplace-byol:
     if: startsWith(github.ref, 'refs/tags/v3.0')
-    needs: [ goreleaser ]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -208,17 +209,25 @@ ifelse(xREPO, <<tyk>>,
           - rhel
 
     steps:
+      - uses: dsaltares/fetch-gh-release-asset@master
+        with:
+          version: "tags/${{ needs.goreleaser.outputs.tag }}"
+          file: "xCOMPATIBILITY_NAME*linux_amd64.deb"
+          target: "./aws"
+ifelse(xREPO, <<tyk-analytics>>, <<
+          token: ${{ secrets.REPO_TOKEN }}>>,
+<<          token: ${{ secrets.GITHUB_TOKEN }}>>)
+
       - name: Packer build
         working-directory: ./aws
         run: |
-          export VERSION=${GITHUB_REF##*/}
+          export VERSION=${{ needs.goreleaser.outputs.tag }}
           packer validate -var-file=${{ matrix.flavour }}.vars.json byol.pkr.hcl
           packer build -var-file=${{ matrix.flavour }}.vars.json byol.pkr.hcl
 
 ifelse(xREPO, <<tyk-analytics>>, <<
   aws-mktplace-payg:
     if: startsWith(github.ref, 'refs/tags/v3.0')
-    needs: [ goreleaser ]
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -231,6 +240,15 @@ ifelse(xREPO, <<tyk-analytics>>, <<
           - UNLIMITED_GW
 
     steps:
+      - uses: dsaltares/fetch-gh-release-asset@master
+        with:
+          version: "tags/${{ needs.goreleaser.outputs.tag }}"
+          file: "xCOMPATIBILITY_NAME*linux_amd64.deb"
+          target: "./aws"
+ifelse(xREPO, <<tyk-analytics>>, <<
+          token: ${{ secrets.REPO_TOKEN }}>>,
+<<         token: ${{ secrets.GITHUB_TOKEN }}>>)
+
       - name: Packer build
         working-directory: ./aws
         env:
@@ -238,7 +256,7 @@ ifelse(xREPO, <<tyk-analytics>>, <<
           TWO_GW: ${{ secrets.PAYG_TWO_GW }}
           UNLIMITED_GW: ${{ secrets.PAYG_UNLIMITED_GW }}
         run: |
-          export TYK_DB_VERSION=${GITHUB_REF##*/}
+          export TYK_DB_VERSION=${{ needs.goreleaser.outputs.tag }}
           export LICENSE_STRING=$${{ matrix.gws }}
           packer validate -var-file=${{ matrix.flavour }}.vars.json payg.pkr.hcl
           packer build -var-file=${{ matrix.flavour }}.vars.json payg.pkr.hcl

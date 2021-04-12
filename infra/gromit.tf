@@ -118,10 +118,10 @@ module "chitragupta" {
     log_group = "internal",
     image     = var.gromit_image,
     command   = ["cluster", "expose", "-a"],
-    mounts = [],
-    env = [],
-    secrets = [],
-    region = var.region
+    mounts    = [],
+    env       = [],
+    secrets   = [],
+    region    = var.region
   }
   trarn       = aws_iam_role.gromit_tr.arn
   tearn       = aws_iam_role.gromit_ter.arn
