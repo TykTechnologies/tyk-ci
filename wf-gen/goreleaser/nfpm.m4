@@ -26,7 +26,7 @@ ifelse(xREPO, <<tyk-analytics>>,<<
       - src: "install/inits/*"
         dst: "/opt/xCOMPATIBILITY_NAME/install/inits"
       - src: tyk_config_sample.config
-        dst: /opt/xCOMPATIBILITY_NAME/tyk_analytics.conf
+        dst: /opt/xCOMPATIBILITY_NAME/xREPO.conf
         type: "config|noreplace"
 >>, xREPO, <<tyk>>,<<
       - src: "LICENSE.md"
@@ -50,7 +50,7 @@ ifelse(xREPO, <<tyk-analytics>>,<<
       - src: "coprocess/*"
         dst: "/opt/xCOMPATIBILITY_NAME/coprocess"
       - src: tyk.conf.example
-        dst: /opt/xCOMPATIBILITY_NAME/tyk.conf
+        dst: /opt/xCOMPATIBILITY_NAME/xREPO.conf
         type: "config|noreplace"
 >>, xREPO, <<tyk-pump>>,<<
       - src: "LICENSE.md"
@@ -58,13 +58,13 @@ ifelse(xREPO, <<tyk-analytics>>,<<
       - src: "install/*"
         dst: "/opt/xCOMPATIBILITY_NAME/install"
       - src: pump.example.conf
-        dst: /opt/xCOMPATIBILITY_NAME/pump.conf
+        dst: /opt/xCOMPATIBILITY_NAME/xREPO.conf
         type: "config|noreplace"
 >>, xREPO, <<tyk-sink>>, <<
       - src: "install/inits/*"
         dst: "/opt/xCOMPATIBILITY_NAME/install/inits"
       - src: tyk_sink_sample.conf
-        dst: /opt/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME.conf
+        dst: /opt/xCOMPATIBILITY_NAME/xREPO.conf
         type: "config|noreplace"
 >>)dnl
     scripts:

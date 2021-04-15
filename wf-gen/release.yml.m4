@@ -42,7 +42,7 @@ ifelse(xREPO, <<tyk-analytics>>,
         id: aws-creds
         run: |
             cd integration/terraform
-            terraform init -input=false -lock=false
+            terraform init -input=false
             terraform refresh
             eval $(terraform output -json xREPO | jq -r 'to_entries[] | [.key,.value] | join("=")')
             region=$(terraform output region | xargs)
@@ -198,6 +198,79 @@ ifelse(xREPO, <<tyk>>,
           docker push tykio/tyk-hybrid-docker:${{ steps.targets.outputs.tag }}
 >>)dnl
 
+  install-deb:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs:
+      - goreleaser
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        distro:
+          - ubuntu:xenial
+          - ubuntu:bionic
+          - ubuntu:focal
+          - debian:jessie
+          - debian:stretch
+          - debian:buster
+
+    steps:
+      - uses: TykTechnologies/gh-asset-action@main
+        with:
+          tag: ${{ needs.goreleaser.outputs.tag }}
+          kind: "_linux_amd64.deb"
+          dest: "xCOMPATIBILITY_NAME.deb"
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/setup-buildx-action@v1
+
+      - name: generate dockerfile
+        run: |
+          echo 'FROM ${{ matrix.distro }}
+          COPY xCOMPATIBILITY_NAME.deb /
+          RUN dpkg -i /xCOMPATIBILITY_NAME.deb && /opt/xCOMPATIBILITY_NAME/xREPO --conf=/opt/xCOMPATIBILITY_NAME/xREPO.conf &' > Dockerfile
+
+      - name: install on ${{ matrix.distro }}
+        uses: docker/build-push-action@v2
+        with:
+          context: "."
+          file: Dockerfile
+          push: false
+
+  install-rpm:
+    if: startsWith(github.ref, 'refs/tags/')
+    needs:
+      - goreleaser
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        distro:
+          - registry.access.redhat.com/ubi7/ubi:7.9
+          - registry.access.redhat.com/ubi8/ubi:8.3
+
+    steps:
+      - uses: TykTechnologies/gh-asset-action@main
+        with:
+          tag: ${{ needs.goreleaser.outputs.tag }}
+          kind: "_linux_x86_64.rpm"
+          dest: "xCOMPATIBILITY_NAME.rpm"
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - uses: docker/setup-buildx-action@v1
+
+      - name: generate dockerfile
+        run: |
+          echo 'FROM ${{ matrix.distro }}
+          COPY tyk-pump.rpm /
+          RUN rpm -ih /tyk-pump.rpm && /opt/xCOMPATIBILITY_NAME/xREPO --conf=/opt/xCOMPATIBILITY_NAME/xREPO.conf &' > Dockerfile
+
+      - name: install on ${{ matrix.distro }}
+        uses: docker/build-push-action@v2
+        with:
+          context: "."
+          file: Dockerfile
+          push: false
+
+
 # AWS mktplace update only for LTS releases
   aws-mktplace-byol:
     if: startsWith(github.ref, 'refs/tags/v3.0')
@@ -209,14 +282,17 @@ ifelse(xREPO, <<tyk>>,
           - rhel
 
     steps:
-      - uses: dsaltares/fetch-gh-release-asset@master
+      - name: Checkout xREPO
+        uses: actions/checkout@v2
         with:
-          version: "tags/${{ needs.goreleaser.outputs.tag }}"
-          file: "xCOMPATIBILITY_NAME*linux_amd64.deb"
-          target: "./aws"
-ifelse(xREPO, <<tyk-analytics>>, <<
-          token: ${{ secrets.REPO_TOKEN }}>>,
-<<          token: ${{ secrets.GITHUB_TOKEN }}>>)
+          fetch-depth: 1
+
+      - uses: TykTechnologies/gh-asset-action@main
+        with:
+          tag: ${{ needs.goreleaser.outputs.tag }}
+          kind: "_linux_amd64.deb"
+          dest: "aws/xCOMPATIBILITY_NAME.deb"
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Packer build
         working-directory: ./aws
@@ -240,14 +316,17 @@ ifelse(xREPO, <<tyk-analytics>>, <<
           - UNLIMITED_GW
 
     steps:
-      - uses: dsaltares/fetch-gh-release-asset@master
+      - name: Checkout xREPO
+        uses: actions/checkout@v2
         with:
-          version: "tags/${{ needs.goreleaser.outputs.tag }}"
-          file: "xCOMPATIBILITY_NAME*linux_amd64.deb"
-          target: "./aws"
-ifelse(xREPO, <<tyk-analytics>>, <<
-          token: ${{ secrets.REPO_TOKEN }}>>,
-<<         token: ${{ secrets.GITHUB_TOKEN }}>>)
+          fetch-depth: 1
+
+      - uses: TykTechnologies/gh-asset-action@main
+        with:
+          tag: ${{ needs.goreleaser.outputs.tag }}
+          kind: "_linux_amd64.deb"
+          dest: "aws/xCOMPATIBILITY_NAME.deb"
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Packer build
         working-directory: ./aws
