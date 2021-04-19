@@ -24,9 +24,10 @@ output "tfstate_lock_table" {
 }
 
 output "cd" {
-  value = map(
-    "key", aws_iam_access_key.deployment.id,
-    "secret", aws_iam_access_key.deployment.secret
-    )
+  sensitive = true
+  value = tomap({
+    "key" = aws_iam_access_key.deployment.id,
+    "secret" = aws_iam_access_key.deployment.secret
+  })
   description = "Service account for continuous deployment"
 }
