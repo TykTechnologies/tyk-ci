@@ -11,6 +11,7 @@ SOURCE_BRANCHES[tyk]='master release-2.9 release-3-lts release-3 release-3.1 rel
 SOURCE_BRANCHES[tyk-analytics]='master release-2.9 release-3-lts release-3 release-3.1 release-3.2'
 SOURCE_BRANCHES[tyk-pump]='master'
 SOURCE_BRANCHES[tyk-pump]='master'
+SOURCE_BRANCHES[tyk-sink]='master'
 
 # Release branches for known repos, all automation will be sync'd to these branches when pushed to the corresponding SOURCE_BRANCH by sync-automation.yml
 # Needs to be a comma-separated list as it it goes into a YAML array.
@@ -19,16 +20,14 @@ RELEASE_BRANCHES[master,tyk]='release-3.2'
 RELEASE_BRANCHES[release-2.9,tyk]='release-2.9.3.2'
 RELEASE_BRANCHES[release-3-lts,tyk]='release-3.0.2, release-3.0.2-update, release-3.0.3, release-3.0.4, release-3.0.5'
 RELEASE_BRANCHES[release-3,tyk]='release-3.1, release-3.1.0, release-3.1.1, release-3.1.1-cloud, release-3.1.2'
-RELEASE_BRANCHES[release-3.2,tyk]=''
 
 RELEASE_BRANCHES[master,tyk-analytics]='release-3.2'
 RELEASE_BRANCHES[release-2.9,tyk-analytics]=''
 RELEASE_BRANCHES[release-3-lts,tyk-analytics]='release-3.0.2, release-3.0.3, release-3.0.4, release-3.0.5'
 RELEASE_BRANCHES[release-3,tyk,tyk-analytics]='release-3.1, release-3.1.0, release-3.1.1, release-3.1.2'
-RELEASE_BRANCHES[release-3.2,tyk]=''
 
 RELEASE_BRANCHES[master,tyk-pump]='release-0.8, release-1.0'
-RELEASE_BRANCHES[master,tyk-sink]=''
+RELEASE_BRANCHES[master,tyk-sink]='release-1.7, release-1.8'
 
 function parse_options {
     # Defaults
