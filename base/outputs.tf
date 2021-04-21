@@ -14,54 +14,64 @@ output "config_efs" {
 }
 
 output "tyk" {
-  value = map("key", aws_iam_access_key.integration["tyk"].id,
-    "secret", aws_iam_access_key.integration["tyk"].secret,
-  "ecr", aws_ecr_repository.integration["tyk"].repository_url)
+  sensitive = true
+  value = tomap({
+    key = aws_iam_access_key.integration["tyk"].id,
+    secret = aws_iam_access_key.integration["tyk"].secret,
+  })
   description = "gateway"
 }
 
+output "raava" {
+  sensitive = true
+  value = tomap({
+    key = aws_iam_access_key.integration["raava"].id,
+    secret = aws_iam_access_key.integration["raava"].secret,
+  })
+  description = "raava"
+}
+
 output "tyk-analytics" {
-  value = map("key", aws_iam_access_key.integration["tyk-analytics"].id,
-    "secret", aws_iam_access_key.integration["tyk-analytics"].secret,
-  "ecr", aws_ecr_repository.integration["tyk-analytics"].repository_url)
+  sensitive = true
+  value = tomap({
+    key = aws_iam_access_key.integration["tyk-analytics"].id,
+    secret = aws_iam_access_key.integration["tyk-analytics"].secret,
+  })
   description = "dashboard"
 }
 
 output "tyk-pump" {
-  value = map("key", aws_iam_access_key.integration["tyk-pump"].id,
-    "secret", aws_iam_access_key.integration["tyk-pump"].secret,
-  "ecr", aws_ecr_repository.integration["tyk-pump"].repository_url)
+  sensitive = true
+  value = tomap({
+    key = aws_iam_access_key.integration["tyk-pump"].id,
+    secret = aws_iam_access_key.integration["tyk-pump"].secret,
+  })
   description = "pump"
 }
 
-output "raava" {
-  value = map("key", aws_iam_access_key.integration["raava"].id,
-    "secret", aws_iam_access_key.integration["raava"].secret,
-  "ecr", aws_ecr_repository.integration["raava"].repository_url)
-  description = "mdcb"
-}
-
 output "tyk-identity-broker" {
-  value = map("key", aws_iam_access_key.integration["tyk-identity-broker"].id,
-    "secret", aws_iam_access_key.integration["tyk-identity-broker"].secret,
-  "ecr", aws_ecr_repository.integration["tyk-identity-broker"].repository_url)
-  description = "mdcb"
+  sensitive = true
+  value = tomap({
+    key = aws_iam_access_key.integration["tyk-identity-broker"].id,
+    secret = aws_iam_access_key.integration["tyk-identity-broker"].secret,
+  })
+  description = "tib"
 }
 
 output "tyk-sink" {
-  value = map("key", aws_iam_access_key.integration["tyk-sink"].id,
-    "secret", aws_iam_access_key.integration["tyk-sink"].secret,
-  "ecr", aws_ecr_repository.integration["tyk-sink"].repository_url)
+  sensitive = true
+  value = tomap({
+    key = aws_iam_access_key.integration["tyk-sink"].id,
+    secret = aws_iam_access_key.integration["tyk-sink"].secret,
+  })
   description = "mdcb"
 }
 
 output "devshared" {
-  value = map("key", aws_iam_access_key.devshared.id,
-  "secret", aws_iam_access_key.devshared.secret)
+  sensitive = true
+  value = tomap({
+    key = aws_iam_access_key.devshared.id,
+    secret = aws_iam_access_key.devshared.secret
+  })
   description = "shared developer key for access to all repos"
-}
-
-output "registry_id" {
-  value       = aws_ecr_repository.integration["tyk"].registry_id
-  description = "Registry ID of the ECR"
 }

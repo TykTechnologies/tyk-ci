@@ -12,10 +12,6 @@ define(<<xPORTS>>, <<ifelse(xREPO, <<tyk>>, <<8080>>, xREPO, <<tyk-analytics>>, 
 
 include(goreleaser/builds.m4)
 
-
-snapshot:
-  name_template: 0.0.0-SNAPSHOT-{{ .ShortCommit }}
-
 dockers:
 include(goreleaser/docker.std.m4)
 include(goreleaser/docker.slim.m4)
