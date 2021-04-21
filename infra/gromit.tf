@@ -7,7 +7,7 @@ data "aws_route53_zone" "dev_tyk_tech" {
 }
 
 # Processes env updates
-module "gromit-run" {
+module "sow" {
   source = "../modules/fg-sched-task"
 
   cdt      = "templates/cd-awsvpc.tpl"
@@ -15,10 +15,10 @@ module "gromit-run" {
   cluster  = aws_ecs_cluster.internal.arn
   # Container definition
   cd = {
-    name      = "grun",
+    name      = "sow",
     log_group = "internal",
     image     = var.gromit_image,
-    command   = ["cluster", "run", "/config"],
+    command   = ["sow", "/config"],
     mounts = [
       { src = "config", dest = "/config", readonly = false }
     ],
@@ -26,11 +26,11 @@ module "gromit-run" {
       { name = "GROMIT_TABLENAME", value = local.gromit.table },
       { name = "GROMIT_REPOS", value = local.gromit.repos },
       { name = "GROMIT_REGISTRYID", value = data.aws_caller_identity.current.account_id },
-      { name = "GROMIT_DOMAIN", value = data.aws_route53_zone.dev_tyk_tech.name },
-      { name = "GROMIT_ZONEID", value = data.aws_route53_zone.dev_tyk_tech.zone_id }
+      { name = "GROMIT_CLUSTER_DOMAIN", value = data.aws_route53_zone.dev_tyk_tech.name },
+      { name = "GROMIT_CLUSTER_ZONEID", value = data.aws_route53_zone.dev_tyk_tech.zone_id }
     ],
     secrets = [
-      { name = "TF_API_TOKEN", from = local.gromit.tfcloud }
+      { name = "TF_API_TOKEN", from = "arn:aws:secretsmanager:eu-central-1:754489498669:secret:TFCloudAPI-1UnG8y" }
     ],
     region = var.region
   }
@@ -43,7 +43,7 @@ module "gromit-run" {
 }
 
 # Listen for new builds
-module "gromit-serve" {
+module "serve" {
   source = "../modules/fg-service"
 
   cluster = aws_ecs_cluster.internal.arn
@@ -54,16 +54,20 @@ module "gromit-serve" {
     port      = 443,
     log_group = "internal",
     image     = var.gromit_image,
-    command   = ["serve", "--certpath=/cfssl/gromit/server"],
+    command   = ["serve"],
     mounts = [
       { src = "cfssl", dest = "/cfssl", readonly = true },
     ],
     env = [
       { name = "GROMIT_TABLENAME", value = local.gromit.table },
       { name = "GROMIT_REGISTRYID", value = data.aws_caller_identity.current.account_id },
-      { name = "GROMIT_REPOS", value = local.gromit.repos }
+      { name = "GROMIT_REPOS", value = local.gromit.repos },
+      { name = "GROMIT_CA", value = local.gromit.ca },
+      { name = "GROMIT_SERVE_CERT", value = local.gromit.serve_cert }
     ],
-    secrets = [],
+    secrets = [
+      { name = "GROMIT_SERVE_KEY", from = aws_secretsmanager_secret.gromit_serve_key.arn }
+    ],
     region  = var.region
   }
   trarn       = aws_iam_role.gromit_tr.arn
@@ -92,7 +96,7 @@ module "licenser" {
     ],
     env = [],
     secrets = [
-      { name = "GROMIT_LICENSER_TOKEN", from = local.gromit.dashtrial_token }
+      { name = "GROMIT_LICENSER_TOKEN", from = aws_secretsmanager_secret.dash_token.arn }
     ],
     region = var.region
   }

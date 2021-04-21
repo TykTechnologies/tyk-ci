@@ -63,7 +63,7 @@ resource "aws_iam_user_policy" "deployment" {
   name = "deployment"
   user = aws_iam_user.deployment.id
 
-  policy = data.aws_iam_policy_document.deployment.json
+  policy = data.aws_iam_policy_document.gromit_ter.json
 }
 
 # Extra permissions required for deployment via CD
@@ -74,18 +74,6 @@ resource "aws_iam_user_policy_attachment" "deployment2" {
   policy_arn = "arn:aws:iam::aws:policy/${each.value}"
 }
 
-data "aws_iam_policy_document" "deployment" {
-  statement {
-    actions = [
-      "logs:*",
-      "events:*",
-      "iam:PassRole",
-      "iam:PutUserPolicy"
-    ]
-    resources = ["*"]
-  }
-}
-
 # Init time permissions
 
 # Extra stuff
@@ -94,20 +82,32 @@ data "aws_iam_policy_document" "deployment" {
 data "aws_iam_policy_document" "gromit_ter" {
   statement {
     actions = [
-      "secretsmanager:GetSecretValue",
+      "secretsmanager:*",
       "kms:Decrypt"
     ]
     resources = [
       "arn:aws:secretsmanager:eu-central-1:754489498669:secret:TFCloudAPI-1UnG8y",
-      "arn:aws:kms:eu-central-1:754489498669:key/17432de6-5a75-4a4a-b32e-ff8d8efd277f"
+      "arn:aws:kms:eu-central-1:754489498669:key/17432de6-5a75-4a4a-b32e-ff8d8efd277f",
+      "arn:aws:secretsmanager:eu-central-1:754489498669:secret:DashTrialToken-BfNk9B",
+      "arn:aws:secretsmanager:eu-central-1:754489498669:secret:MDCBTrialToken-5zTlhf",
+      "arn:aws:secretsmanager:eu-central-1:754489498669:secret:GromitServeKey-pkgkwi"
     ]
   }
 
   statement {
     actions = [
-      "iam:PassRole",
+      "logs:*",
+      "events:*",
       "ecs:RunTask",
-      "logs:DescribeLogStreams"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    actions = [
+      "iam:PassRole",
+      "iam:PutUserPolicy",
+      "iam:PassRole",
     ]
     resources = ["*"]
   }
