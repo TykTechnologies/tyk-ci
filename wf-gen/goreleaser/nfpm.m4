@@ -14,7 +14,12 @@ nfpms:
     contents:
       - src: "README.md"
         dst: "/opt/share/docs/xCOMPATIBILITY_NAME/README.md"
+      - src: "install/*"
+        dst: "/opt/xCOMPATIBILITY_NAME/install"
 ifelse(xREPO, <<tyk-analytics>>,<<
+      - src: /opt/xCOMPATIBILITY_NAME
+        dst: /opt/xREPO
+        type: "symlink"
       - src: "EULA.md"
         dst: "/opt/share/docs/xCOMPATIBILITY_NAME/EULA.md"
       - src: "portal/*"
@@ -23,12 +28,13 @@ ifelse(xREPO, <<tyk-analytics>>,<<
         dst: "/opt/xCOMPATIBILITY_NAME/schemas"
       - src: "webclient/lang/*"
         dst: "/opt/xCOMPATIBILITY_NAME/lang"
-      - src: "install/inits/*"
-        dst: "/opt/xCOMPATIBILITY_NAME/install/inits"
       - src: tyk_config_sample.config
         dst: /opt/xCOMPATIBILITY_NAME/xREPO.conf
         type: "config|noreplace"
 >>, xREPO, <<tyk>>,<<
+      - src: /opt/xCOMPATIBILITY_NAME
+        dst: /opt/xREPO
+        type: "symlink"
       - src: "LICENSE.md"
         dst: "/opt/share/docs/xCOMPATIBILITY_NAME/LICENSE.md"
       - src: "apps/app_sample.json"
@@ -39,8 +45,6 @@ ifelse(xREPO, <<tyk-analytics>>,<<
         dst: "/opt/xCOMPATIBILITY_NAME/templates/playground/index.html"
       - src: "templates/playground/playground.js"
         dst: "/opt/xCOMPATIBILITY_NAME/templates/playground/playground.js"
-      - src: "install/*"
-        dst: "/opt/xCOMPATIBILITY_NAME/install"
       - src: "middleware/*.js"
         dst: "/opt/xCOMPATIBILITY_NAME/middleware"
       - src: "event_handlers/sample/*.js"
@@ -52,17 +56,19 @@ ifelse(xREPO, <<tyk-analytics>>,<<
       - src: tyk.conf.example
         dst: /opt/xCOMPATIBILITY_NAME/xREPO.conf
         type: "config|noreplace"
+>>, xREPO, <<tyk-identity-broker>>, <<
+      - src: "LICENSE.md"
+        dst: "/opt/share/docs/xCOMPATIBILITY_NAME/LICENSE.md"
+      - src: tib_sample.conf
+        dst: /opt/xCOMPATIBILITY_NAME/xREPO.conf
+        type: "config|noreplace"
 >>, xREPO, <<tyk-pump>>,<<
       - src: "LICENSE.md"
         dst: "/opt/share/docs/xCOMPATIBILITY_NAME/LICENSE.md"
-      - src: "install/*"
-        dst: "/opt/xCOMPATIBILITY_NAME/install"
       - src: pump.example.conf
         dst: /opt/xCOMPATIBILITY_NAME/xREPO.conf
         type: "config|noreplace"
 >>, xREPO, <<tyk-sink>>, <<
-      - src: "install/inits/*"
-        dst: "/opt/xCOMPATIBILITY_NAME/install/inits"
       - src: tyk_sink_sample.conf
         dst: /opt/xCOMPATIBILITY_NAME/xREPO.conf
         type: "config|noreplace"
