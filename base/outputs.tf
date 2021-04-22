@@ -18,6 +18,7 @@ output "tyk" {
   value = tomap({
     key = aws_iam_access_key.integration["tyk"].id,
     secret = aws_iam_access_key.integration["tyk"].secret,
+    ecr = aws_ecr_repository.integration["tyk"].repository_url,
   })
   description = "gateway"
 }
@@ -27,6 +28,7 @@ output "raava" {
   value = tomap({
     key = aws_iam_access_key.integration["raava"].id,
     secret = aws_iam_access_key.integration["raava"].secret,
+    ecr = aws_ecr_repository.integration["raava"].repository_url,
   })
   description = "raava"
 }
@@ -36,6 +38,7 @@ output "tyk-analytics" {
   value = tomap({
     key = aws_iam_access_key.integration["tyk-analytics"].id,
     secret = aws_iam_access_key.integration["tyk-analytics"].secret,
+    ecr = aws_ecr_repository.integration["tyk-analytics"].repository_url,
   })
   description = "dashboard"
 }
@@ -45,6 +48,7 @@ output "tyk-pump" {
   value = tomap({
     key = aws_iam_access_key.integration["tyk-pump"].id,
     secret = aws_iam_access_key.integration["tyk-pump"].secret,
+    ecr = aws_ecr_repository.integration["tyk-pump"].repository_url,
   })
   description = "pump"
 }
@@ -54,6 +58,7 @@ output "tyk-identity-broker" {
   value = tomap({
     key = aws_iam_access_key.integration["tyk-identity-broker"].id,
     secret = aws_iam_access_key.integration["tyk-identity-broker"].secret,
+    ecr = aws_ecr_repository.integration["tyk-identity-broker"].repository_url,
   })
   description = "tib"
 }
@@ -63,6 +68,7 @@ output "tyk-sink" {
   value = tomap({
     key = aws_iam_access_key.integration["tyk-sink"].id,
     secret = aws_iam_access_key.integration["tyk-sink"].secret,
+    ecr = aws_ecr_repository.integration["tyk-sink"].repository_url,
   })
   description = "mdcb"
 }

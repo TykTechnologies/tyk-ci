@@ -1,9 +1,18 @@
 # Tyk CI
-Infrastructure definition for CI environments. This is the infra in which the integration images run for
+Infrastructure definition for CI/CD environments. This is the infra in which the integration images run for
 
 - [tyk](https://github.com/TykTechnologies/tyk/actions?query=workflow%3A%22Integration+image%22 "gw")
 - [tyk-analytics](https://github.com/TykTechnologies/tyk-analytics/actions?query=workflow%3A%22Integration+image%22 "db")
 - [pump](https://github.com/TykTechnologies/tyk-pump/actions?query=workflow%3A%22Integration+image%22)
+
+To add a new repo to CD, 
+- add it to the `local.repos` in <base/base.tf>
+- plan, apply there
+- add a sensible default value to a new variable for the repo in <infra/variables.tf>
+- add it to `local.repos` in <infra/infra.tf>
+- plan, apply there
+- add a definition of the service to <devenv/terraform> in the gromit repo
+- make new release of gromit
 
 ## Base
 Contains the AWS Resources that require privileged access like IAM roles. These resources have a lifecycle separate from the infra and are stored in a separate state on [Terraform Cloud](https://app.terraform.io/app/Tyk/workspaces/base-euc1/states).

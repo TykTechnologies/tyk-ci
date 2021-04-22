@@ -6,8 +6,8 @@ provider "aws" {
 
 locals {
   gromit = {
-    base       = "prod"
-    infra      = "prod"
+    base       = "base-prod"
+    infra      = "infra-prod"
     table      = "DeveloperEnvironments"
     repos      = "tyk,tyk-analytics,tyk-pump,tyk-sink,tyk-identity-broker,raava"
     domain     = "${var.domain}.tyk.technology"
