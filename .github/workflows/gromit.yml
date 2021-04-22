@@ -54,8 +54,8 @@ jobs:
       - name: Make PR
         uses: peter-evans/create-pull-request@v3
         with:
-          title: "A new Gromit"
-          body: >
+          title: "A new gromit has appeared"
+          body: |
             New version ${{ env.GROMIT_REF }} has arrived. Merging this PR will deploy this version.
 
             # Validate
