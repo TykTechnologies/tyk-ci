@@ -25,6 +25,8 @@ module "sow" {
     env = [
       { name = "GROMIT_TABLENAME", value = local.gromit.table },
       { name = "GROMIT_REPOS", value = local.gromit.repos },
+      { name = "GROMIT_BASE", value = local.gromit.base },
+      { name = "GROMIT_INFRA", value = local.gromit.infra },
       { name = "GROMIT_REGISTRYID", value = data.aws_caller_identity.current.account_id },
       { name = "GROMIT_CLUSTER_DOMAIN", value = data.aws_route53_zone.dev_tyk_tech.name },
       { name = "GROMIT_CLUSTER_ZONEID", value = data.aws_route53_zone.dev_tyk_tech.zone_id }

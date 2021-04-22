@@ -6,10 +6,12 @@ provider "aws" {
 
 locals {
   gromit = {
-    table           = "DeveloperEnvironments"
-    repos           = "tyk,tyk-analytics,tyk-pump,tyk-sink,tyk-identity-broker,raava"
-    domain          = "${var.domain}.tyk.technology"
-    ca = <<EOF
+    base       = "prod"
+    infra      = "prod"
+    table      = "DeveloperEnvironments"
+    repos      = "tyk,tyk-analytics,tyk-pump,tyk-sink,tyk-identity-broker,raava"
+    domain     = "${var.domain}.tyk.technology"
+    ca         = <<EOF
 -----BEGIN CERTIFICATE-----
 MIID4jCCAsqgAwIBAgIUZrB9yKVNOgt9g4MAj4Z8cjWVWNYwDQYJKoZIhvcNAQEL
 BQAwgYgxCzAJBgNVBAYTAlVLMRcwFQYDVQQIEw5HcmVhdGVyIExvbmRvbjEPMA0G
