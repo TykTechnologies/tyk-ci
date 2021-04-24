@@ -26,7 +26,7 @@ RELEASE_BRANCHES[release-2.9,tyk-analytics]=''
 RELEASE_BRANCHES[release-3-lts,tyk-analytics]='release-3.0.2, release-3.0.3, release-3.0.4, release-3.0.5'
 RELEASE_BRANCHES[release-3,tyk,tyk-analytics]='release-3.1, release-3.1.0, release-3.1.1, release-3.1.2'
 
-RELEASE_BRANCHES[master,tyk-pump]='release-0.8, release-1.0'
+RELEASE_BRANCHES[master,tyk-pump]='release-0.8, release-1.0, release-1.2.0  release-1.2.1 release-1.3'
 RELEASE_BRANCHES[master,tyk-sink]='release-1.7, release-1.8'
 
 function parse_options {

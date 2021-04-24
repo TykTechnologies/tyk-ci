@@ -1,18 +1,25 @@
-# Tyk CI
-Infrastructure definition for CI/CD environments. This is the infra in which the integration images run for
+# Tyk CI/CD
 
-- [tyk](https://github.com/TykTechnologies/tyk/actions?query=workflow%3A%22Integration+image%22 "gw")
-- [tyk-analytics](https://github.com/TykTechnologies/tyk-analytics/actions?query=workflow%3A%22Integration+image%22 "db")
-- [pump](https://github.com/TykTechnologies/tyk-pump/actions?query=workflow%3A%22Integration+image%22)
+Infrastructure definition for CI/CD environments.
+
+To add a new repo to CI,
+- add the repo to `REPOS` in [wf-gen/common.zsh](wf-gen/common.zsh)
+- run [wf-gen/prs.zsh](wf-gen/prs.zsh) for all repos
+- get all your PRs merged
 
 To add a new repo to CD, 
-- add it to the `local.repos` in <base/base.tf>
+- add it to the `local.repos` in [base/base.tf](base/base.tf)
 - plan, apply there
-- add a sensible default value to a new variable for the repo in <infra/variables.tf>
-- add it to `local.repos` in <infra/infra.tf>
+- add a sensible default value to a new variable for the repo in [infra/variables.tf](infra/variables.tf)
+- add it to `local.repos` in [infra/infra.tf](infra/infra.tf)
 - plan, apply there
-- add a definition of the service to <devenv/terraform> in the gromit repo
+- add a definition of the service to [devenv/terraform](https://github.com/TykTechnologies/gromit/tree/master/devenv/terraform) in the gromit repo
 - make new release of gromit
+- let [the CD on this repo](.github/workflows) deploy the new gromit release
+
+To manage the meta-automation which keeps the automation managed by `prs.zsh` in sync across release branches,
+- review [wf-gen/meta.zsh](wf-gen/meta.zsh)
+- run it
 
 ## Base
 Contains the AWS Resources that require privileged access like IAM roles. These resources have a lifecycle separate from the infra and are stored in a separate state on [Terraform Cloud](https://app.terraform.io/app/Tyk/workspaces/base-euc1/states).
@@ -23,7 +30,7 @@ Contents:
 - ECS Task roles
 - EFS filesystems for Tyk config (`config`) and Tyk PKI (`certs`)
 
-See <base/*.auto.tfvars> for the actual values being used right now.
+See [base/*.auto.tfvars](base/*.auto.tfvars) for the actual values being used right now.
 
 ### Network
 Given a vpc cidr of 10.91.0.0/16, we create,

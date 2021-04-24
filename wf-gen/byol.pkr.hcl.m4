@@ -40,7 +40,13 @@ variable "version" {
 }
 
 # "timestamp" template function replacement
-locals { timestamp = regex_replace(timestamp(), "[- TZ:]", "") }
+locals {
+       timestamp = regex_replace(timestamp(), "[- TZ:]", "")
+       extn_map = {
+         AWSLinux = "deb"
+         Redhat   = "rpm"
+       }
+}
 
 # source blocks are generated from your builders; a source can be referenced in
 # build blocks. A build block runs provisioner and post-processors on a
@@ -99,11 +105,15 @@ ifelse(xREPO, <<tyk-analytics>>, <<
   }>>)
   provisioner "file" {
     destination = "/tmp/semver.sh"
-    source      = "./semver.sh"
+    source      = "utils/semver.sh"
+  }
+  provisioner "file" {
+    destination = "/xCOMPATIBILITY_NAME.${lookup(local.extn_map, var.flavour)}"
+    source      = "deb/*amd64.deb"
   }
   provisioner "file" {
     destination = "/tmp/10-run-tyk.conf"
-    source      = "./10-run-tyk.conf"
+    source      = "utils/10-run-tyk.conf"
   }
   provisioner "shell" {
     environment_vars = ["VERSION=${var.version}" ifelse(xREPO, <<tyk>>, <<, "GEOIP_LICENSE=${var.geoip_license}">>)]

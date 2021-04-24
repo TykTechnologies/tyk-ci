@@ -15,6 +15,7 @@ include(goreleaser/builds.m4)
 dockers:
 include(goreleaser/docker.std.m4)
 include(goreleaser/docker.slim.m4)
+include(goreleaser/docker.arm64.m4)
 ifelse(xREPO, <<tyk>>, include(goreleaser/docker.tyk.m4))
 
 include(goreleaser/nfpm.m4)

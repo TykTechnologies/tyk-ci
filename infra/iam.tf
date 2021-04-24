@@ -4,7 +4,7 @@ data "aws_iam_policy_document" "gromit_tr" {
   statement {
     actions = ["sts:AssumeRole"]
     principals {
-      type = "Service"
+      type        = "Service"
       identifiers = ["ecs-tasks.amazonaws.com", "chatbot.amazonaws.com"]
     }
   }
@@ -28,9 +28,9 @@ resource "aws_iam_role_policy" "chatops" {
 }
 
 resource "aws_iam_role" "gromit_tr" {
-  name = "gromit"
+  name               = "gromit"
   assume_role_policy = data.aws_iam_policy_document.gromit_tr.json
-  tags = local.common_tags
+  tags               = local.common_tags
 }
 
 resource "aws_iam_role_policy_attachment" "gromit_tr" {
@@ -105,6 +105,17 @@ data "aws_iam_policy_document" "gromit_ter" {
 
   statement {
     actions = [
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:PutObjectAcl"
+    ]
+    resources = [
+      "arn:aws:s3:::ara-bundles-live"
+    ]
+  }
+
+  statement {
+    actions = [
       "iam:PassRole",
       "iam:PutUserPolicy",
       "iam:PassRole",
@@ -146,8 +157,8 @@ resource "aws_iam_role" "gromit_ter" {
  ]
 }
 EOF
-  
-  tags               = local.common_tags
+
+  tags = local.common_tags
 }
 
 # To be able to pull from ECR
@@ -157,7 +168,6 @@ resource "aws_iam_role_policy_attachment" "ecs_init" {
 }
 
 resource "aws_iam_role_policy_attachment" "gromit_ter" {
-  role   = aws_iam_role.gromit_ter.id
+  role       = aws_iam_role.gromit_ter.id
   policy_arn = aws_iam_policy.gromit_ter.arn
 }
-

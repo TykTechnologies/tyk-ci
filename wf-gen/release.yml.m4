@@ -19,7 +19,12 @@ on:
     tags:
       - 'v*'
 
+env:
+  SLACK_CLI_TOKEN: ${{ secrets.BENDER_TOKEN }}
+  
 jobs:
 include(release/goreleaser.m4)
+include(release/ci.m4)
 include(release/install.m4)
+include(release/packagecloud.m4)
 include(release/aws.m4)

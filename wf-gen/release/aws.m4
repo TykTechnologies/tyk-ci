@@ -1,8 +1,11 @@
-# AWS updates only for stable releases
-
+  # AWS updates only for stable releases
   aws-mktplace-byol:
     if: startsWith(github.ref, 'refs/tags/v3.0')
     runs-on: ubuntu-latest
+    needs:
+      - goreleaser
+      - install-deb
+      - install-rpm
     strategy:
       matrix:
         flavour:
@@ -15,12 +18,9 @@
         with:
           fetch-depth: 1
 
-      - uses: TykTechnologies/gh-asset-action@main
+      - uses: actions/download-artifact@v2
         with:
-          tag: ${{ needs.goreleaser.outputs.tag }}
-          kind: "_linux_amd64.deb"
-          dest: "aws/xCOMPATIBILITY_NAME.deb"
-          token: ${{ secrets.GITHUB_TOKEN }}
+          path: aws
 
       - name: Packer build
         working-directory: ./aws
@@ -33,6 +33,10 @@ ifelse(xREPO, <<tyk-analytics>>, <<
   aws-mktplace-payg:
     if: startsWith(github.ref, 'refs/tags/v3.0')
     runs-on: ubuntu-latest
+    needs:
+      - goreleaser
+      - install-deb
+      - install-rpm
     strategy:
       matrix:
         flavour:
@@ -49,12 +53,9 @@ ifelse(xREPO, <<tyk-analytics>>, <<
         with:
           fetch-depth: 1
 
-      - uses: TykTechnologies/gh-asset-action@main
+      - uses: actions/download-artifact@v2
         with:
-          tag: ${{ needs.goreleaser.outputs.tag }}
-          kind: "_linux_amd64.deb"
-          dest: "aws/xCOMPATIBILITY_NAME.deb"
-          token: ${{ secrets.GITHUB_TOKEN }}
+          path: aws
 
       - name: Packer build
         working-directory: ./aws

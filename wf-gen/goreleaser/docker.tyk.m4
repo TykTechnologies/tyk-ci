@@ -17,7 +17,6 @@
 - ids:
     - std
   image_templates:
-    - "{{ .Env.CI_REGISTRY }}/tyk-plugin-compiler:{{ .Env.CI_TAG }}"
     - "tykio/tyk-plugin-compiler:{{ .Tag }}"
     - "tykio/tyk-plugin-compiler:v{{ .Major }}.{{ .Minor }}"
   build_flag_templates:

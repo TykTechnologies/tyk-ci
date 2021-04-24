@@ -1,7 +1,6 @@
 - ids:
     - std
   image_templates:
-    - "{{ .Env.CI_REGISTRY }}/xREPO:{{ .Env.CI_TAG }}"
     - "tykio/xDH_REPO:{{ .Tag }}"
     - "tykio/xDH_REPO:v{{ .Major }}.{{ .Minor }}"
     - "docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:{{ .Tag }}"

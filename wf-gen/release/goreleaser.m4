@@ -3,59 +3,22 @@
     container: tykio/golang-cross:1.15.8
     outputs:
       tag: ${{ steps.targets.outputs.tag }}
+      upload: ${{ steps.targets.outputs.upload }}
+      pc: ${{ steps.targets.outputs.pc }}
 
     steps:
-      - name: Full checkout of xREPO
-        if: startsWith(github.ref, 'refs/tags')
+      - name: Checkout of xREPO
         uses: actions/checkout@v2
         with:
-          fetch-depth: 0
+          fetch-depth: ${{ ! startsWith(github.ref, 'refs/tags') }}
 ifelse(xREPO, <<tyk-analytics>>,
 <<          token: ${{ secrets.REPO_TOKEN }}
           submodules: true
 >>)
-      - name: Shallow checkout of xREPO
-        if: ${{ ! startsWith(github.ref, 'refs/tags') }}
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 1
-ifelse(xREPO, <<tyk-analytics>>,
-<<          token: ${{ secrets.REPO_TOKEN }}
-          submodules: true
->>)
-      - name: Install build time dependencies
-        run: |
-          apt-get install -y unzip
+      - uses: docker/setup-qemu-action@v1
 
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v1
-        with:
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-          terraform_wrapper: false
+      - uses: docker/setup-buildx-action@v1
 
-      - name: Get AWS creds from Terraform remote state
-        id: aws-creds
-        run: |
-          cd integration/terraform
-          terraform init -input=false
-          terraform refresh 2>&1 >/dev/null
-          eval $(terraform output -json xREPO | jq -r 'to_entries[] | [.key,.value] | join("=")')
-          region=$(terraform output region | xargs)
-          [ -z "$key" -o -z "$secret" -o -z "$region" ] && exit 1
-          echo "::set-output name=secret::$secret"
-          echo "::set-output name=key::$key"
-          echo "::set-output name=region::$region"
-
-      - name: Configure AWS credentials for use
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ steps.aws-creds.outputs.key }}
-          aws-secret-access-key: ${{ steps.aws-creds.outputs.secret }}
-          aws-region: ${{ steps.aws-creds.outputs.region }}
-
-      - name: Login to Amazon ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v1
       - name: Login to DockerHub
         if: startsWith(github.ref, 'refs/tags')
         uses: docker/login-action@v1
@@ -128,33 +91,7 @@ ifelse(xREPO, <<tyk-analytics>>,
           PKG_SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           CI_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           CI_TAG: ${{ steps.targets.outputs.tag }}
-
-      - name: Push image to CI
-        env:
-          CI_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          CI_TAG: ${{ steps.targets.outputs.tag }}
-        run: |
-          docker tag ${CI_REGISTRY}/xREPO:${CI_TAG} ${CI_REGISTRY}/xREPO:latest
-          docker tag ${CI_REGISTRY}/xREPO:${CI_TAG} ${CI_REGISTRY}/xREPO:${GITHUB_SHA}
-          docker push ${CI_REGISTRY}/xREPO:${CI_TAG}
-          docker push ${CI_REGISTRY}/xREPO:latest
-          docker push ${CI_REGISTRY}/xREPO:${GITHUB_SHA}
-ifelse(xREPO, <<tyk>>,
-<<          docker tag ${CI_REGISTRY}/tyk-plugin-compiler:${CI_TAG} ${CI_REGISTRY}/tyk-plugin-compiler:latest
-          docker tag ${CI_REGISTRY}/tyk-plugin-compiler:${CI_TAG} ${CI_REGISTRY}/tyk-plugin-compiler:${GITHUB_SHA}
-          docker push ${CI_REGISTRY}/tyk-plugin-compiler:${CI_TAG}
-          docker push ${CI_REGISTRY}/tyk-plugin-compiler:latest
-          docker push ${CI_REGISTRY}/tyk-plugin-compiler:${GITHUB_SHA}
->>)
-      - name: Push to packagecloud
-        if: steps.targets.outputs.upload == 'true'
-        uses: TykTechnologies/packagecloud-action@main
-        env:
-          PACKAGECLOUD_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
-        with:
-          repo: tyk/${{ steps.targets.outputs.pc }}
-          dir: 'dist'
-
+ 
       - name: Push unstable docker image
         if: steps.targets.outputs.hub == 'unstable' && steps.targets.outputs.upload == 'true'
         run: |
@@ -166,13 +103,16 @@ ifelse(xREPO, <<tyk>>,
 ifelse(xREPO, <<tyk>>,
 <<          docker push tykio/tyk-plugin-compiler:${{ steps.targets.outputs.tag }}
           docker push tykio/tyk-hybrid-docker:${{ steps.targets.outputs.tag }}
->>)dnl
+>>)
 
-      - name: Tell gromit about new build
-        run: |
-            curl -fsSL -H "Authorization: ${{secrets.GROMIT_TOKEN}}" 'https://domu-kun.cloud.tyk.io/gromit/newbuild' \
-                 -X POST -d '{ "repo": "${{ github.repository}}", "ref": "${{ github.ref }}", "sha": "${{ github.sha }}" }'
+      - uses: actions/upload-artifact@v2
+        with:
+          name: deb
+          retention-days: 1
+          path: dist/*.deb
 
-      - name: Logout of Amazon ECR
-        if: always()
-        run: docker logout ${{ steps.login-ecr.outputs.registry }}
+      - uses: actions/upload-artifact@v2
+        with:
+          name: rpm
+          retention-days: 1
+          path: dist/*.rpm

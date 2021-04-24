@@ -1,19 +1,21 @@
 - ids:
-    - static-amd64
+    - std
   image_templates:
+    - "tykio/xDH_REPO:v{{ .Major }}.{{ .Minor }}"
     - "tykio/xDH_REPO:{{ .Tag }}"
-    - "tykio/xDH_REPO:s{{ .Major }}.{{ .Minor }}"
-    - "docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:{{ .Tag }}"
     - "docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:v{{ .Major }}.{{ .Minor }}"
+    - "docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:{{ .Tag }}"
   build_flag_templates:
     - "--build-arg=PORTS=xPORTS"
+    - "--platform=linux/arm64"
     - "--label=org.opencontainers.image.created={{.Date}}"
-    - "--label=org.opencontainers.image.title={{.ProjectName}}-slim"
+    - "--label=org.opencontainers.image.title={{.ProjectName}}-arm64"
     - "--label=org.opencontainers.image.revision={{.FullCommit}}"
     - "--label=org.opencontainers.image.version={{.Version}}"
-  goarch: amd64
+  goarch: arm64
   goos: linux
-  dockerfile: Dockerfile.slim
+  use_buildx: true
+  dockerfile: Dockerfile.std
   skip_push: auto
   extra_files:
     - "install/"
