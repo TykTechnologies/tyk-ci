@@ -55,7 +55,7 @@ ifelse(xREPO, <<tyk-analytics>>,
 
       - uses: docker/setup-buildx-action@v1
 
-      # TODO: add plugin-compiler 
+      dnl TODO: add plugin-compiler 
       - name: CI build
         uses: docker/build-push-action@v2
         with:
