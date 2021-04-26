@@ -98,8 +98,8 @@ ifelse(xREPO, <<tyk-analytics>>,
           docker tag tykio/xDH_REPO:${{ steps.targets.outputs.tag }} tykio/xDH_REPO:${{ steps.targets.outputs.hub }}
           docker push tykio/xDH_REPO:${{ steps.targets.outputs.hub }}
           docker push tykio/xDH_REPO:${{ steps.targets.outputs.tag }}
-          docker tag tykio/xDH_REPO:${{ steps.targets.outputs.tag }} docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:${{ steps.targets.outputs.tag }}
-          docker push docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:${{ steps.targets.outputs.tag }}
+          docker tag tykio/xDH_REPO:${{ steps.targets.outputs.tag }} docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:${{ steps.targets.outputs.tag }}
+          docker push docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:${{ steps.targets.outputs.tag }}
 ifelse(xREPO, <<tyk>>,
 <<          docker push tykio/tyk-plugin-compiler:${{ steps.targets.outputs.tag }}
           docker push tykio/tyk-hybrid-docker:${{ steps.targets.outputs.tag }}
