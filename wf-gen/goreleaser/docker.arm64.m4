@@ -3,8 +3,8 @@
   image_templates:
     - "tykio/xDH_REPO:v{{ .Major }}.{{ .Minor }}"
     - "tykio/xDH_REPO:{{ .Tag }}"
-    - "docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:v{{ .Major }}.{{ .Minor }}"
-    - "docker.cloudsmith.io/tyk/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:{{ .Tag }}"
+    - "docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:v{{ .Major }}.{{ .Minor }}"
+    - "docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:{{ .Tag }}"
   build_flag_templates:
     - "--build-arg=PORTS=xPORTS"
     - "--platform=linux/arm64"
