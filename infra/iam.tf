@@ -2,6 +2,16 @@
 
 data "aws_iam_policy_document" "gromit_tr" {
   statement {
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com", "chatbot.amazonaws.com"]
+    }
+  }
+}
+
+data "aws_iam_policy_document" "gromit" {
+  statement {
     actions = [
       "secretsmanager:*",
       "kms:Decrypt"
@@ -15,16 +25,6 @@ data "aws_iam_policy_document" "gromit_tr" {
   }
 
   statement {
-    actions = ["sts:AssumeRole"]
-    principals {
-      type        = "Service"
-      identifiers = ["ecs-tasks.amazonaws.com", "chatbot.amazonaws.com"]
-    }
-  }
-}
-
-data "aws_iam_policy_document" "chatops" {
-  statement {
     actions = [
       "logs:*",
       "chatbot:DescribeSlackChannelConfigurations"
@@ -33,15 +33,15 @@ data "aws_iam_policy_document" "chatops" {
   }
 }
 
-resource "aws_iam_role_policy" "chatops" {
-  name = "chatops"
+resource "aws_iam_role_policy" "gromit" {
+  name = "gromit"
   role = aws_iam_role.gromit_tr.id
 
-  policy = data.aws_iam_policy_document.chatops.json
+  policy = data.aws_iam_policy_document.gromit.json
 }
 
 resource "aws_iam_role" "gromit_tr" {
-  name               = "gromit"
+  name               = "gromit_tr"
   assume_role_policy = data.aws_iam_policy_document.gromit_tr.json
   tags               = local.common_tags
 }
@@ -103,7 +103,9 @@ data "aws_iam_policy_document" "gromit_ter" {
       "arn:aws:kms:eu-central-1:754489498669:key/17432de6-5a75-4a4a-b32e-ff8d8efd277f",
       "arn:aws:secretsmanager:eu-central-1:754489498669:secret:DashTrialToken-BfNk9B",
       "arn:aws:secretsmanager:eu-central-1:754489498669:secret:MDCBTrialToken-5zTlhf",
-      "arn:aws:secretsmanager:eu-central-1:754489498669:secret:GromitServeKey-pkgkwi"
+      "arn:aws:secretsmanager:eu-central-1:754489498669:secret:GromitServeKey-pkgkwi",
+      "arn:aws:secretsmanager:eu-central-1:754489498669:secret:DashTrialLicense-7EzdZh",
+      "arn:aws:secretsmanager:eu-central-1:754489498669:secret:MDCBTrialLicense-9BIRjv"
     ]
   }
 
