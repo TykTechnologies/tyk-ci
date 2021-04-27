@@ -2,11 +2,6 @@
     needs:
       - goreleaser
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        arch:
-          - amd64
-          - arm64
 
     steps:
       - name: Shallow checkout of xREPO
@@ -55,14 +50,13 @@ ifelse(xREPO, <<tyk-analytics>>,
 
       - uses: docker/setup-buildx-action@v1
 
-      dnl TODO: add plugin-compiler 
       - name: CI build
         uses: docker/build-push-action@v2
         with:
           push: true
           context: "."
           file: Dockerfile.std
-          platforms: linux/${{ matrix.arch }}
+          platforms: linux/amd64,linux/arm64
           tags: |
             ${{ steps.login-ecr.outputs.registry }}/xREPO:${{ needs.goreleaser.outputs.tag }}
             ${{ steps.login-ecr.outputs.registry }}/xREPO:${{ github.sha }}
@@ -70,7 +64,7 @@ ifelse(xREPO, <<tyk-analytics>>,
       - name: Tell gromit about new build
         id: gromit
         run: |
-            curl -fsSL -H "Authorization: ${{secrets.GROMIT_TOKEN}}" 'https://domu-kun.cloud.tyk.io/gromit/newbuild' \
+          curl -fsSL -H "Authorization: ${{secrets.GROMIT_TOKEN}}" 'https://domu-kun.cloud.tyk.io/gromit/newbuild' \
                  -X POST -d '{ "repo": "${{ github.repository}}", "ref": "${{ github.ref }}", "sha": "${{ github.sha }}" }'
 
       - name: Tell integration channel

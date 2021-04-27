@@ -1,10 +1,10 @@
 - ids:
     - static-amd64
   image_templates:
-    - "tykio/xDH_REPO:{{ .Tag }}"
+    - "tykio/xDH_REPO:s{{ .Version }}"
     - "tykio/xDH_REPO:s{{ .Major }}.{{ .Minor }}"
-    - "docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:{{ .Tag }}"
-    - "docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:v{{ .Major }}.{{ .Minor }}"
+    - "docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:s{{ .Version }}"
+    - "docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:s{{ .Major }}.{{ .Minor }}"
   build_flag_templates:
     - "--build-arg=PORTS=xPORTS"
     - "--label=org.opencontainers.image.created={{.Date}}"

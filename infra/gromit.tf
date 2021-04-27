@@ -18,7 +18,7 @@ module "sow" {
     name      = "sow",
     log_group = "internal",
     image     = var.gromit_image,
-    command   = ["-l", "trace", "sow", "/config"],
+    command   = ["sow", "/config"],
     mounts = [
       { src = "config", dest = "/config", readonly = false }
     ],

@@ -7,10 +7,12 @@
     - "docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:v{{ .Major }}.{{ .Minor }}"
   build_flag_templates:
     - "--build-arg=PORTS=xPORTS"
+    - "--platform=linux/amd64"
     - "--label=org.opencontainers.image.created={{.Date}}"
     - "--label=org.opencontainers.image.title={{.ProjectName}}"
     - "--label=org.opencontainers.image.revision={{.FullCommit}}"
     - "--label=org.opencontainers.image.version={{.Version}}"
+  use_buildx: true
   goarch: amd64
   goos: linux
   dockerfile: Dockerfile.std

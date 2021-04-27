@@ -1,8 +1,8 @@
 - ids:
     - std
   image_templates:
-    - "tykio/xDH_REPO:v{{ .Major }}.{{ .Minor }}"
     - "tykio/xDH_REPO:{{ .Tag }}"
+    - "tykio/xDH_REPO:v{{ .Major }}.{{ .Minor }}"
     - "docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:v{{ .Major }}.{{ .Minor }}"
     - "docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:{{ .Tag }}"
   build_flag_templates:
@@ -12,9 +12,9 @@
     - "--label=org.opencontainers.image.title={{.ProjectName}}-arm64"
     - "--label=org.opencontainers.image.revision={{.FullCommit}}"
     - "--label=org.opencontainers.image.version={{.Version}}"
+  use_buildx: true
   goarch: arm64
   goos: linux
-  use_buildx: true
   dockerfile: Dockerfile.std
   skip_push: auto
   extra_files:
