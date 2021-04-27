@@ -90,7 +90,9 @@ data "aws_iam_policy_document" "gromit_ter" {
       "arn:aws:kms:eu-central-1:754489498669:key/17432de6-5a75-4a4a-b32e-ff8d8efd277f",
       "arn:aws:secretsmanager:eu-central-1:754489498669:secret:DashTrialToken-BfNk9B",
       "arn:aws:secretsmanager:eu-central-1:754489498669:secret:MDCBTrialToken-5zTlhf",
-      "arn:aws:secretsmanager:eu-central-1:754489498669:secret:GromitServeKey-pkgkwi"
+      "arn:aws:secretsmanager:eu-central-1:754489498669:secret:GromitServeKey-pkgkwi",
+      "arn:aws:secretsmanager:eu-central-1:754489498669:secret:DashTrialLicense-7EzdZh",
+      "arn:aws:secretsmanager:eu-central-1:754489498669:secret:MDCBTrialLicense-9BIRjv"
     ]
   }
 

@@ -21,7 +21,7 @@ RELEASE_BRANCHES[release-2.9,tyk]='release-2.9.3.2'
 RELEASE_BRANCHES[release-3-lts,tyk]='release-3.0.2, release-3.0.2-update, release-3.0.3, release-3.0.4, release-3.0.5'
 RELEASE_BRANCHES[release-3,tyk]='release-3.1, release-3.1.0, release-3.1.1, release-3.1.1-cloud, release-3.1.2'
 
-RELEASE_BRANCHES[master,tyk-analytics]='release-3.2'
+RELEASE_BRANCHES[master,tyk-analytics]='release-3.2, release-3.2.0'
 RELEASE_BRANCHES[release-2.9,tyk-analytics]=''
 RELEASE_BRANCHES[release-3-lts,tyk-analytics]='release-3.0.2, release-3.0.3, release-3.0.4, release-3.0.5'
 RELEASE_BRANCHES[release-3,tyk,tyk-analytics]='release-3.1, release-3.1.0, release-3.1.1, release-3.1.2'
@@ -48,6 +48,10 @@ function usage {
 Usage: 
 
     $PROGNAME	-${o_repos}
+
+Manages the automated sync of release engineering code. This means that it is no longer necessary to remember which branches to cherry pick changes to. Maintains a two maps:
+SOURCE_BRANCHES which is map of repo to a list of root branches (i.e. branches onto which commits can land directly, without being cherry picked)
+RELEASE_BRANCHES which is a per-repo map of root branches to branches that release engineering code should be sync'd to
 
 Any omitted options will use the values above
 GNU style long/short options not supported
@@ -115,6 +119,7 @@ for repo in $repos
 do
     for src_branch in ${(z)SOURCE_BRANCHES[$repo]}
     do
+	[[ -n $RELEASE_BRANCHES[$src_branch,$repo] ]] || continue
 	fetch_branch $repo $src_branch
 	print Generating files for $repo/$src_branch
 	process_repo_branch $repo $src_branch

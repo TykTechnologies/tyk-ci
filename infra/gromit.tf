@@ -18,7 +18,7 @@ module "sow" {
     name      = "sow",
     log_group = "internal",
     image     = var.gromit_image,
-    command   = ["sow", "/config"],
+    command   = ["-l", "trace", "sow", "/config"],
     mounts = [
       { src = "config", dest = "/config", readonly = false }
     ],
@@ -125,7 +125,10 @@ module "chitragupta" {
     image     = var.gromit_image,
     command   = ["cluster", "expose", "-a"],
     mounts    = [],
-    env       = [],
+    env       = [
+      { name = "GROMIT_CLUSTER_DOMAIN", value = data.aws_route53_zone.dev_tyk_tech.name },
+      { name = "GROMIT_CLUSTER_ZONEID", value = data.aws_route53_zone.dev_tyk_tech.zone_id }
+    ],
     secrets   = [],
     region    = var.region
   }
