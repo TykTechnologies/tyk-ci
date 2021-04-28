@@ -162,12 +162,20 @@ resource "aws_iam_role" "gromit_ter" {
      "Sid": ""
    },
    {
-     "Sid": "",
-     "Effect": "Allow",
+     "Action": "sts:AssumeRole",
      "Principal": {
        "Service": "events.amazonaws.com"
      },
-     "Action": "sts:AssumeRole"
+     "Effect": "Allow",
+     "Sid": ""
+   },
+   {
+     "Action": "sts:AssumeRole",
+     "Principal": {
+       "Service": "chatbot.amazonaws.com"
+     },
+     "Effect": "Allow",
+     "Sid": ""
    }
  ]
 }

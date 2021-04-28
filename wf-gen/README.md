@@ -35,7 +35,7 @@ These are runtime variables which are defined at runtime. These are usually shel
 ## goreleaser
 All binary artefacts are _created_ by goreleaser, controlled by a `.goreleaser.yml` file in the root of each repo. These files are generated from [.goreleaser.yml.m4](.goreleaser.yml.m4).
 
-Since goreleaser does not support `CGO_ENABLED=1`, goreleaser runs inside [a specially crafted docker image](https://github.com/TykTechnologies/golang-cross) that contains cross compiler toolchains for arm64 and darwin-amd64. amd64 is the host architecture.
+tyk and tyk-analytics require cgo. Since goreleaser does not support `CGO_ENABLED=1`, for these two cases, goreleaser runs inside [a specially crafted docker image](https://github.com/TykTechnologies/golang-cross) that contains cross compiler toolchains for arm64 and darwin-amd64. amd64 is the host architecture. Other repos use a plain goreleaser config and can run in any old container.
 
 Multi-platform docker images are built by buildx.
 
@@ -67,3 +67,25 @@ This is triggered when a branch is deleted and will retire the CD environment if
 The github actions based automation lives in git. Thus, the automation triggered will be the version in that branch. How then do we ensure that bugfixes that apply to all versions of the automation will propagate to all needed branches? Enter [meta.zsh](meta.zsh).
 
 [meta.zsh](meta.zsh) controls [sync-automation.yml.m4](sync-automation.yml.m4) the template that is rendered to `.github/workflows/sync-automation.yml` in each repo. This action will sync commits that land on `master` to active release branches. It also knows about old release branches going back to `release-3-lts` and knows where to sync commits that land on branches like `release-3.1` for instance.
+
+# Hacking
+To build locally docker buildx support is needed. This is a part of docker-ce since 19.03 but needs to be enabled specifically. Once you have the builder up, in repos needing cgo, tyk for example,
+
+```shell
+% docker run --rm --privileged -e CGO_ENABLED=1 -e GO111MODULE=on -e GITHUB_TOKEN=xxxx \
+       -e PKG_SIGNING_KEY="$(<~src/rpmsign/tyk.io.signing.key)" -e NFPM_STD_PASSPHRASE=supersekret -e GPG_FINGERPRINT=12B5D62C28F57592D1575BD51ED14C59E37DAC20 \
+       -v /var/run/docker.sock:/var/run/docker.sock -v ~/.docker/config.json:/root/.docker/config.json \
+       -v `pwd`:/go/src/github.com/TykTechnologies/tyk \
+       -w /go/src/github.com/TykTechnologies/tyk \
+       tykio/golang-cross:1.15.8 bash -c 'bin/unlock-agent.sh && goreleaser --rm-dist --snapshot' 
+```
+
+In repos that don't need cgo, in the repo root,
+
+``` shellsession
+% GITHUB_TOKEN=xxxx goreleaser --rm-dist --snapshot
+```
+
+## Running a whole release locally
+
+lol no

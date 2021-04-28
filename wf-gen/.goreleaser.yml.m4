@@ -10,13 +10,22 @@ define(<<xPORTS>>, <<ifelse(xREPO, <<tyk>>, <<8080>>, xREPO, <<tyk-analytics>>, 
 # - macOS (only 10.15 is supported)
 # - amd64
 
-include(goreleaser/builds.m4)
+ifelse(xCGO, <<1>>, include(goreleaser/cgo-builds.m4), include(goreleaser/builds.m4))
 
 dockers:
 include(goreleaser/docker.std.m4)
 include(goreleaser/docker.slim.m4)
-include(goreleaser/docker.arm64.m4)
 ifelse(xREPO, <<tyk>>, include(goreleaser/docker.tyk.m4))
+docker_manifests:
+  - name_template: tykio/xDH_REPO:{{ .Tag }}
+    image_templates:
+    - tykio/xDH_REPO:{{ .Tag }}-amd64
+    - tykio/xDH_REPO:{{ .Tag }}-arm64
+# Disabled since cloudsmith unable to handle manifests
+# - name_template: docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:{{ .Tag }}
+#   image_templates:
+#   - docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:{{ .Tag }}-amd64
+#   - docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:{{ .Tag }}-arm64
 
 include(goreleaser/nfpm.m4)
 

@@ -1,6 +1,8 @@
   goreleaser:
     runs-on: ubuntu-latest
+ifelse(xCGO, <<1>>, <<
     container: tykio/golang-cross:1.15.8
+>>)
     outputs:
       tag: ${{ steps.targets.outputs.tag }}
       upload: ${{ steps.targets.outputs.upload }}
@@ -42,24 +44,23 @@ ifelse(xREPO, <<tyk-analytics>>,
           GPG_FINGERPRINT: 12B5D62C28F57592D1575BD51ED14C59E37DAC20
           PKG_SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
         run: |
-          /unlock-agent.sh
+          bin/unlock-agent.sh
+          DOCKER_CFG_PATH="${DOCKER_CONFIG:-$HOME/.docker}/config.json"
+          jq '. + {"experimental": "enabled"}' "$DOCKER_CFG_PATH" > c.json && mv c.json "$DOCKER_CFG_PATH"
           current_tag=${GITHUB_REF##*/}
           echo "::set-output name=tag::${current_tag}"
           if [[ $current_tag =~ .+-(qa|rc).* ]]; then
                   echo "::set-output name=upload::true"
                   echo "::set-output name=pc::xPC_REPO-unstable"
-                  echo "::set-output name=hub::unstable"
                   echo "::debug file=.goreleaser.yml::Pushing to unstable repos"
           # From https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
           # If this is a public release, the tag is of the form vX.Y.Z where X, Y, Z ∈ ℤ
           elif [[ $current_tag =~ v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*) ]]; then
                   echo "::set-output name=upload::true"
                   echo "::set-output name=pc::xPC_REPO"
-                  echo "::set-output name=hub::stable"
                   echo "::debug file=.goreleaser.yml::Pushing to stable repos"
           else
                   echo "::set-output name=upload::false"
-                  echo "::set-output name=hub::unstable"
                   echo "::debug file=.goreleaser.yml::No uploads"
           fi
 
@@ -77,11 +78,20 @@ ifelse(xREPO, <<tyk-analytics>>,
             *.tar.gz
             *.txt.sig
             *.txt
-
+ifelse(xCGO, <<0>>, <<
       - uses: goreleaser/goreleaser-action@v2
         with:
           version: latest
           args: release --rm-dist
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CGO_ENABLED: 0
+          NFPM_STD_PASSPHRASE: ${{ secrets.SIGNING_KEY_PASSPHRASE }}
+          NFPM_PAYG_PASSPHRASE: ${{ secrets.SIGNING_KEY_PASSPHRASE }}
+          GPG_FINGERPRINT: 12B5D62C28F57592D1575BD51ED14C59E37DAC20
+          PKG_SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+>>, <<
+      - name: goreleaser from golang-cross
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CGO_ENABLED: 1
@@ -89,22 +99,14 @@ ifelse(xREPO, <<tyk-analytics>>,
           NFPM_PAYG_PASSPHRASE: ${{ secrets.SIGNING_KEY_PASSPHRASE }}
           GPG_FINGERPRINT: 12B5D62C28F57592D1575BD51ED14C59E37DAC20
           PKG_SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-          CI_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          CI_TAG: ${{ steps.targets.outputs.tag }}
-
-      - name: Push unstable docker image
-        if: steps.targets.outputs.hub == 'unstable' && steps.targets.outputs.upload == 'true'
+        shell: bash
         run: |
-          docker tag tykio/xDH_REPO:${{ steps.targets.outputs.tag }} tykio/xDH_REPO:${{ steps.targets.outputs.hub }}
-          docker push tykio/xDH_REPO:${{ steps.targets.outputs.hub }}
-          docker push tykio/xDH_REPO:${{ steps.targets.outputs.tag }}
-          docker tag tykio/xDH_REPO:${{ steps.targets.outputs.tag }} docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:${{ steps.targets.outputs.tag }}
-          docker push docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:${{ steps.targets.outputs.tag }}
-ifelse(xREPO, <<tyk>>,
-<<          docker push tykio/tyk-plugin-compiler:${{ steps.targets.outputs.tag }}
-          docker push tykio/tyk-hybrid-docker:${{ steps.targets.outputs.tag }}
+          snapshot="--snapshot"
+          if [[ ${{steps.targets.outputs.tag}} = $(git describe --tags) ]]; then
+              snapshot=""
+          fi
+          goreleaser release --rm-dist $snapshot
 >>)
-
       - uses: actions/upload-artifact@v2
         with:
           name: deb

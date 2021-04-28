@@ -1,18 +1,35 @@
 
 builds:
-  - id: std
+  - id: std-linux
     ldflags:
       - -X xPKG_NAME.VERSION={{.Version}} -X xPKG_NAME.commit={{.Commit}} -X xPKG_NAME.buildDate={{.Date}} -X xPKG_NAME.builtBy=goreleaser
     goos:
       - linux
+    goarch:
+      - amd64
+  - id: std-darwin
+    ldflags:
+      - -X xPKG_NAME.VERSION={{.Version}} -X xPKG_NAME.commit={{.Commit}} -X xPKG_NAME.buildDate={{.Date}} -X xPKG_NAME.builtBy=goreleaser
+    env:
+      - CC=o64-clang
+    goos:
       - darwin
     goarch:
       - amd64
+  - id: std-arm64
+    ldflags:
+      - -X xPKG_NAME.VERSION={{.Version}} -X xPKG_NAME.commit={{.Commit}} -X xPKG_NAME.buildDate={{.Date}} -X xPKG_NAME.builtBy=goreleaser
+    env:
+      - CC=aarch64-linux-gnu-gcc
+    goos:
+      - linux
+    goarch:
       - arm64
   # static builds strip symbols and do not allow plugins
   - id: static-amd64
     ldflags:
       - -s -w -X xPKG_NAME.VERSION={{.Version}} -X xPKG_NAME.commit={{.Commit}} -X xPKG_NAME.buildDate={{.Date}} -X xPKG_NAME.builtBy=goreleaser
+      - -linkmode external -extldflags -static
     goos:
       - linux
     goarch:

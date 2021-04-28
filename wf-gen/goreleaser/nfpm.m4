@@ -6,8 +6,12 @@ nfpms:
     description: xPKG_DESC
     package_name: xCOMPATIBILITY_NAME
     builds:
+ifelse(xCGO, <<1>>,<<
       - std-linux
       - std-arm64
+>>, <<
+      - std
+>>)dnl
     formats:
       - deb
       - rpm
@@ -103,6 +107,7 @@ ifelse(xREPO, <<tyk-analytics>>, <<
     builds:
       - payg
     formats:
+      - deb
       - rpm
     contents:
       - src: "README*"
