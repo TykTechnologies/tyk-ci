@@ -30,7 +30,7 @@ ifelse(xREPO, <<tyk-analytics>>,
         if: startsWith(github.ref, 'refs/tags')
         uses: docker/login-action@v1
         with:
-          registry: docker.cloudsmith.io
+          registry: docker.tyk.io
           username: ${{ secrets.CLOUDSMITH_USERNAME }}
           password: ${{ secrets.CLOUDSMITH_API_KEY }}
 
@@ -91,7 +91,7 @@ ifelse(xREPO, <<tyk-analytics>>,
           PKG_SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
           CI_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           CI_TAG: ${{ steps.targets.outputs.tag }}
- 
+
       - name: Push unstable docker image
         if: steps.targets.outputs.hub == 'unstable' && steps.targets.outputs.upload == 'true'
         run: |
