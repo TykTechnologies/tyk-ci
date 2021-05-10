@@ -1,42 +1,49 @@
-version: "3"
+version: "3.9"
 services:
     upstream:
         image: citizenstig/httpbin
 
-    dashboard:
-        image: 754489498669.dkr.ecr.eu-central-1.amazonaws.com/tyk-analytics:master
-        ports:
-            - "3000:3000"
-            - "5000:5000"
-        environment:
-            - TYK_LOGLEVEL=${TYK_LOGLEVEL:-debug}
-        volumes:
-            - ../confs/default:/conf
-        depends_on:
-            - tyk-mongo
-
-    gateway:
-        image: 754489498669.dkr.ecr.eu-central-1.amazonaws.com/tyk:master
-        ports:
-            - "8080:8080"
-        volumes:
-            - ../confs/default:/conf
-        depends_on:
-            - tyk-redis
-
-    pump:
-        image: 754489498669.dkr.ecr.eu-central-1.amazonaws.com/tyk-pump:master
-        volumes:
-            - ../confs/default:/conf
-        depends_on:
-            - gateway
-            - tyk-mongo
-
     tyk-redis:
         image: redis
         ports:
-            - "6379:6379"
+            - "0.0.0.0:6379:6379"
 
     tyk-mongo:
         image: mongo
+        ports:
+            - "0.0.0.0:27017:27017"
 #        command: mongod --sslMode allowSSL --sslCAFile /etc/ssl/tyk-mongo-ca.pem --sslPEMKeyFile /etc/ssl/tyk-mongo-key.pem --sslAllowConnectionsWithoutCertificates --sslAllowInvalidCertificates --sslAllowInvalidHostnames
+
+    gateway:
+        image: 754489498669.dkr.ecr.eu-central-1.amazonaws.com/tyk:master
+        command: "--conf=/conf/tyk.conf"
+        ports:
+            - "0.0.0.0:8080:8080"
+            - "0.0.0.0:8181:8181"
+        volumes:
+            - ./confs/tyk:/conf
+        depends_on:
+            - tyk-redis
+
+    dashboard:
+        image: 754489498669.dkr.ecr.eu-central-1.amazonaws.com/tyk-analytics:aff03255cd3b903fc88ab90de0e2b08e40dea8e4
+        command: "--conf=/conf/tyk-analytics.conf"
+        ports:
+            - "0.0.0.0:3000:3000"
+            - "0.0.0.0:5000:5000"
+        environment:
+            - TYK_LOGLEVEL=${TYK_LOGLEVEL:-debug}
+            - TYK_DB_LICENSE_KEY=${DASH_TRIAL}
+        volumes:
+            - ./confs/tyk-analytics:/conf
+        depends_on:
+            - tyk-mongo
+
+    pump:
+        image: 754489498669.dkr.ecr.eu-central-1.amazonaws.com/tyk-pump:master
+        command: "--conf=/conf/tyk-pump.conf"
+        volumes:
+            - ./confs/tyk-pump:/conf
+        depends_on:
+            - gateway
+            - tyk-mongo

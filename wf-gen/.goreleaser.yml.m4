@@ -21,11 +21,28 @@ docker_manifests:
     image_templates:
     - tykio/xDH_REPO:{{ .Tag }}-amd64
     - tykio/xDH_REPO:{{ .Tag }}-arm64
-# Disabled since cloudsmith unable to handle manifests
-# - name_template: docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:{{ .Tag }}
-#   image_templates:
-#   - docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:{{ .Tag }}-amd64
-#   - docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:{{ .Tag }}-arm64
+  - name_template: docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:{{ .Tag }}
+    image_templates:
+    - docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:{{ .Tag }}-amd64
+    - docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:{{ .Tag }}-arm64
+  - name_template: tykio/xDH_REPO:v{{ .Major }}.{{ .Minor }}{{.Prerelease}}
+    image_templates:
+    - tykio/xDH_REPO:{{ .Tag }}-amd64
+    - tykio/xDH_REPO:{{ .Tag }}-arm64
+  - name_template: docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:v{{ .Major }}.{{ .Minor }}{{.Prerelease}}
+    image_templates:
+    - docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:{{ .Tag }}-amd64
+    - docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:{{ .Tag }}-arm64
+ifelse(xREPO, <<tyk>>, <<
+  - name_template: tykio/tyk-hybrid-docker:{{ .Tag }}
+    image_templates:
+    - tykio/tyk-hybrid-docker:{{ .Tag }}-amd64
+    - tykio/tyk-hybrid-docker:{{ .Tag }}-arm64
+  - name_template: docker.tyk.io/tyk/tyk-hybrid-docker:{{ .Tag }}
+    image_templates:
+    - docker.tyk.io/tykio/tyk-hybrid-docker:{{ .Tag }}-amd64
+    - docker.tyk.io/tykio/tyk-hybrid-docker:{{ .Tag }}-arm64
+>>)
 
 include(goreleaser/nfpm.m4)
 

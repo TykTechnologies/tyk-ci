@@ -3,8 +3,17 @@ FROM debian:buster-slim
 ARG TARGETARCH
 
 RUN apt-get update \
- && apt-get dist-upgrade -y ca-certificates \
- && apt-get autoremove -y
+    && apt-get dist-upgrade -y ca-certificates
+
+ifelse(xREPO, <<tyk>>,<<RUN apt-get install -y python3-setuptools libpython3.7 python3.7-dev curl \
+    && curl https://bootstrap.pypa.io/get-pip.py | python3 \
+    && rm -rf /usr/include/* && rm /usr/lib/*-linux-gnu/*.a && rm /usr/lib/*-linux-gnu/*.o \
+    && rm /usr/lib/python3.7/config-3.7m-*-linux-gnu/*.a \
+    && pip3 install protobuf grpcio \
+    && apt-get autoremove -y \
+    && rm -rf /root/.cache \
+    && rm -rf /var/lib/apt/lists/*
+>>)
 
 COPY *${TARGETARCH}.deb /
 RUN dpkg -i /xCOMPATIBILITY_NAME*${TARGETARCH}.deb
@@ -16,4 +25,4 @@ EXPOSE $PORTS
 WORKDIR /opt/xCOMPATIBILITY_NAME/
 
 ENTRYPOINT ["/opt/xCOMPATIBILITY_NAME/xREPO" ]
-CMD [ "--conf=/opt/xCOMPATIBILITY_NAME/xREPO.conf" ]
+CMD [ "--conf=/opt/xCOMPATIBILITY_NAME/xCONFIG_FILE" ]

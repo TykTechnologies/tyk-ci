@@ -1,0 +1,22 @@
+version: "3"
+services:
+  redis:
+    image: redis
+    ports:
+      - "0.0.0.0:6379:6379"
+
+  bundler:
+    build:
+      context: ./python
+      args:
+        - TAG=${TAG}
+      
+  gw:
+    image: tykio/tyk-hybrid-docker:${TAG}
+    volumes:
+      - ./python/apidef.json:/opt/tyk-gateway/apps/python.json
+      - ./python/tyk.conf:/opt/tyk-gateway/tyk.conf
+    ports:
+      - "0.0.0.0:8080:8080"
+    environment:
+      - TYK_LOGLEVEL=debug
