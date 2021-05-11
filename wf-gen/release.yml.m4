@@ -16,6 +16,9 @@ on:
     branches:
       - master
       - release-**
+      - integration/**
+      - feature/**
+      - perf/**
     tags:
       - 'v*'
 

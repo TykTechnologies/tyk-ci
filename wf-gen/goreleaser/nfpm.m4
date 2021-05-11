@@ -33,7 +33,7 @@ ifelse(xREPO, <<tyk-analytics>>,<<
       - src: "webclient/lang/*"
         dst: "/opt/xCOMPATIBILITY_NAME/lang"
       - src: tyk_config_sample.config
-        dst: /opt/xCOMPATIBILITY_NAME/xREPO.conf
+        dst: /opt/xCOMPATIBILITY_NAME/xCONFIG_FILE
         type: "config|noreplace"
 >>, xREPO, <<tyk>>,<<
       - src: /opt/xCOMPATIBILITY_NAME
@@ -42,7 +42,7 @@ ifelse(xREPO, <<tyk-analytics>>,<<
       - src: "LICENSE.md"
         dst: "/opt/share/docs/xCOMPATIBILITY_NAME/LICENSE.md"
       - src: "apps/app_sample.json"
-        dst: "/opt/xCOMPATIBILITY_NAME/apps"
+        dst: "/opt/xCOMPATIBILITY_NAME/apps/app_sample.json"
       - src: "templates/*.json"
         dst: "/opt/xCOMPATIBILITY_NAME/templates"
       - src: "templates/playground/index.html"
@@ -58,23 +58,23 @@ ifelse(xREPO, <<tyk-analytics>>,<<
       - src: "coprocess/*"
         dst: "/opt/xCOMPATIBILITY_NAME/coprocess"
       - src: tyk.conf.example
-        dst: /opt/xCOMPATIBILITY_NAME/xREPO.conf
+        dst: /opt/xCOMPATIBILITY_NAME/xCONFIG_FILE
         type: "config|noreplace"
 >>, xREPO, <<tyk-identity-broker>>, <<
       - src: "LICENSE.md"
         dst: "/opt/share/docs/xCOMPATIBILITY_NAME/LICENSE.md"
       - src: tib_sample.conf
-        dst: /opt/xCOMPATIBILITY_NAME/xREPO.conf
+        dst: /opt/xCOMPATIBILITY_NAME/xCONFIG_FILE
         type: "config|noreplace"
 >>, xREPO, <<tyk-pump>>,<<
       - src: "LICENSE.md"
         dst: "/opt/share/docs/xCOMPATIBILITY_NAME/LICENSE.md"
       - src: pump.example.conf
-        dst: /opt/xCOMPATIBILITY_NAME/xREPO.conf
+        dst: /opt/xCOMPATIBILITY_NAME/xCONFIG_FILE
         type: "config|noreplace"
 >>, xREPO, <<tyk-sink>>, <<
       - src: tyk_sink_sample.conf
-        dst: /opt/xCOMPATIBILITY_NAME/xREPO.conf
+        dst: /opt/xCOMPATIBILITY_NAME/xCONFIG_FILE
         type: "config|noreplace"
 >>)dnl
     scripts:
@@ -123,7 +123,7 @@ ifelse(xREPO, <<tyk-analytics>>, <<
       - src: "install/inits/*"
         dst: "/opt/xCOMPATIBILITY_NAME/install/inits"
       - src: tyk_config_sample.config
-        dst: /opt/xCOMPATIBILITY_NAME/tyk_analytics.conf
+        dst: /opt/xCOMPATIBILITY_NAME/xCONFIG_FILE
         type: "config|noreplace"
     scripts:
       preinstall: "install/before_install.sh"

@@ -46,7 +46,7 @@ ifelse(xREPO, <<tyk-analytics>>,
         run: |
           bin/unlock-agent.sh
           DOCKER_CFG_PATH="${DOCKER_CONFIG:-$HOME/.docker}/config.json"
-          jq '. + {"experimental": "enabled"}' "$DOCKER_CFG_PATH" > c.json && mv c.json "$DOCKER_CFG_PATH"
+          jq '. + {"experimental": "enabled"}' "$DOCKER_CFG_PATH" > c.json && mv c.json "$DOCKER_CFG_PATH" || rm c.json
           current_tag=${GITHUB_REF##*/}
           echo "::set-output name=tag::${current_tag}"
           if [[ $current_tag =~ .+-(qa|rc).* ]]; then
