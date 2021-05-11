@@ -1,5 +1,5 @@
 ARG TAG=v3.2.0
-FROM tykio/tyk-hybrid-docker:${TAG}
+FROM tykio/tyk-gateway:${TAG}
 
 RUN apt-get update && apt-get install -y busybox
 WORKDIR /tmp

@@ -57,6 +57,9 @@ ifelse(xREPO, <<tyk-analytics>>,<<
         dst: "/opt/xCOMPATIBILITY_NAME/policies"
       - src: "coprocess/*"
         dst: "/opt/xCOMPATIBILITY_NAME/coprocess"
+      # in the repo coprocess/python/proto is a symlink, so copy the files explicitly
+      - src: "coprocess/bindings/python/*"
+        dst: "/opt/xCOMPATIBILITY_NAME/coprocess/python/proto"
       - src: tyk.conf.example
         dst: /opt/xCOMPATIBILITY_NAME/xCONFIG_FILE
         type: "config|noreplace"
