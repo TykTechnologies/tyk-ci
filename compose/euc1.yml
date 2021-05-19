@@ -26,14 +26,14 @@ services:
             - tyk-redis
 
     dashboard:
-        image: 754489498669.dkr.ecr.eu-central-1.amazonaws.com/tyk-analytics:aff03255cd3b903fc88ab90de0e2b08e40dea8e4
+        image: 754489498669.dkr.ecr.eu-central-1.amazonaws.com/tyk-analytics:federation-test
         command: "--conf=/conf/tyk-analytics.conf"
         ports:
             - "0.0.0.0:3000:3000"
             - "0.0.0.0:5000:5000"
         environment:
             - TYK_LOGLEVEL=${TYK_LOGLEVEL:-debug}
-            - TYK_DB_LICENSE_KEY=${DASH_TRIAL}
+            - TYK_DB_LICENSEKEY=${DASH_TRIAL}
         volumes:
             - ./confs/tyk-analytics:/conf
         depends_on:

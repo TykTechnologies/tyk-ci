@@ -1,3 +1,4 @@
+# Build tykio/xDH_REPO, cloudsmith/xCOMPATIBILITY_NAME (amd64)
 - ids:
     - std
   image_templates:
@@ -37,6 +38,7 @@ ifelse(xREPO, <<tyk-analytics>>,<<
     - "pump.example.conf"
 >>)dnl
 
+# Build tykio/xDH_REPO, cloudsmith/xCOMPATIBILITY_NAME (arm64)
 - ids:
     - std
   image_templates:

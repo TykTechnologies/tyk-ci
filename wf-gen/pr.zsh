@@ -48,6 +48,7 @@ Usage:
     $PROGNAME	-${o_repos} \\ 
        		-${o_base} \\
        		-branch <branch that will be pushed> \\
+       		[-base <branch to base on> ] \\
        		-title "title" \\
         	-${o_body} \\
        		[-f] [-p]

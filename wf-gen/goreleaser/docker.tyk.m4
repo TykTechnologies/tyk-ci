@@ -1,3 +1,4 @@
+# Build gateway hybrid container amd64
 - ids:
     - std
   image_templates:
@@ -12,9 +13,10 @@
   goarch: amd64
   goos: linux
   dockerfile: images/hybrid/Dockerfile
-  skip_push: auto
   extra_files:
     - "images/hybrid/"
+
+# Build gateway hybrid container arm64
 - ids:
     - std
   image_templates:
@@ -29,16 +31,17 @@
   goarch: arm64
   goos: linux
   dockerfile: images/hybrid/Dockerfile
-  skip_push: auto
   extra_files:
     - "images/hybrid/"
+
+# Build plugin-compiler multiarch
 - ids:
     - std
   image_templates:
     - "tykio/tyk-plugin-compiler:{{ .Tag }}"
     - "tykio/tyk-plugin-compiler:v{{ .Major }}.{{ .Minor }}{{.Prerelease}}"
   build_flag_templates:
-    - "--build-arg=TYK_GW_TAG={{ .Commit }}"
+    - "--build-arg=branch={{ .Branch }}"
     - "--label=org.opencontainers.image.created={{.Date}}"
     - "--label=org.opencontainers.image.title=tyk-plugin-compiler"
     - "--label=org.opencontainers.image.revision={{.FullCommit}}"
@@ -46,6 +49,5 @@
   goarch: amd64
   goos: linux
   dockerfile: images/plugin-compiler/Dockerfile
-  skip_push: auto
   extra_files:
     - "images/plugin-compiler/"

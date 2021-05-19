@@ -9,7 +9,7 @@ ifelse(xREPO, <<tyk>>,<<RUN apt-get install -y python3-setuptools libpython3.7 p
     && curl https://bootstrap.pypa.io/get-pip.py | python3 \
     && rm -rf /usr/include/* && rm /usr/lib/*-linux-gnu/*.a && rm /usr/lib/*-linux-gnu/*.o \
     && rm /usr/lib/python3.7/config-3.7m-*-linux-gnu/*.a \
-    && pip3 install protobuf grpcio \
+    && pip3 install --only-binary ":all:" grpcio protobuf \
     && apt-get autoremove -y \
     && rm -rf /root/.cache \
     && rm -rf /var/lib/apt/lists/*
