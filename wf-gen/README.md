@@ -17,7 +17,10 @@ Orchestrated by github-actions. This repo contains m4 templates for all repos un
   - cloudsmith
   - Docker Hub
   - CI ECR
-  
+
+# Dependencies
+You probably want to have gh (github cli - https://github.com/cli/cli) and m4 (https://ss64.com/bash/m4.html) installed for a succesful run.
+
 # Implementation
 [prs.zsh](prs.zsh) renders the m4 templates and creates PRs in the respective repositories. Most of the workflows are triggered by PRs but if they are not, most actions that are public facing are not triggered. Public actions are triggered by pushing tags. cf. [confluence](https://tyktech.atlassian.net/wiki/spaces/EN/pages/449708061/Release+Engineering).
 
