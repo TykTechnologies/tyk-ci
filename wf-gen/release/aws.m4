@@ -4,8 +4,6 @@
     runs-on: ubuntu-latest
     needs:
       - goreleaser
-      - install-deb
-      - install-rpm
     strategy:
       matrix:
         flavour:
