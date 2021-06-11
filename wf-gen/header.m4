@@ -5,6 +5,7 @@ define(<<xCOMPATIBILITY_NAME>>, <<ifelse(xREPO, <<tyk>>, <<tyk-gateway>>, xREPO,
 dnl The repository in Docker Hub defaults to xCOMPATIBILITY_NAME
 define(<<xDH_REPO>>, <<ifelse(xREPO, <<tyk-pump>>, <<tyk-pump-docker-pub>>, xREPO, <<tyk-sink>>, <<tyk-mdcb-docker>>, xCOMPATIBILITY_NAME)>>)dnl
 define(<<xPC_REPO>>, <<ifelse(xREPO, <<tyk-sink>>, <<tyk-mdcb>>, xCOMPATIBILITY_NAME)>>)dnl
+define(<<xPC_PRIVATE>>, ifelse(xREPO, <<tyk-sink>>, <<1>>, <<0>>))dnl
 define(<<xCGO>>, ifelse(xREPO, <<tyk>>, <<1>>, xREPO, <<tyk-analytics>>, <<1>>, <<0>>))dnl
 define(<<xCONFIG_FILE>>, <<ifelse(xREPO, <<tyk-analytics>>, <<tyk_analytics.conf>>, xREPO, <<tyk-sink>>, <<tyk_sink.conf>>, xREPO, <<tyk-identity-broker>>, <<tib.conf>>, xREPO.conf)>>)dnl
 dnl The version to test upgrades from, chosen to be the last versions before the wf-gen era, every repo should be explicity featured here

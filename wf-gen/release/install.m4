@@ -29,7 +29,9 @@
           ARG TARGETARCH
           COPY xCOMPATIBILITY_NAME*_${TARGETARCH}.deb /xCOMPATIBILITY_NAME.deb
           RUN apt-get update && apt-get install -y curl
-          RUN curl -fsSL https://packagecloud.io/install/repositories/tyk/xCOMPATIBILITY_NAME/script.deb.sh | bash && apt-get install -y xCOMPATIBILITY_NAME=xUPGRADE_FROM
+ifelse(xPC_PRIVATE, <<0>>, <<
+          RUN curl -fsSL https://packagecloud.io/install/repositories/tyk/xPC_REPO/script.deb.sh | bash && apt-get install -y xCOMPATIBILITY_NAME=xUPGRADE_FROM>>, <<
+          RUN curl -u ${{ secrets.PACKAGECLOUD_TOKEN }}: -fsSL https://packagecloud.io/install/repositories/tyk/xPC_REPO/script.deb.sh | bash && apt-get install -y xCOMPATIBILITY_NAME=xUPGRADE_FROM>>)
           RUN dpkg -i /xCOMPATIBILITY_NAME.deb && /opt/xCOMPATIBILITY_NAME/xREPO --conf=/opt/xCOMPATIBILITY_NAME/xREPO.conf &' > Dockerfile
 
       - name: install on ${{ matrix.distro }}
@@ -39,14 +41,6 @@
           platforms: linux/${{ matrix.arch }}
           file: Dockerfile
           push: false
-      # - name: install on ${{ matrix.distro }}
-      #   run: |
-      #     DOCKER_CFG_PATH="${DOCKER_CONFIG:-$HOME/.docker}/config.json"
-      #     jq '. + {"experimental": "enabled"}' "$DOCKER_CFG_PATH" > c.json && mv c.json "$DOCKER_CFG_PATH" || rm c.json
-      #     docker version
-      #     docker info
-      #     docker buildx ls
-      #     docker buildx build --platform ${{ matrix.arch }} --file Dockerfile .
 
   upgrade-rpm:
     needs: goreleaser
@@ -70,7 +64,9 @@
           echo 'FROM registry.access.redhat.com/${{ matrix.distro }}
           COPY xCOMPATIBILITY_NAME*_x86_64.rpm /xCOMPATIBILITY_NAME.rpm
           RUN yum install -y curl
-          RUN curl -s https://packagecloud.io/install/repositories/tyk/xCOMPATIBILITY_NAME/script.rpm.sh | bash && yum install -y xCOMPATIBILITY_NAME-xUPGRADE_FROM-1
+ifelse(xPC_PRIVATE, <<0>>, <<
+          RUN curl -s https://packagecloud.io/install/repositories/tyk/xPC_REPO/script.rpm.sh | bash && yum install -y xCOMPATIBILITY_NAME-xUPGRADE_FROM-1>>, <<
+          RUN curl -u ${{ secrets.PACKAGECLOUD_TOKEN }}: -s https://packagecloud.io/install/repositories/tyk/xPC_REPO/script.rpm.sh | bash && yum install -y xCOMPATIBILITY_NAME-xUPGRADE_FROM-1>>)
           RUN rpm -ih /xCOMPATIBILITY_NAME.rpm && /opt/xCOMPATIBILITY_NAME/xREPO --conf=/opt/xCOMPATIBILITY_NAME/xREPO.conf &' > Dockerfile
 
       - name: install on ${{ matrix.distro }}
