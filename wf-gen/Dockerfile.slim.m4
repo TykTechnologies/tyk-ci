@@ -13,5 +13,5 @@ COPY pump.example.conf tyk-pump.conf)
 ARG PORTS
 EXPOSE $PORTS
 
-ENTRYPOINT ["/opt/xREPO/xREPO" ]
-CMD [ "--conf=/opt/xREPO/xREPO.conf" ]
+ENTRYPOINT ["/opt/xCOMPATIBILITY_NAME/xREPO" ]
+CMD [ "--conf=/opt/xCOMPATIBILITY_NAME/xCONFIG_FILE" ]

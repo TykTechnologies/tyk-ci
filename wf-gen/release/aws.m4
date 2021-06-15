@@ -4,8 +4,7 @@
     runs-on: ubuntu-latest
     needs:
       - goreleaser
-      - install-deb
-      - install-rpm
+      - upgrade-rpm
     strategy:
       matrix:
         flavour:
@@ -35,8 +34,7 @@ ifelse(xREPO, <<tyk-analytics>>, <<
     runs-on: ubuntu-latest
     needs:
       - goreleaser
-      - install-deb
-      - install-rpm
+      - upgrade-rpm
     strategy:
       matrix:
         flavour:

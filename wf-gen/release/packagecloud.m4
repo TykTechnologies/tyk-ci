@@ -2,8 +2,6 @@
     if: needs.goreleaser.outputs.upload == 'true'
     needs:
       - goreleaser
-      - install-deb
-      - install-rpm
     runs-on: ubuntu-latest
 
     steps:

@@ -3,7 +3,7 @@
     - std
   image_templates:
     - "tykio/xDH_REPO:{{ .Tag }}-amd64"
-    - "docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:{{ .Tag }}-amd64"
+    - "docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:{{ .Tag }}"
   build_flag_templates:
     - "--build-arg=PORTS=xPORTS"
     - "--platform=linux/amd64"
