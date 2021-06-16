@@ -6,7 +6,7 @@ dnl The repository in Docker Hub defaults to xCOMPATIBILITY_NAME
 define(<<xDH_REPO>>, <<ifelse(xREPO, <<tyk-pump>>, <<tyk-pump-docker-pub>>, xREPO, <<tyk-sink>>, <<tyk-mdcb-docker>>, xCOMPATIBILITY_NAME)>>)dnl
 define(<<xPC_REPO>>, <<ifelse(xREPO, <<tyk-sink>>, <<tyk-mdcb>>, xCOMPATIBILITY_NAME)>>)dnl
 define(<<xPC_PRIVATE>>, ifelse(xREPO, <<tyk-sink>>, <<1>>, <<0>>))dnl
-define(<<xCGO>>, ifelse(xREPO, <<tyk>>, <<1>>, xREPO, <<tyk-analytics>>, <<1>>, <<0>>))dnl
+define(<<xCGO>>, ifelse(xREPO, <<tyk>>, <<1>>, xREPO, <<tyk-analytics>>, <<1>>, xREPO, <<raava>>, <<1>>, <<0>>))dnl
 define(<<xCONFIG_FILE>>, <<ifelse(xREPO, <<tyk-analytics>>, <<tyk_analytics.conf>>, xREPO, <<tyk-sink>>, <<tyk_sink.conf>>, xREPO, <<tyk-identity-broker>>, <<tib.conf>>, xREPO.conf)>>)dnl
 dnl The version to test upgrades from, chosen to be the last versions before the wf-gen era, every repo should be explicity featured here
 define(<<xUPGRADE_FROM>>, ifelse(xREPO, <<tyk>>, <<3.0.5>>, xREPO, <<tyk-analytics>>, <<3.0.5>>, xREPO, <<tyk-pump>>, <<1.2.0>>, xREPO, <<tyk-identity-broker>>, <<1.1.0>>, xREPO, <<tyk-sink>>, <<1.7.7>>, xREPO, <<raava>>, <<0.0.0>>))dnl

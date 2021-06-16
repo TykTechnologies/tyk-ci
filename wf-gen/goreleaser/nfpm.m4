@@ -77,6 +77,14 @@ ifelse(xREPO, <<tyk-analytics>>,<<
       - src: tyk_sink_sample.conf
         dst: /opt/xCOMPATIBILITY_NAME/xCONFIG_FILE
         type: "config|noreplace"
+>>, xREPO, <<raava>>, <<
+      - src: raava.conf
+        dst: /opt/xCOMPATIBILITY_NAME/xCONFIG_FILE
+        type: "config|noreplace"
+      - src: app/*
+        dst: /opt/xCOMPATIBILITY_NAME/app/
+      - src: public/system/*
+        dst: /opt/xCOMPATIBILITY_NAME/public/system/
 >>)dnl
     scripts:
       preinstall: "install/before_install.sh"
