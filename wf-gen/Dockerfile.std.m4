@@ -16,7 +16,7 @@ ifelse(xREPO, <<tyk>>,<<RUN apt-get install -y python3-setuptools libpython3.7 p
 >>)
 
 COPY *${TARGETARCH}.deb /
-RUN dpkg -i /xCOMPATIBILITY_NAME*${TARGETARCH}.deb
+RUN dpkg -i /xCOMPATIBILITY_NAME*${TARGETARCH}.deb && rm /*.deb
 
 ARG PORTS
 

@@ -111,10 +111,20 @@ ifelse(xCGO, <<0>>, <<
         with:
           name: deb
           retention-days: 1
-          path: dist/*.deb
+          path: |
+            dist/*.deb
+            !dist/*PAYG*.deb
 
       - uses: actions/upload-artifact@v2
         with:
           name: rpm
           retention-days: 1
-          path: dist/*.rpm
+          path: |
+            dist/*.rpm
+            !dist/*PAYG*.rpm
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: payg
+          retention-days: 1
+          path: dist/*PAYG*

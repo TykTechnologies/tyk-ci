@@ -28,6 +28,6 @@ env:
 jobs:
 include(release/goreleaser.m4)
 include(release/ci.m4)
-include(release/install.m4)
+include(release/tests.m4)
 include(release/packagecloud.m4)
 include(release/aws.m4)

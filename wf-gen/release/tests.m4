@@ -15,6 +15,10 @@
           - debian:buster
 
     steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
       - uses: actions/download-artifact@v2
         with:
           name: deb
@@ -31,8 +35,8 @@
           RUN apt-get update && apt-get install -y curl
 ifelse(xPC_PRIVATE, <<0>>, <<
           RUN curl -fsSL https://packagecloud.io/install/repositories/tyk/xPC_REPO/script.deb.sh | bash && apt-get install -y xCOMPATIBILITY_NAME=xUPGRADE_FROM>>, <<
-          RUN curl -u ${{ secrets.PACKAGECLOUD_TOKEN }}: -fsSL https://packagecloud.io/install/repositories/tyk/xPC_REPO/script.deb.sh | bash && apt-get install -y xCOMPATIBILITY_NAME=xUPGRADE_FROM>>)
-          RUN dpkg -i /xCOMPATIBILITY_NAME.deb && /opt/xCOMPATIBILITY_NAME/xREPO --conf=/opt/xCOMPATIBILITY_NAME/xREPO.conf &' > Dockerfile
+          RUN curl -u ${{ secrets.PACKAGECLOUD_MASTER_TOKEN }}: -fsSL https://packagecloud.io/install/repositories/tyk/xPC_REPO/script.deb.sh | bash && apt-get install -y xCOMPATIBILITY_NAME=xUPGRADE_FROM>>)
+          RUN dpkg -i /xCOMPATIBILITY_NAME.deb' > Dockerfile
 
       - name: install on ${{ matrix.distro }}
         uses: docker/build-push-action@v2
@@ -53,6 +57,10 @@ ifelse(xPC_PRIVATE, <<0>>, <<
           - ubi8/ubi:8.3
 
     steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
       - uses: actions/download-artifact@v2
         with:
           name: rpm
@@ -66,8 +74,8 @@ ifelse(xPC_PRIVATE, <<0>>, <<
           RUN yum install -y curl
 ifelse(xPC_PRIVATE, <<0>>, <<
           RUN curl -s https://packagecloud.io/install/repositories/tyk/xPC_REPO/script.rpm.sh | bash && yum install -y xCOMPATIBILITY_NAME-xUPGRADE_FROM-1>>, <<
-          RUN curl -u ${{ secrets.PACKAGECLOUD_TOKEN }}: -s https://packagecloud.io/install/repositories/tyk/xPC_REPO/script.rpm.sh | bash && yum install -y xCOMPATIBILITY_NAME-xUPGRADE_FROM-1>>)
-          RUN rpm -ih /xCOMPATIBILITY_NAME.rpm && /opt/xCOMPATIBILITY_NAME/xREPO --conf=/opt/xCOMPATIBILITY_NAME/xREPO.conf &' > Dockerfile
+          RUN curl -u ${{ secrets.PACKAGECLOUD_MASTER_TOKEN }}: -s https://packagecloud.io/install/repositories/tyk/xPC_REPO/script.rpm.sh | bash && yum install -y xCOMPATIBILITY_NAME-xUPGRADE_FROM-1>>)
+          RUN rpm -Uvh /xCOMPATIBILITY_NAME.rpm' > Dockerfile
 
       - name: install on ${{ matrix.distro }}
         uses: docker/build-push-action@v2
@@ -75,3 +83,25 @@ ifelse(xPC_PRIVATE, <<0>>, <<
           context: "."
           file: Dockerfile
           push: false
+
+  smoke-tests:
+    if: needs.goreleaser.outputs.upload == 'true'
+    needs:
+      - goreleaser
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - name: Run tests
+        shell: bash
+        run: |
+          if [ ! -d integration/smoke-tests ]; then
+             echo "::warning No smoke tests defined"
+             exit 0
+          fi
+          for d in integration/smoke-tests/*/; do
+             [ -d $d ] && cd $d && ./test.zsh ${{ needs.goreleaser.outputs.tag }}
+          done

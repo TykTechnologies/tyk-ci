@@ -19,6 +19,7 @@
 
       - uses: actions/download-artifact@v2
         with:
+          name: rpm
           path: aws
 
       - name: Packer build
@@ -53,6 +54,7 @@ ifelse(xREPO, <<tyk-analytics>>, <<
 
       - uses: actions/download-artifact@v2
         with:
+          name: payg
           path: aws
 
       - name: Packer build

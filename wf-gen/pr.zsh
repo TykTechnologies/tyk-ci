@@ -131,7 +131,7 @@ function commit_changes {
 	read -q "?End of diff for $r. Control-C to cancel. Any key to confirm." c
 	# commit if there are changes
 	git commit -m $t
-	git push origin $branch
+	git push --force-with-lease origin $branch
 	if [[ -z $push_only ]]; then
 	    gh pr create --draft --title $t --base $base --reviewer TykTechnologies/devops --body $body
 	fi

@@ -14,7 +14,6 @@
   goarch: amd64
   goos: linux
   dockerfile: Dockerfile.slim
-  skip_push: auto
   extra_files:
     - "install/"
     - "README.md"
