@@ -1,7 +1,7 @@
   packagecloud:
     if: needs.goreleaser.outputs.upload == 'true'
     needs:
-      - goreleaser
+      - smoke-tests
     runs-on: ubuntu-latest
 
     steps:

@@ -3,8 +3,7 @@
     if: startsWith(github.ref, 'refs/tags/v3.0')
     runs-on: ubuntu-latest
     needs:
-      - goreleaser
-      - upgrade-rpm
+      - smoke-tests
     strategy:
       matrix:
         flavour:

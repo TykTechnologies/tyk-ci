@@ -98,10 +98,18 @@ ifelse(xPC_PRIVATE, <<0>>, <<
       - name: Run tests
         shell: bash
         run: |
+          set -eaxo pipefail
           if [ ! -d integration/smoke-tests ]; then
              echo "::warning No smoke tests defined"
              exit 0
           fi
-          for d in integration/smoke-tests/*/; do
-             [ -d $d ] && cd $d && ./test.zsh ${{ needs.goreleaser.outputs.tag }}
+          for d in integration/smoke-tests/*/
+          do
+              echo Attempting to test $d
+              if [ -d $d ]; then
+                  cd $d
+                  ./test.sh ${{ needs.goreleaser.outputs.tag }}
+                  cd -
+              fi
           done
+
