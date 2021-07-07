@@ -2,6 +2,7 @@
     if: needs.goreleaser.outputs.upload == 'true'
     needs:
       - smoke-tests
+      - goreleaser
     runs-on: ubuntu-latest
 
     steps:
