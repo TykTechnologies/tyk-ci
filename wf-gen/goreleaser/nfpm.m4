@@ -87,8 +87,8 @@ ifelse(xREPO, <<tyk-analytics>>,<<
 >>)dnl
     scripts:
       preinstall: "install/before_install.sh"
-      postinstall: "install/post_install.sh"
       postremove: "install/post_remove.sh"
+      postinstall: "install/post_install.sh"
     bindir: "/opt/xCOMPATIBILITY_NAME"
     overrides:
       rpm:
@@ -135,8 +135,8 @@ ifelse(xREPO, <<tyk-analytics>>, <<
         type: "config|noreplace"
     scripts:
       preinstall: "install/before_install.sh"
-      postinstall: "install/post_install.sh"
       postremove: "install/post_remove.sh"
+      postinstall: "install/post_install.sh"
     bindir: "/opt/xCOMPATIBILITY_NAME"
     rpm:
       signature:
