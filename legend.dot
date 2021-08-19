@@ -1,0 +1,12 @@
+digraph legend {
+    rankdir = LR;
+    code [ shape=octagon label="Hand-written code" ];
+    gen_code [ shape=doubleoctagon label="Generated code"]
+    bin [ shape=box label="artefact" ];
+    repo [ shape=circle label="Repository"]
+    code -> gen_code [ style=invis ];
+    gen_code -> bin [ style=invis ];
+    bin -> repo [ style=invis ];
+    label = "Legend";
+    fontsize = 30;
+}
