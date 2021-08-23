@@ -1,0 +1,257 @@
+digraph releng {
+	node [ shape = circle ]; gw_packagecloud gw_ecr gw_github gw_dockerhub gw_cloudsmith
+	dash_packagecloud dash_ecr dash_github dash_dockerhub dash_cloudsmith
+	pmp_packagecloud pmp_ecr pmp_github pmp_dockerhub pmp_cloudsmith
+	mdcb_packagecloud mdcb_ecr mdcb_github mdcb_dockerhub pmp_cloudsmith
+	tib_packagecloud tib_ecr tib_github tib_dockerhub tib_cloudsmith
+	raava_packagecloud raava_ecr raava_github raava_dockerhub raava_cloudsmith;
+
+	node [ shape = octagon ]; templates ;
+	node [ shape = doubleoctagon ]; gw_goreleaser dash_goreleaser pmp_goreleaser mdcb_goreleaser tib_goreleaser raava_goreleaser;
+
+	node [ shape = box ];
+	compound = true;
+	
+	subgraph cluster_tyk {
+		label = "Gateway";
+		gw_goreleaser -> gw_std_amd64_bin [ label="build" ];
+		gw_goreleaser -> gw_std_arm64_bin [ label="build" ];
+		gw_goreleaser -> gw_slim_amd64_bin [ label="build" ];
+		gw_goreleaser -> gw_darwin_amd64_bin [ label="build" ];
+
+		gw_std_amd64_bin -> gw_amd64_rpm [ label = "nfpm" ];
+		gw_std_amd64_bin -> gw_amd64_deb [ label = "nfpm" ];
+		gw_std_arm64_bin -> gw_arm64_rpm [ label = "nfpm" ];
+		gw_std_arm64_bin -> gw_arm64_deb [ label = "nfpm" ];
+
+		gw_slim_amd64_bin -> gw_tarball [ label = "archives" ];
+		gw_darwin_amd64_bin -> gw_tarball [ label = "archives" ];
+
+		gw_arm64_rpm -> gw_packagecloud [ label = "gha"] ;
+		gw_arm64_deb -> gw_packagecloud [ label = "gha"];
+		gw_amd64_rpm -> gw_packagecloud [ label = "gha"];
+		gw_amd64_deb -> gw_packagecloud [ label = "gha"];
+
+		gw_arm64_deb -> gw_std_arm64_image [ label = "docker" ];
+		gw_amd64_deb -> gw_std_amd64_image [ label = "docker" ];
+		gw_slim_amd64_bin -> gw_slim_amd64_image [ label = "docker" ];
+
+		gw_std_arm64_image -> gw_dockerhub [ label = "manifests" ];
+		gw_std_amd64_image -> gw_dockerhub [ label = "manifests" ];
+		gw_std_amd64_image -> gw_cloudsmith [ label = "docker" ];
+		gw_slim_amd64_image -> gw_dockerhub [ label = "docker" ];
+
+		gw_std_amd64_image -> gw_ecr [ label = "gha" ];
+
+		gw_tarball -> gw_github [ label = "release" ];
+
+		gw_amd64_rpm -> gw_rhel_ami [ label = "packer" ];
+		gw_amd64_rpm -> gw_al2_ami [ label = "packer" ];
+	}
+
+	subgraph cluster_tyk_analytics {
+		label = "Dashboard";
+		dash_goreleaser -> dash_std_amd64_bin [ label="build" ];
+		dash_goreleaser -> dash_std_arm64_bin [ label="build" ];
+		dash_goreleaser -> dash_slim_amd64_bin [ label="build" ];
+		dash_goreleaser -> dash_darwin_amd64_bin [ label="build" ];
+
+		dash_std_amd64_bin -> dash_amd64_rpm [ label = "nfpm" ];
+		dash_std_amd64_bin -> dash_amd64_deb [ label = "nfpm" ];
+		dash_std_arm64_bin -> dash_arm64_deb [ label = "nfpm" ];
+		dash_std_arm64_bin -> dash_arm64_rpm [ label = "nfpm" ];
+
+		dash_slim_amd64_bin -> dash_tarball [ label = "archives" ];
+		dash_darwin_amd64_bin -> dash_tarball [ label = "archives" ];
+
+		dash_arm64_rpm -> dash_packagecloud [ label = "gha"] ;
+		dash_arm64_deb -> dash_packagecloud [ label = "gha"];
+		dash_amd64_rpm -> dash_packagecloud [ label = "gha"];
+		dash_amd64_deb -> dash_packagecloud [ label = "gha"];
+
+		dash_arm64_deb -> dash_std_arm64_image [ label = "docker" ];
+		dash_amd64_deb -> dash_std_amd64_image [ label = "docker" ];
+		dash_slim_amd64_bin -> dash_slim_amd64_image [ label = "docker" ];
+
+		dash_std_arm64_image -> dash_dockerhub [ label = "manifests" ];
+		dash_std_amd64_image -> dash_dockerhub [ label = "manifests" ];
+		dash_std_amd64_image -> dash_cloudsmith [ label = "docker" ];
+		dash_slim_amd64_image -> dash_dockerhub [ label = "docker" ];
+
+		dash_std_amd64_image -> dash_ecr [ label = "gha" ];
+
+		dash_tarball -> dash_github [ label = "release" ];
+
+		dash_amd64_rpm -> dash_rhel_ami [ label = "packer" ];
+		dash_amd64_rpm -> dash_al2_ami [ label = "packer" ];
+	}
+
+	subgraph cluster_tyk_pump {
+		label = "Pump"
+		pmp_goreleaser -> pmp_std_amd64_bin [ label="build" ];
+		pmp_goreleaser -> pmp_std_arm64_bin [ label="build" ];
+		pmp_goreleaser -> pmp_slim_amd64_bin [ label="build" ];
+		pmp_goreleaser -> pmp_darwin_amd64_bin [ label="build" ];
+
+		pmp_std_amd64_bin -> pmp_amd64_rpm [ label = "nfpm" ];
+		pmp_std_amd64_bin -> pmp_amd64_deb [ label = "nfpm" ];
+		pmp_std_arm64_bin -> pmp_arm64_deb [ label = "nfpm" ];
+		pmp_std_arm64_bin -> pmp_arm64_rpm [ label = "nfpm" ];
+
+		pmp_slim_amd64_bin -> pmp_tarball [ label = "archives" ];
+		pmp_darwin_amd64_bin -> pmp_tarball [ label = "archives" ];
+
+		pmp_arm64_rpm -> pmp_packagecloud [ label = "gha"] ;
+		pmp_arm64_deb -> pmp_packagecloud [ label = "gha"];
+		pmp_amd64_rpm -> pmp_packagecloud [ label = "gha"];
+		pmp_amd64_deb -> pmp_packagecloud [ label = "gha"];
+
+		pmp_arm64_deb -> pmp_std_arm64_image [ label = "docker" ];
+		pmp_amd64_deb -> pmp_std_amd64_image [ label = "docker" ];
+		pmp_slim_amd64_bin -> pmp_slim_amd64_image [ label = "docker" ];
+
+		pmp_std_arm64_image -> pmp_dockerhub [ label = "manifests" ];
+		pmp_std_amd64_image -> pmp_dockerhub [ label = "manifests" ];
+		pmp_std_amd64_image -> pmp_cloudsmith [ label = "docker" ];
+		pmp_slim_amd64_image -> pmp_dockerhub [ label = "docker" ];
+
+		pmp_std_amd64_image -> pmp_ecr [ label = "gha" ];
+
+		pmp_tarball -> pmp_github [ label = "release" ];
+
+		pmp_amd64_rpm -> pmp_rhel_ami [ label = "packer" ];
+		pmp_amd64_rpm -> pmp_al2_ami [ label = "packer" ];
+	}
+
+	subgraph cluster_tyk_sink {
+		label = "MDCB";
+		mdcb_goreleaser -> mdcb_std_amd64_bin [ label="build" ];
+		mdcb_goreleaser -> mdcb_std_arm64_bin [ label="build" ];
+		mdcb_goreleaser -> mdcb_slim_amd64_bin [ label="build" ];
+		mdcb_goreleaser -> mdcb_darwin_amd64_bin [ label="build" ];
+
+		mdcb_std_amd64_bin -> mdcb_amd64_rpm [ label = "nfpm" ];
+		mdcb_std_amd64_bin -> mdcb_amd64_deb [ label = "nfpm" ];
+		mdcb_std_arm64_bin -> mdcb_arm64_deb [ label = "nfpm" ];
+		mdcb_std_arm64_bin -> mdcb_arm64_rpm [ label = "nfpm" ];
+
+		mdcb_slim_amd64_bin -> mdcb_tarball [ label = "archives" ];
+		mdcb_darwin_amd64_bin -> mdcb_tarball [ label = "archives" ];
+
+		mdcb_arm64_rpm -> mdcb_packagecloud [ label = "gha"] ;
+		mdcb_arm64_deb -> mdcb_packagecloud [ label = "gha"];
+		mdcb_amd64_rpm -> mdcb_packagecloud [ label = "gha"];
+		mdcb_amd64_deb -> mdcb_packagecloud [ label = "gha"];
+
+		mdcb_arm64_deb -> mdcb_std_arm64_image [ label = "docker" ];
+		mdcb_amd64_deb -> mdcb_std_amd64_image [ label = "docker" ];
+		mdcb_slim_amd64_bin -> mdcb_slim_amd64_image [ label = "docker" ];
+
+		mdcb_std_arm64_image -> mdcb_dockerhub [ label = "manifests" ];
+		mdcb_std_amd64_image -> mdcb_dockerhub [ label = "manifests" ];
+		mdcb_std_amd64_image -> mdcb_cloudsmith [ label = "docker" ];
+		mdcb_slim_amd64_image -> mdcb_dockerhub [ label = "docker" ];
+
+		mdcb_std_amd64_image -> mdcb_ecr [ label = "gha" ];
+
+		mdcb_tarball -> mdcb_github [ label = "release" ];
+
+		mdcb_amd64_rpm -> mdcb_rhel_ami [ label = "packer" ];
+		mdcb_amd64_rpm -> mdcb_al2_ami [ label = "packer" ];
+	}
+
+	subgraph cluster_tyk_identity_broker {
+		label = "TIB";
+		tib_goreleaser -> tib_std_amd64_bin [ label="build" ];
+		tib_goreleaser -> tib_std_arm64_bin [ label="build" ];
+		tib_goreleaser -> tib_slim_amd64_bin [ label="build" ];
+		tib_goreleaser -> tib_darwin_amd64_bin [ label="build" ];
+
+		tib_std_amd64_bin -> tib_amd64_rpm [ label = "nfpm" ];
+		tib_std_amd64_bin -> tib_amd64_deb [ label = "nfpm" ];
+		tib_std_arm64_bin -> tib_arm64_deb [ label = "nfpm" ];
+		tib_std_arm64_bin -> tib_arm64_rpm [ label = "nfpm" ];
+
+		tib_slim_amd64_bin -> tib_tarball [ label = "archives" ];
+		tib_darwin_amd64_bin -> tib_tarball [ label = "archives" ];
+
+		tib_arm64_rpm -> tib_packagecloud [ label = "gha"] ;
+		tib_arm64_deb -> tib_packagecloud [ label = "gha"];
+		tib_amd64_rpm -> tib_packagecloud [ label = "gha"];
+		tib_amd64_deb -> tib_packagecloud [ label = "gha"];
+
+		tib_arm64_deb -> tib_std_arm64_image [ label = "docker" ];
+		tib_amd64_deb -> tib_std_amd64_image [ label = "docker" ];
+		tib_slim_amd64_bin -> tib_slim_amd64_image [ label = "docker" ];
+
+		tib_std_arm64_image -> tib_dockerhub [ label = "manifests" ];
+		tib_std_amd64_image -> tib_dockerhub [ label = "manifests" ];
+		tib_std_amd64_image -> tib_cloudsmith [ label = "docker" ];
+		tib_slim_amd64_image -> tib_dockerhub [ label = "docker" ];
+
+		tib_std_amd64_image -> tib_ecr [ label = "gha" ];
+
+		tib_tarball -> tib_github [ label = "release" ];
+
+		tib_amd64_rpm -> tib_rhel_ami [ label = "packer" ];
+		tib_amd64_rpm -> tib_al2_ami [ label = "packer" ];
+	}
+	
+	subgraph cluster_raava {
+		label = "Raava";
+		raava_goreleaser -> raava_std_amd64_bin [ label="build" ];
+		raava_goreleaser -> raava_std_arm64_bin [ label="build" ];
+		raava_goreleaser -> raava_slim_amd64_bin [ label="build" ];
+		raava_goreleaser -> raava_darwin_amd64_bin [ label="build" ];
+
+		raava_std_amd64_bin -> raava_amd64_rpm [ label = "nfpm" ];
+		raava_std_amd64_bin -> raava_amd64_deb [ label = "nfpm" ];
+		raava_std_arm64_bin -> raava_arm64_deb [ label = "nfpm" ];
+		raava_std_arm64_bin -> raava_arm64_rpm [ label = "nfpm" ];
+
+		raava_slim_amd64_bin -> raava_tarball [ label = "archives" ];
+		raava_darwin_amd64_bin -> raava_tarball [ label = "archives" ];
+
+		raava_arm64_rpm -> raava_packagecloud [ label = "gha"] ;
+		raava_arm64_deb -> raava_packagecloud [ label = "gha"];
+		raava_amd64_rpm -> raava_packagecloud [ label = "gha"];
+		raava_amd64_deb -> raava_packagecloud [ label = "gha"];
+
+		raava_arm64_deb -> raava_std_arm64_image [ label = "docker" ];
+		raava_amd64_deb -> raava_std_amd64_image [ label = "docker" ];
+		raava_slim_amd64_bin -> raava_slim_amd64_image [ label = "docker" ];
+
+		raava_std_arm64_image -> raava_dockerhub [ label = "manifests" ];
+		raava_std_amd64_image -> raava_dockerhub [ label = "manifests" ];
+		raava_std_amd64_image -> raava_cloudsmith [ label = "docker" ];
+		raava_slim_amd64_image -> raava_dockerhub [ label = "docker" ];
+
+		raava_std_amd64_image -> raava_ecr [ label = "gha" ];
+
+		raava_tarball -> raava_github [ label = "release" ];
+
+		raava_amd64_rpm -> raava_rhel_ami [ label = "packer" ];
+		raava_amd64_rpm -> raava_al2_ami [ label = "packer" ];
+	}
+
+	templates -> gw_goreleaser;
+	templates -> dash_goreleaser;
+	templates -> pmp_goreleaser;
+	templates -> mdcb_goreleaser;
+	templates -> tib_goreleaser;
+	templates -> raava_goreleaser;
+
+	subgraph cluster_legend {
+		rankdir = LR;
+		code [ shape=octagon label="Hand-written code" ];
+		gen_code [ shape=doubleoctagon label="Generated code"]
+		bin [ shape=box label="artefact" ];
+		repo [ shape=circle label="Repository"]
+		code -> gen_code [ style=invis ];
+		gen_code -> bin [ style=invis ];
+		bin -> repo [ style=invis ];
+		label = "Legend";
+		fontsize = 30;
+	}
+
+}

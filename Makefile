@@ -1,5 +1,7 @@
-releng.png: callgraph.png legend.png
-	convert $^ -append $@
+releng.svg: releng.dot
 
-%.png: %.dot
-	dot -Tpng $< > $@
+%.svg: %.dot
+	dot -Tsvg $< -o  $@
+
+clean:
+	rm -fv *.svg
