@@ -1,6 +1,6 @@
 include(header.m4)
 dnl xPKG_NAME is the package in which version.go lives
-define(<<xPKG_NAME>>, <<ifelse(xREPO, <<tyk>>, <<gateway>>, xREPO, <<tyk-analytics>>, <<dashboard>>, xREPO, <<tyk-pump>>, <<main>>)>>)dnl
+define(<<xPKG_NAME>>, <<ifelse(xREPO, <<tyk>>, <<gateway>>, xREPO, <<tyk-analytics>>, <<dashboard>>, <<main>>)>>)dnl
 define(<<xPKG_DESC>>, <<ifelse(xREPO, <<tyk>>, <<Tyk API Gateway>>, xREPO, <<tyk-analytics>>, <<Dashboard for the Tyk API gateway>>, xREPO, <<tyk-pump>>, <<Archive analytics for the Tyk API gateway>>)>>)dnl
 define(<<xPORTS>>, <<ifelse(xREPO, <<tyk>>, <<8080>>, xREPO, <<tyk-analytics>>, <<3000 5000>>, <<80>>)>>)dnl
 
