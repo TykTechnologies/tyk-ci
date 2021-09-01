@@ -1,7 +1,7 @@
   goreleaser:
     runs-on: ubuntu-latest
 ifelse(xCGO, <<1>>, <<
-    container: tykio/golang-cross:1.15.8
+    container: tykio/golang-cross:1.15.15
 >>)
     outputs:
       tag: ${{ steps.targets.outputs.tag }}
@@ -78,35 +78,19 @@ ifelse(xREPO, <<tyk-analytics>>,
             *.tar.gz
             *.txt.sig
             *.txt
-ifelse(xCGO, <<0>>, <<
+
       - uses: goreleaser/goreleaser-action@v2
         with:
           version: latest
           args: release --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CGO_ENABLED: 0
+          CGO_ENABLED: xCGO
           NFPM_STD_PASSPHRASE: ${{ secrets.SIGNING_KEY_PASSPHRASE }}
           NFPM_PAYG_PASSPHRASE: ${{ secrets.SIGNING_KEY_PASSPHRASE }}
           GPG_FINGERPRINT: 12B5D62C28F57592D1575BD51ED14C59E37DAC20
           PKG_SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
->>, <<
-      - name: goreleaser from golang-cross
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          CGO_ENABLED: 1
-          NFPM_STD_PASSPHRASE: ${{ secrets.SIGNING_KEY_PASSPHRASE }}
-          NFPM_PAYG_PASSPHRASE: ${{ secrets.SIGNING_KEY_PASSPHRASE }}
-          GPG_FINGERPRINT: 12B5D62C28F57592D1575BD51ED14C59E37DAC20
-          PKG_SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
-        shell: bash
-        run: |
-          snapshot="--snapshot"
-          if [[ ${{steps.targets.outputs.tag}} = $(git describe --tags) ]]; then
-              snapshot=""
-          fi
-          goreleaser release --rm-dist $snapshot
->>)
+
       - uses: actions/upload-artifact@v2
         with:
           name: deb

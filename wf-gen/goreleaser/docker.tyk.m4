@@ -9,7 +9,7 @@
     - "--label=org.opencontainers.image.title={{.ProjectName}}-hybrid"
     - "--label=org.opencontainers.image.revision={{.FullCommit}}"
     - "--label=org.opencontainers.image.version={{.Version}}"
-  use_buildx: true
+  use: buildx
   goarch: amd64
   goos: linux
   dockerfile: images/hybrid/Dockerfile
@@ -27,7 +27,7 @@
     - "--label=org.opencontainers.image.title={{.ProjectName}}-hybrid"
     - "--label=org.opencontainers.image.revision={{.FullCommit}}"
     - "--label=org.opencontainers.image.version={{.Version}}"
-  use_buildx: true
+  use: buildx
   goarch: arm64
   goos: linux
   dockerfile: images/hybrid/Dockerfile
@@ -51,3 +51,4 @@
   dockerfile: images/plugin-compiler/Dockerfile
   extra_files:
     - "images/plugin-compiler/"
+    - "go.mod"

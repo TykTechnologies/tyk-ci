@@ -11,7 +11,7 @@
     - "--label=org.opencontainers.image.title={{.ProjectName}}"
     - "--label=org.opencontainers.image.revision={{.FullCommit}}"
     - "--label=org.opencontainers.image.version={{.Version}}"
-  use_buildx: true
+  use: buildx
   goarch: amd64
   goos: linux
   dockerfile: Dockerfile.std
@@ -51,7 +51,7 @@ ifelse(xREPO, <<tyk-analytics>>,<<
     - "--label=org.opencontainers.image.title={{.ProjectName}}-arm64"
     - "--label=org.opencontainers.image.revision={{.FullCommit}}"
     - "--label=org.opencontainers.image.version={{.Version}}"
-  use_buildx: true
+  use: buildx
   goarch: arm64
   goos: linux
   dockerfile: Dockerfile.std
