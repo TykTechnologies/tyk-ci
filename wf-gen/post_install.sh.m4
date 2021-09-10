@@ -22,9 +22,9 @@ cleanup() {
 
 restoreSystemd() {
     if [ "${use_systemctl}" = "True" ]; then
-        if [ ! -f /lib/systemd/system/tyk-gateway.service ]; then
-	    cp /opt/tyk-gateway/install/tyk-gateway.service /lib/systemd/system/tyk-gateway.service
-	fi
+        if [ ! -f /lib/systemd/system/xCOMPATIBILITY_NAME.service ]; then
+            cp /opt/xCOMPATIBILITY_NAME/install/xCOMPATIBILITY_NAME.service /lib/systemd/system/xCOMPATIBILITY_NAME.service
+        fi
     fi
 }
 
