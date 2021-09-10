@@ -20,6 +20,14 @@ cleanup() {
     fi
 }
 
+restoreSystemd() {
+    if [ "${use_systemctl}" = "True" ]; then
+        if [ ! -f /lib/systemd/system/tyk-gateway.service ]; then
+	    cp /opt/tyk-gateway/install/tyk-gateway.service /lib/systemd/system/tyk-gateway.service
+	fi
+    fi
+}
+
 cleanInstall() {
     printf "\033[32m Post Install of an clean install\033[0m\n"
     # Step 3 (clean install), enable the service in the proper way for this platform
@@ -79,6 +87,7 @@ case "$action" in
     "2" | "upgrade")
 	printf "\033[32m Post Install of an upgrade\033[0m\n"
 	upgrade
+	restoreSystemd
 	;;
     *)
 	# $1 == version being installed  
@@ -87,5 +96,8 @@ case "$action" in
 	;;
 esac
 
-# Step 4, clean up unused files, yes you get a warning when you remove the package, but that is ok. 
-cleanup
+# From https://www.debian.org/doc/debian-policy/ap-flowcharts.html and
+# https://docs.fedoraproject.org/en-US/packaging-guidelines/Scriptlets/ it appears that cleanup is not
+# needed to support systemd and sysv
+
+#cleanup
