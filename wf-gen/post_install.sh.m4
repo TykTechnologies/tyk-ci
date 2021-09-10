@@ -2,6 +2,9 @@
 
 include(header.m4)
 
+# If "True" the install directory ownership will be changed to "tyk:tyk"
+change_ownership=ifelse(xREPO, tyk, "False", "True")
+
 # Step 1, decide if we should use systemd or init/upstart
 use_systemctl="True"
 systemd_version=0
@@ -26,6 +29,13 @@ restoreSystemd() {
             cp /opt/xCOMPATIBILITY_NAME/install/xCOMPATIBILITY_NAME.service /lib/systemd/system/xCOMPATIBILITY_NAME.service
         fi
     fi
+}
+
+setupOwnership() {
+    printf "\033[32m Post Install of the install directory ownership and permissions\033[0m\n"
+    [ "${change_ownership}" = "True" ] && chown -R tyk:tyk /opt/xCOMPATIBILITY_NAME
+    # Config file should never be world-readable
+    chmod 660 /opt/xCOMPATIBILITY_NAME/xCONFIG_FILE
 }
 
 cleanInstall() {
@@ -83,16 +93,19 @@ fi
 case "$action" in
     "1" | "install")
 	cleanInstall
+    setupOwnership
 	;;
     "2" | "upgrade")
 	printf "\033[32m Post Install of an upgrade\033[0m\n"
 	upgrade
 	restoreSystemd
+    setupOwnership
 	;;
     *)
 	# $1 == version being installed  
 	printf "\033[32m Alpine\033[0m"
 	cleanInstall
+    setupOwnership
 	;;
 esac
 
