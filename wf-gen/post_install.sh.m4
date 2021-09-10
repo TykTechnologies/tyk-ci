@@ -44,7 +44,7 @@ cleanInstall() {
     if [ "${use_systemctl}" = "False" ]; then
         if command -V chkconfig >/dev/null 2>&1; then
             chkconfig --add xCOMPATIBILITY_NAME
-	    chkconfig xCOMPATIBILITY_NAME on
+            chkconfig xCOMPATIBILITY_NAME on
         fi
         if command -V update-rc.d >/dev/null 2>&1; then
             update-rc.d xCOMPATIBILITY_NAME defaults
@@ -73,10 +73,10 @@ cleanInstall() {
 upgrade() {
     printf "\033[32m Post Install of an upgrade\033[0m\n"
     if [ "${use_systemctl}" = "False" ]; then
-	systemctl daemon-reload ||:
-	systemctl restart xCOMPATIBILITY_NAME ||:
+        systemctl daemon-reload ||:
+        systemctl restart xCOMPATIBILITY_NAME ||:
     else
-	service xCOMPATIBILITY_NAME restart
+        service xCOMPATIBILITY_NAME restart
     fi
 }
 
@@ -92,21 +92,21 @@ fi
 
 case "$action" in
     "1" | "install")
-	cleanInstall
-    setupOwnership
-	;;
+        cleanInstall
+        setupOwnership
+        ;;
     "2" | "upgrade")
-	printf "\033[32m Post Install of an upgrade\033[0m\n"
-	upgrade
-	restoreSystemd
-    setupOwnership
-	;;
+        printf "\033[32m Post Install of an upgrade\033[0m\n"
+        upgrade
+        restoreSystemd
+        setupOwnership
+        ;;
     *)
-	# $1 == version being installed  
-	printf "\033[32m Alpine\033[0m"
-	cleanInstall
-    setupOwnership
-	;;
+        # $1 == version being installed
+        printf "\033[32m Alpine\033[0m"
+        cleanInstall
+        setupOwnership
+        ;;
 esac
 
 # From https://www.debian.org/doc/debian-policy/ap-flowcharts.html and
