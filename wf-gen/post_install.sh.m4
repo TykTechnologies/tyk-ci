@@ -92,20 +92,20 @@ fi
 
 case "$action" in
     "1" | "install")
-        cleanInstall
         setupOwnership
+        cleanInstall
         ;;
     "2" | "upgrade")
         printf "\033[32m Post Install of an upgrade\033[0m\n"
-        upgrade
-        restoreSystemd
         setupOwnership
+        restoreSystemd
+        upgrade
         ;;
     *)
         # $1 == version being installed
         printf "\033[32m Alpine\033[0m"
-        cleanInstall
         setupOwnership
+        cleanInstall
         ;;
 esac
 
