@@ -85,12 +85,12 @@ case "$action" in
 	cleanInstall
 	;;
     "2" | "upgrade")
-	printf "\033[32m Post Install of an upgrade\033[0m\n"
-	upgrade
+	printf "\033[32m Post Install of an upgrade\033[0m\n"	
 	restoreSystemd
+  upgrade
 	;;
     *)
-	# $1 == version being installed  
+	# $1 == version being installed
 	printf "\033[32m Alpine\033[0m"
 	cleanInstall
 	;;
