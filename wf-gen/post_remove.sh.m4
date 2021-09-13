@@ -5,12 +5,12 @@ include(header.m4)
 cleanRemove() {
     printf "\033[32m Post remove for plain removal\033[0m\n"
     if command -V systemctl >/dev/null 2>&1; then
-	systemctl stop xCOMPATIBILITY_NAME ||:
-	systemctl daemon-reload ||:
+        systemctl stop xCOMPATIBILITY_NAME ||:
+        systemctl daemon-reload ||:
     fi
     service stop xCOMPATIBILITY_NAME ||:
     if command -V chkconfig >/dev/null 2>&1; then
-	chkconfig --del xCOMPATIBILITY_NAME ||:
+        chkconfig --del xCOMPATIBILITY_NAME ||:
     fi
     if command -V update-rc.d >/dev/null 2>&1; then
         update-rc.d xCOMPATIBILITY_NAME remove
@@ -32,16 +32,16 @@ fi
 
 case "$action" in
     "1" | "install")
-	printf "\033[32m Post Install of a clean install\033[0m\n"
-	cleanRemove
-	;;
+        printf "\033[32m Post Install of a clean install\033[0m\n"
+        cleanRemove
+        ;;
     "2" | "upgrade")
-	printf "\033[32m Post Install of an upgrade\033[0m\n"
-	upgrade
-	;;
+        printf "\033[32m Post Install of an upgrade\033[0m\n"
+        upgrade
+        ;;
     *)
-	# $1 == version being installed  
-	printf "\033[32m Alpine\033[0m"
-	cleanRemove
-	;;
+        # $1 == version being installed
+        printf "\033[32m Alpine\033[0m"
+        cleanRemove
+        ;;
 esac
