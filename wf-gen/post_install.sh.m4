@@ -86,8 +86,8 @@ case "$action" in
 	;;
     "2" | "upgrade")
 	printf "\033[32m Post Install of an upgrade\033[0m\n"
-       restoreSystemd
-       upgrade
+	restoreSystemd
+	upgrade
 	;;
     *)
 	# $1 == version being installed
