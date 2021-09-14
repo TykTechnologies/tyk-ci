@@ -16,17 +16,21 @@ fi
 
 cleanup() {
     # After installing, remove files that were not needed on this platform / system
-    if [ "${use_systemctl}" = "False" ]; then
+    if [ "${use_systemctl}" = "True" ]; then
         rm -f /lib/systemd/system/xCOMPATIBILITY_NAME.service
     else
         rm -f /etc/init.d/xCOMPATIBILITY_NAME
     fi
 }
 
-restoreSystemd() {
+restoreServices() {
     if [ "${use_systemctl}" = "True" ]; then
         if [ ! -f /lib/systemd/system/xCOMPATIBILITY_NAME.service ]; then
-            cp /opt/xCOMPATIBILITY_NAME/install/xCOMPATIBILITY_NAME.service /lib/systemd/system/xCOMPATIBILITY_NAME.service
+            cp /opt/xCOMPATIBILITY_NAME/install/inits/systemd/system/xCOMPATIBILITY_NAME.service /lib/systemd/system/xCOMPATIBILITY_NAME.service
+        fi
+    else
+        if [ ! -f /etc/init.d/xCOMPATIBILITY_NAME ]; then
+            cp /opt/xCOMPATIBILITY_NAME/install/inits/sysv/init.d/xCOMPATIBILITY_NAME /etc/init.d/xCOMPATIBILITY_NAME
         fi
     fi
 }
@@ -73,10 +77,10 @@ cleanInstall() {
 upgrade() {
     printf "\033[32m Post Install of an upgrade\033[0m\n"
     if [ "${use_systemctl}" = "False" ]; then
+        service xCOMPATIBILITY_NAME restart
+    else
         systemctl daemon-reload ||:
         systemctl restart xCOMPATIBILITY_NAME ||:
-    else
-        service xCOMPATIBILITY_NAME restart
     fi
 }
 
@@ -98,7 +102,7 @@ case "$action" in
     "2" | "upgrade")
         printf "\033[32m Post Install of an upgrade\033[0m\n"
         setupOwnership
-        restoreSystemd
+        restoreServices
         upgrade
         ;;
     *)
