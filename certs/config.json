@@ -35,7 +35,7 @@
                     "client auth",
                     "server auth"
                 ],
-                "expiry": "8760h"
+                "expiry": "87600h"
             },
             "server": {
                 "usages": [
@@ -44,7 +44,7 @@
                     "key encipherment",
                     "server auth"
                 ],
-                "expiry": "8760h"
+                "expiry": "87600h"
             },
             "client": {
                 "usages": [
@@ -53,7 +53,7 @@
                     "key encipherment", 
                     "client auth"
                 ],
-                "expiry": "8760h"
+                "expiry": "87600h"
             }
         }
     },
