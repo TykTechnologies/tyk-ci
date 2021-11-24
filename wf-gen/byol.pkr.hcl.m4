@@ -1,5 +1,14 @@
 include(header.m4)
 
+packer {
+  required_plugins {
+    amazon = {
+      version = ">= 0.0.2"
+      source  = "github.com/hashicorp/amazon"
+    }
+  }
+}
+
 variable "flavour" {
   description = "OS Flavour"
   type    = string
