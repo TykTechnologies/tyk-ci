@@ -96,7 +96,7 @@ ifelse(xREPO, <<tyk-analytics>>, <<
   }
   provisioner "file" {
     destination = "/tmp/xCOMPATIBILITY_NAME.rpm"
-    source      = "rpm/xCOMPATIBILITY_NAME-x86_64.rpm"
+    sources     = fileset(".", "rpm/*x86_64.rpm")
   }
   provisioner "file" {
     destination = "/tmp/10-run-tyk.conf"
