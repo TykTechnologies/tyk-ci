@@ -89,28 +89,7 @@ ifelse(xREPO, <<tyk-analytics>>,<<
       - src: public/system/*
         dst: /opt/xCOMPATIBILITY_NAME/public/system/
 >>)dnl
-    scripts:
-      preinstall: "install/before_install.sh"
-      postinstall: "install/post_install.sh"
-      postremove: "install/post_remove.sh"
-    bindir: "/opt/xCOMPATIBILITY_NAME"
-    overrides:
-      rpm:
-        replacements:
-          amd64: x86_64
-          arm: aarch64
-      deb:
-        replacements:
-          arm: arm64
-    rpm:
-      scripts:
-        posttrans: install/post_trans.sh
-      signature:
-        key_file: tyk.io.signing.key
-    deb:
-      signature:
-        key_file: tyk.io.signing.key
-        type: origin
+include(goreleaser/nfpm-common.m4)
 ifelse(xREPO, <<tyk-analytics>>, <<
   - id: payg
     vendor: "Tyk Technologies Ltd"
@@ -124,27 +103,29 @@ ifelse(xREPO, <<tyk-analytics>>, <<
       - deb
       - rpm
     contents:
-      - src: "README*"
-        dst: "/opt/xCOMPATIBILITY_NAME/"
+      - src: "README.md"
+        dst: "/opt/share/docs/xCOMPATIBILITY_NAME/README.md"
+      - src: "install/*"
+        dst: "/opt/xCOMPATIBILITY_NAME/install"
+      - src: install/inits/systemd/system/xCOMPATIBILITY_NAME.service
+        dst: /lib/systemd/system/xCOMPATIBILITY_NAME.service
+      - src: install/inits/sysv/init.d/xCOMPATIBILITY_NAME
+        dst: /etc/init.d/xCOMPATIBILITY_NAME
+      - src: /opt/xCOMPATIBILITY_NAME
+        dst: /opt/xREPO
+        type: "symlink"
       - src: "EULA.md"
-        dst: "/opt/xCOMPATIBILITY_NAME"
+        dst: "/opt/share/docs/xCOMPATIBILITY_NAME/EULA.md"
       - src: "portal/*"
         dst: "/opt/xCOMPATIBILITY_NAME/portal"
+      - src: "utils/scripts/*"
+        dst: "/opt/xCOMPATIBILITY_NAME/utils/scripts"
       - src: "schemas/*"
         dst: "/opt/xCOMPATIBILITY_NAME/schemas"
       - src: "webclient/lang/*"
         dst: "/opt/xCOMPATIBILITY_NAME/lang"
-      - src: "install/inits/*"
-        dst: "/opt/xCOMPATIBILITY_NAME/install/inits"
       - src: tyk_config_sample.config
         dst: /opt/xCOMPATIBILITY_NAME/xCONFIG_FILE
         type: "config|noreplace"
-    scripts:
-      preinstall: "install/before_install.sh"
-      postinstall: "install/post_install.sh"
-      postremove: "install/post_remove.sh"
-    bindir: "/opt/xCOMPATIBILITY_NAME"
-    rpm:
-      signature:
-        key_file: tyk.io.signing.key
+include(goreleaser/nfpm-common.m4)
 >>)
