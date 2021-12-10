@@ -3,7 +3,7 @@ changequote(<<, >>)dnl
 dnl xCOMPATIBILITY_NAME is the legacy directory that the code is installed in. This is also used for the package name. For new repos, use the repo name. The use of this parameter should reduce.
 define(<<xCOMPATIBILITY_NAME>>, <<ifelse(xREPO, <<tyk>>, <<tyk-gateway>>, xREPO, <<tyk-analytics>>, <<tyk-dashboard>>, xREPO)>>)dnl
 dnl The repository in Docker Hub defaults to xCOMPATIBILITY_NAME
-define(<<xDH_REPO>>, <<ifelse(xREPO, <<tyk-pump>>, <<tyk-pump-docker-pub>>, xREPO, <<tyk-sink>>, <<tyk-mdcb-docker>>, xCOMPATIBILITY_NAME)>>)dnl
+define(<<xDH_REPO>>, <<ifelse(xREPO, <<tyk-pump>>, <<tyk-pump-docker-pub>>, xREPO, <<tyk-sink>>, <<tyk-mdcb-docker>>, xREPO, <<raava>>, <<developer-portal>>, xCOMPATIBILITY_NAME)>>)dnl
 define(<<xPC_REPO>>, <<ifelse(xREPO, <<tyk-sink>>, <<tyk-mdcb>>, xCOMPATIBILITY_NAME)>>)dnl
 define(<<xPC_PRIVATE>>, ifelse(xREPO, <<tyk-sink>>, <<1>>, <<0>>))dnl
 define(<<xCGO>>, ifelse(xREPO, <<tyk>>, <<1>>, xREPO, <<tyk-analytics>>, <<1>>, xREPO, <<raava>>, <<1>>, <<0>>))dnl
