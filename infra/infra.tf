@@ -9,7 +9,7 @@ locals {
     base       = "base-prod"
     infra      = "infra-prod"
     table      = "DeveloperEnvironments"
-    repos      = "tyk,tyk-analytics,tyk-pump,tyk-sink,tyk-identity-broker,raava"
+    repos      = "tyk,tyk-analytics,tyk-pump,tyk-sink,tyk-identity-broker,raava,portal"
     domain     = "${var.domain}.tyk.technology"
     ca         = <<EOF
 -----BEGIN CERTIFICATE-----
