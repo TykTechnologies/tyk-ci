@@ -64,7 +64,7 @@ ifelse(xREPO, <<tyk-analytics>>, <<
           UNLIMITED_GW: ${{ secrets.PAYG_UNLIMITED_GW }}
         run: |
           export TYK_DB_VERSION=${{ needs.goreleaser.outputs.tag }}
-          export LICENSE_STRING=$${{ matrix.gws }}
+          echo "$${{ matrix.gws }}" > byol/license.lic
           packer validate -var-file=${{ matrix.flavour }}.vars.json payg.pkr.hcl
           packer build -var-file=${{ matrix.flavour }}.vars.json payg.pkr.hcl
 >>)
