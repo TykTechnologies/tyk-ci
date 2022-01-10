@@ -9,6 +9,13 @@ ifelse(xCGO, <<1>>, <<
       pc: ${{ steps.targets.outputs.pc }}
 
     steps:
+ifelse(xUSEPRIVATEREPO, <<1>>,
+<<      - name: Fix private module deps
+        env:
+          TOKEN: '${{ secrets.ORG_GH_TOKEN }}'
+        run: >
+          git config --global url."https://${TOKEN}@github.com".insteadOf "https://github.com"
+>>)
       - name: Checkout of xREPO
         uses: actions/checkout@v2
         with:

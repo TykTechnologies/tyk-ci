@@ -11,6 +11,7 @@ ifelse(xREPO, <<tyk>>, <<
       - linux
     goarch:
       - amd64
+ifelse(xBINARY, <<none>>, <<>>, <<    binary: xBINARY>>)
   - id: std-darwin
     ldflags:
       - -X xPKG_NAME.VERSION={{.Version}} -X xPKG_NAME.commit={{.FullCommit}} -X xPKG_NAME.buildDate={{.Date}} -X xPKG_NAME.builtBy=goreleaser
@@ -20,6 +21,7 @@ ifelse(xREPO, <<tyk>>, <<
       - darwin
     goarch:
       - amd64
+ifelse(xBINARY, <<none>>, <<>>, <<    binary: xBINARY>>)
   - id: std-arm64
 ifelse(xREPO, <<tyk>>, <<
     flags:
@@ -33,6 +35,7 @@ ifelse(xREPO, <<tyk>>, <<
       - linux
     goarch:
       - arm64
+ifelse(xBINARY, <<none>>, <<>>, <<    binary: xBINARY>>)
   # static builds strip symbols and do not allow plugins
   - id: static-amd64
     ldflags:
@@ -42,6 +45,7 @@ ifelse(xREPO, <<tyk>>, <<
       - linux
     goarch:
       - amd64
+ifelse(xBINARY, <<none>>, <<>>, <<    binary: xBINARY>>)
 ifelse(xREPO, <<tyk-analytics>>, <<
   # With special license pubkey
   - id: payg

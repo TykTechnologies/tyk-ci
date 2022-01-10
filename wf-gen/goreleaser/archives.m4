@@ -61,7 +61,7 @@ ifelse(xREPO, <<tyk-analytics>>,
     - CHANGELOG.md
     - "install/*"
     - pump.example.conf
->>, xREPO, <<raava>>,
+>>, xREPO, <<portal>>,
 <<    - "app/*"
     - "themes/*"
     - "public/system/*"  
