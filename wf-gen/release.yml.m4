@@ -24,6 +24,7 @@ on:
 
 env:
   SLACK_CLI_TOKEN: ${{ secrets.BENDER_TOKEN }}
+  GOPRIVATE: github.com/TykTechnologies
   
 jobs:
 include(release/goreleaser.m4)

@@ -23,14 +23,14 @@ output "tyk" {
   description = "gateway"
 }
 
-output "raava" {
+output "portal" {
   sensitive = true
   value = tomap({
-    key = aws_iam_access_key.integration["raava"].id,
-    secret = aws_iam_access_key.integration["raava"].secret,
-    ecr = aws_ecr_repository.integration["raava"].repository_url,
+    key = aws_iam_access_key.integration["portal"].id,
+    secret = aws_iam_access_key.integration["portal"].secret,
+    ecr = aws_ecr_repository.integration["portal"].repository_url,
   })
-  description = "raava"
+  description = "portal"
 }
 
 output "tyk-analytics" {
