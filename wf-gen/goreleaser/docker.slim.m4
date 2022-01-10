@@ -35,4 +35,8 @@ ifelse(xREPO, <<tyk-analytics>>,<<
 >>, xREPO, <<tyk-pump>>,<<
     - "LICENSE.md"
     - "pump.example.conf"
+>>, xREPO, <<portal>>,
+<<    - "app/*"
+    - "themes/*"
+    - "public/system/*"  
 >>)dnl

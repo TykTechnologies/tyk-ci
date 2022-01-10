@@ -28,7 +28,6 @@
           TOKEN: '${{ secrets.ORG_GH_TOKEN }}'
         run: >
           git config --global url."https://${TOKEN}@github.com".insteadOf "https://github.com"
-
       - name: Checkout of xREPO
         uses: actions/checkout@v2
         with:
