@@ -4,6 +4,10 @@
       - smoke-tests
       - goreleaser
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        golang_cross: [1.15, 1.15-el7]
 
     steps:
       - uses: actions/download-artifact@v2
@@ -24,6 +28,8 @@
         with:
           repo: tyk/${{ needs.goreleaser.outputs.pc }}
           dir: dist
+          rpmvers: ${{ matrix.golang_cross == '1.15-el7' && 'el/7' || 'el/8' }}
+          debvers: ${{ matrix.golang_cross == '1.15-el7' && "ubuntu/xenial debian/stretch" || "ubuntu/bionic ubuntu/focal debian/jessie" }}
 
       - name: Tell release channel
         if: always()

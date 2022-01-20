@@ -1,7 +1,14 @@
   goreleaser:
+    name: '${{ matrix.golang_cross }}'
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        golang_cross: [1.15,1.15-el7]
+    env:
+      GOLANG_CROSS: ${{ matrix.golang_cross }}
 ifelse(xCGO, <<1>>, <<
-    container: tykio/golang-cross:1.15.15
+    container: 'tykio/golang-cross:${{ matrix.golang_cross }}'
 >>)
     outputs:
       tag: ${{ steps.targets.outputs.tag }}

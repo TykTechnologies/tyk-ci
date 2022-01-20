@@ -5,6 +5,7 @@ nfpms:
     maintainer: "Tyk <info@tyk.io>"
     description: xPKG_DESC
     package_name: xCOMPATIBILITY_NAME
+    file_name_template: "{{ .PackageName }}-{{ .Env.GOLANG_CROSS }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}{{ if .Mips }}_{{ .Mips }}{{ end }}"
     builds:
 ifelse(xCGO, <<1>>,<<
       - std-linux
