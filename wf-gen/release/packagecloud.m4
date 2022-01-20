@@ -18,7 +18,7 @@
 
       - name: Push to packagecloud
         id: pc-push
-        uses: TykTechnologies/packagecloud-action@main
+        uses: TykTechnologies/packagecloud-action@v1.1
         env:
           PACKAGECLOUD_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
         with:
