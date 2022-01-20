@@ -1,10 +1,7 @@
-env:
-  - MAIN_PKG_GOPATH=github.com/TykTechnologies/xREPO/xPKG_NAME
-
 builds:
   - id: std
     ldflags:
-      - -X {{ .Env.MAIN_PKG_GOPATH }}.VERSION={{.Version}} -X {{ .Env.MAIN_PKG_GOPATH }}.commit={{.FullCommit}} -X {{ .Env.MAIN_PKG_GOPATH }}.buildDate={{.Date}} -X {{ .Env.MAIN_PKG_GOPATH }}.builtBy=goreleaser
+      - -X xPKG_NAME.VERSION={{.Version}} -X xPKG_NAME.commit={{.FullCommit}} -X xPKG_NAME.buildDate={{.Date}} -X xPKG_NAME.builtBy=goreleaser
     goos:
       - linux
       - darwin
@@ -14,7 +11,7 @@ builds:
   # static builds strip symbols and do not allow plugins
   - id: static-amd64
     ldflags:
-      - -s -w -X {{ .Env.MAIN_PKG_GOPATH }}.VERSION={{.Version}} -X {{ .Env.MAIN_PKG_GOPATH }}.commit={{.FullCommit}} -X {{ .Env.MAIN_PKG_GOPATH }}.buildDate={{.Date}} -X {{ .Env.MAIN_PKG_GOPATH }}.builtBy=goreleaser
+      - -s -w -X xPKG_NAME.VERSION={{.Version}} -X xPKG_NAME.commit={{.FullCommit}} -X xPKG_NAME.buildDate={{.Date}} -X xPKG_NAME.builtBy=goreleaser
     goos:
       - linux
     goarch:
