@@ -84,6 +84,23 @@ ifelse(xREPO, <<tyk-analytics>>,
             *.txt.sig
             *.txt
 
+ifelse(xREPO, <<tyk>>,
+<<
+      - name: Fix vendor
+        run: |
+          export GOPATH=/go
+          mkdir -p /go/src || true
+          whereis go
+          go mod tidy
+          go mod vendor
+          echo "Moving vendor"
+          mv -f vendor/* $GOPATH/src
+          rm -rf vendor
+          mkdir -p /go/src/github.com/TykTechnologies/tyk
+          cp -r ./* /go/src/github.com/TykTechnologies/tyk
+          git checkout .
+>>)
+
       - uses: goreleaser/goreleaser-action@v2
         with:
           version: latest
@@ -91,6 +108,8 @@ ifelse(xREPO, <<tyk-analytics>>,
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CGO_ENABLED: xCGO
+ifelse(xREPO, <<tyk>>,
+<<          GO111MODULE: off>>)
           NFPM_STD_PASSPHRASE: ${{ secrets.SIGNING_KEY_PASSPHRASE }}
           NFPM_PAYG_PASSPHRASE: ${{ secrets.SIGNING_KEY_PASSPHRASE }}
           GPG_FINGERPRINT: 12B5D62C28F57592D1575BD51ED14C59E37DAC20
