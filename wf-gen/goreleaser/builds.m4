@@ -7,7 +7,7 @@ builds:
     goarch:
       - amd64
       - arm64
-ifelse(xBINARY, <<none>>, <<>>, <<    binary: xBINARY>>)      
+    binary: xBINARY
   # static builds strip symbols and do not allow plugins
   - id: static-amd64
     ldflags:
@@ -16,4 +16,4 @@ ifelse(xBINARY, <<none>>, <<>>, <<    binary: xBINARY>>)
       - linux
     goarch:
       - amd64
-ifelse(xBINARY, <<none>>, <<>>, <<    binary: xBINARY>>)
+    binary: xBINARY
