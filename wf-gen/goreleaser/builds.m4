@@ -1,7 +1,7 @@
 builds:
   - id: std
     ldflags:
-      - -X xPKG_NAME.VERSION={{.Version}} -X xPKG_NAME.commit={{.FullCommit}} -X xPKG_NAME.buildDate={{.Date}} -X xPKG_NAME.builtBy=goreleaser
+      - -X xPKG_NAME.VERSION={{.Version}} -X xPKG_NAME.Commit={{.FullCommit}} -X xPKG_NAME.buildDate={{.Date}} -X xPKG_NAME.builtBy=goreleaser
     goos:
       - linux
       - darwin
@@ -11,7 +11,7 @@ builds:
   # static builds strip symbols and do not allow plugins
   - id: static-amd64
     ldflags:
-      - -s -w -X xPKG_NAME.VERSION={{.Version}} -X xPKG_NAME.commit={{.FullCommit}} -X xPKG_NAME.buildDate={{.Date}} -X xPKG_NAME.builtBy=goreleaser
+      - -s -w -X xPKG_NAME.VERSION={{.Version}} -X xPKG_NAME.Commit={{.FullCommit}} -X xPKG_NAME.buildDate={{.Date}} -X xPKG_NAME.builtBy=goreleaser
     goos:
       - linux
     goarch:
