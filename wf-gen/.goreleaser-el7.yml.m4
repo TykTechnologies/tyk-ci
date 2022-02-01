@@ -15,5 +15,6 @@ archives:
   - format: binary
     allow_different_binary_count: true
 
+ifelse(xREPO, <<tyk>>,
 dockers:
-include(goreleaser/plugin-compiler.m4)
+include(goreleaser/plugin-compiler.m4))

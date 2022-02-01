@@ -23,17 +23,17 @@ ifelse(xCGO, <<1>>, <<
     steps:
       - name: Fix private module deps
         env:
-          TOKEN: '${{ secrets.REPO_TOKEN }}'
+          TOKEN: '${{ secrets.ORG_GH_TOKEN }}'
         run: >
           git config --global url."https://${TOKEN}@github.com".insteadOf "https://github.com"
 
       # v1 reqd to support older git in -el7
       - name: Checkout of xREPO
-        uses: actions/checkout@v1
+        uses: actions/checkout@v2
         with:
           fetch-depth: 1
 ifelse(xREPO, <<tyk-analytics>>,
-<<          token: ${{ secrets.REPO_TOKEN }}
+<<          token: ${{ secrets.ORG_GH_TOKEN }}
           submodules: true
 >>)
       - uses: docker/setup-qemu-action@v1
