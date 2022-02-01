@@ -132,4 +132,11 @@ ifelse(xREPO, <<tyk>>,
           path: |
             dist/*.rpm
             !dist/*PAYG*.rpm
-            
+ifelse(xREPO, <<tyk-analytics>>,
+<<
+      - uses: actions/upload-artifact@v2
+        with:
+          name: payg
+          retention-days: 1
+          path: dist/*PAYG*
+>>)            
