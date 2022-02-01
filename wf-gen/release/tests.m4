@@ -54,6 +54,7 @@ ifelse(xPC_PRIVATE, <<0>>, <<
         distro:
           - ubi7/ubi
           - ubi8/ubi
+          - ubi9/ubi
 
     steps:
       - uses: actions/checkout@v2
