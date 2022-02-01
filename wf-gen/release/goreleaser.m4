@@ -1,12 +1,24 @@
   goreleaser:
+    name: '${{ matrix.golang_cross }}'
     runs-on: ubuntu-latest
 ifelse(xCGO, <<1>>, <<
-    container: tykio/golang-cross:1.15.15
+    container: 'tykio/golang-cross:${{ matrix.golang_cross }}'
+    strategy:
+      fail-fast: false
+      matrix:
+        golang_cross: [ 1.15, 1.15-el7 ]
+        include:
+          - golang_cross: 1.15-el7
+            goreleaser: '.goreleaser-el7.yml'
+            rpmvers: 'el/7'
+            debvers: 'ubuntu/xenial'
+          - golang_cross: 1.15
+            goreleaser: '.goreleaser.yml'
+            rpmvers: 'el/8'
+            debvers: 'ubuntu/bionic ubuntu/focal debian/jessie'
 >>)
     outputs:
       tag: ${{ steps.targets.outputs.tag }}
-      upload: ${{ steps.targets.outputs.upload }}
-      pc: ${{ steps.targets.outputs.pc }}
 
     steps:
       - name: Fix private module deps
@@ -14,10 +26,12 @@ ifelse(xCGO, <<1>>, <<
           TOKEN: '${{ secrets.REPO_TOKEN }}'
         run: >
           git config --global url."https://${TOKEN}@github.com".insteadOf "https://github.com"
+
+      # v1 reqd to support older git in -el7
       - name: Checkout of xREPO
-        uses: actions/checkout@v2
+        uses: actions/checkout@v1
         with:
-          fetch-depth: ${{ ! startsWith(github.ref, 'refs/tags') }}
+          fetch-depth: 1
 ifelse(xREPO, <<tyk-analytics>>,
 <<          token: ${{ secrets.REPO_TOKEN }}
           submodules: true
@@ -41,7 +55,7 @@ ifelse(xREPO, <<tyk-analytics>>,
           username: ${{ secrets.CLOUDSMITH_USERNAME }}
           password: ${{ secrets.CLOUDSMITH_API_KEY }}
 
-      - name: Unlock agent and set targets
+      - name: Unlock agent and set tag
         id: targets
         shell: bash
         env:
@@ -50,24 +64,8 @@ ifelse(xREPO, <<tyk-analytics>>,
           PKG_SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
         run: |
           bin/unlock-agent.sh
-          DOCKER_CFG_PATH="${DOCKER_CONFIG:-$HOME/.docker}/config.json"
-          jq '. + {"experimental": "enabled"}' "$DOCKER_CFG_PATH" > c.json && mv c.json "$DOCKER_CFG_PATH" || rm c.json
           current_tag=${GITHUB_REF##*/}
           echo "::set-output name=tag::${current_tag}"
-          if [[ $current_tag =~ .+-(qa|rc).* ]]; then
-                  echo "::set-output name=upload::true"
-                  echo "::set-output name=pc::xPC_REPO-unstable"
-                  echo "::debug file=.goreleaser.yml::Pushing to unstable repos"
-          # From https://semver.org/#is-there-a-suggested-regular-expression-regex-to-check-a-semver-string
-          # If this is a public release, the tag is of the form vX.Y.Z where X, Y, Z ∈ ℤ
-          elif [[ $current_tag =~ v(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*) ]]; then
-                  echo "::set-output name=upload::true"
-                  echo "::set-output name=pc::xPC_REPO"
-                  echo "::debug file=.goreleaser.yml::Pushing to stable repos"
-          else
-                  echo "::set-output name=upload::false"
-                  echo "::debug file=.goreleaser.yml::No uploads"
-          fi
 
       - name: Delete old release assets
         if: startsWith(github.ref, 'refs/tags')
@@ -94,17 +92,16 @@ ifelse(xREPO, <<tyk>>,
           go mod tidy
           go mod vendor
           echo "Moving vendor"
-          mv -f vendor/* $GOPATH/src
+          cp -r -f vendor/* $GOPATH/src
           rm -rf vendor
           mkdir -p /go/src/github.com/TykTechnologies/tyk
           cp -r ./* /go/src/github.com/TykTechnologies/tyk
-          git checkout .
 >>)
 
       - uses: goreleaser/goreleaser-action@v2
         with:
           version: latest
-          args: release --rm-dist
+          args: release --rm-dist -f ${{ matrix.goreleaser }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CGO_ENABLED: xCGO
@@ -114,6 +111,11 @@ ifelse(xREPO, <<tyk>>,
           NFPM_PAYG_PASSPHRASE: ${{ secrets.SIGNING_KEY_PASSPHRASE }}
           GPG_FINGERPRINT: 12B5D62C28F57592D1575BD51ED14C59E37DAC20
           PKG_SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
+          GOLANG_CROSS: ${{ matrix.golang_cross }}
+          DEBVERS: ${{ matrix.debvers }}
+          RPMVERS: ${{ matrix.rpmvers }}
+          REPO: tyk/tyk-gateway-unstable
+          PACKAGECLOUD_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
 
       - uses: actions/upload-artifact@v2
         with:
@@ -130,9 +132,4 @@ ifelse(xREPO, <<tyk>>,
           path: |
             dist/*.rpm
             !dist/*PAYG*.rpm
-
-      - uses: actions/upload-artifact@v2
-        with:
-          name: payg
-          retention-days: 1
-          path: dist/*PAYG*
+            

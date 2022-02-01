@@ -11,8 +11,7 @@
           - ubuntu:xenial
           - ubuntu:bionic
           - ubuntu:focal
-          - debian:stretch
-          - debian:buster
+          - debian:jessie
 
     steps:
       - uses: actions/checkout@v2
@@ -34,9 +33,9 @@
           COPY xCOMPATIBILITY_NAME*_${TARGETARCH}.deb /xCOMPATIBILITY_NAME.deb
           RUN apt-get update && apt-get install -y curl
 ifelse(xPC_PRIVATE, <<0>>, <<
-          RUN curl -fsSL https://packagecloud.io/install/repositories/tyk/xPC_REPO/script.deb.sh | bash && apt-get install -y xCOMPATIBILITY_NAME=xUPGRADE_FROM>>, <<
+          RUN curl -fsSL https://packagecloud.io/install/repositories/tyk/xPC_REPO-unstable/script.deb.sh | bash && apt-get install -y xCOMPATIBILITY_NAME=xUPGRADE_FROM>>, <<
           RUN curl -u ${{ secrets.PACKAGECLOUD_MASTER_TOKEN }}: -fsSL https://packagecloud.io/install/repositories/tyk/xPC_REPO/script.deb.sh | bash && apt-get install -y xCOMPATIBILITY_NAME=xUPGRADE_FROM>>)
-          RUN dpkg -i /xCOMPATIBILITY_NAME.deb' > Dockerfile
+          RUN dpkg -i xCOMPATIBILITY_NAME.deb' > Dockerfile
 
       - name: install on ${{ matrix.distro }}
         uses: docker/build-push-action@v2
@@ -53,8 +52,8 @@ ifelse(xPC_PRIVATE, <<0>>, <<
       fail-fast: false
       matrix:
         distro:
-          - ubi7/ubi:7.9
-          - ubi8/ubi:8.3
+          - ubi7/ubi
+          - ubi8/ubi
 
     steps:
       - uses: actions/checkout@v2
@@ -73,9 +72,9 @@ ifelse(xPC_PRIVATE, <<0>>, <<
           COPY xCOMPATIBILITY_NAME*_x86_64.rpm /xCOMPATIBILITY_NAME.rpm
           RUN yum install -y curl
 ifelse(xPC_PRIVATE, <<0>>, <<
-          RUN curl -s https://packagecloud.io/install/repositories/tyk/xPC_REPO/script.rpm.sh | bash && yum install -y xCOMPATIBILITY_NAME-xUPGRADE_FROM-1>>, <<
+          RUN curl -s https://packagecloud.io/install/repositories/tyk/xPC_REPO-unstable/script.rpm.sh | bash && yum install -y xCOMPATIBILITY_NAME-xUPGRADE_FROM-1>>, <<
           RUN curl -u ${{ secrets.PACKAGECLOUD_MASTER_TOKEN }}: -s https://packagecloud.io/install/repositories/tyk/xPC_REPO/script.rpm.sh | bash && yum install -y xCOMPATIBILITY_NAME-xUPGRADE_FROM-1>>)
-          RUN rpm -Uvh /xCOMPATIBILITY_NAME.rpm' > Dockerfile
+          RUN rpm -Uvh xCOMPATIBILITY_NAME.rpm' > Dockerfile
 
       - name: install on ${{ matrix.distro }}
         uses: docker/build-push-action@v2
@@ -85,7 +84,6 @@ ifelse(xPC_PRIVATE, <<0>>, <<
           push: false
 
   smoke-tests:
-    if: needs.goreleaser.outputs.upload == 'true'
     needs:
       - goreleaser
     runs-on: ubuntu-latest

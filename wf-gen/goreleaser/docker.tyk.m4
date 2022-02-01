@@ -34,11 +34,11 @@
   extra_files:
     - "images/hybrid/"
 
-# Build plugin-compiler multiarch
+# Build plugin-compiler
 - ids:
     - std
   image_templates:
-    - "tykio/tyk-plugin-compiler:{{ .Tag }}"
+    - tykio/tyk-plugin-compiler:{{ .Tag }}
     - "tykio/tyk-plugin-compiler:v{{ .Major }}.{{ .Minor }}{{.Prerelease}}"
   build_flag_templates:
     - "--build-arg=TYK_GW_TAG={{ .Tag }}"
@@ -46,6 +46,7 @@
     - "--label=org.opencontainers.image.title=tyk-plugin-compiler"
     - "--label=org.opencontainers.image.revision={{.FullCommit}}"
     - "--label=org.opencontainers.image.version={{.Version}}"
+    - "--build-arg=GOLANG_CROSS={{ .Env.GOLANG_CROSS }}"
   goarch: amd64
   goos: linux
   dockerfile: images/plugin-compiler/Dockerfile

@@ -64,8 +64,9 @@ ifelse(xREPO, <<tyk-analytics>>,
       - name: Tell gromit about new build
         id: gromit
         run: |
+          # Remember to remove the true when TD-626 is fixed
           curl -fsSL -H "Authorization: ${{secrets.GROMIT_TOKEN}}" 'https://domu-kun.cloud.tyk.io/gromit/newbuild' \
-                 -X POST -d '{ "repo": "${{ github.repository}}", "ref": "${{ github.ref }}", "sha": "${{ github.sha }}" }'
+                 -X POST -d '{ "repo": "${{ github.repository}}", "ref": "${{ github.ref }}", "sha": "${{ github.sha }}" }' || true
 
       - name: Tell integration channel
         if: ${{ failure() }}

@@ -4,7 +4,6 @@ builds:
       - -X xPKG_NAME.VERSION={{.Version}} -X xPKG_NAME.Commit={{.FullCommit}} -X xPKG_NAME.buildDate={{.Date}} -X xPKG_NAME.builtBy=goreleaser
     goos:
       - linux
-      - darwin
     goarch:
       - amd64
       - arm64
