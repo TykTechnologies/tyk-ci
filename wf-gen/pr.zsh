@@ -99,11 +99,11 @@ function process_repo {
 	# :t is basename
 	local src="${target:t}.${SOURCE_SUFFIX}"
 	echo "FILE: $file, REPO: $r"
-	if [[ ${file} == ".goreleaser-el7.yml" && ${r} != "tyk" ]];then
-		continue
-	fi
 	# Extend this for more special conditions. Associative arrays have limitations.
 	case $file in
+	    .goreleaser-el7.yml)
+		cmd="m4 -E -DxEL7_SUFFIX=-el7 -DxREPO=${r}"
+		;;
 	    *)
 		cmd="m4 -E -DxREPO=${r}"
 		;;

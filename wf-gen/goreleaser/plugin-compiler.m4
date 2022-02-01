@@ -1,10 +1,12 @@
-dockers:
+dnl The default EL7 suffix is nil, it is set on the command line when needed
+define(xEL7_SUFFIX)dnl
+
 # Build plugin-compiler
 - ids:
     - std
   image_templates:
-    - tykio/tyk-plugin-compiler:{{ .Tag }}-el7
-    - "tykio/tyk-plugin-compiler:v{{ .Major }}.{{ .Minor }}{{.Prerelease}}"
+    - tykio/tyk-plugin-compiler:{{ .Tag }}xEL7_SUFFIX
+    - "tykio/tyk-plugin-compiler:v{{ .Major }}.{{ .Minor }}{{.Prerelease}}xEL7_SUFFIX"
   build_flag_templates:
     - "--label=org.opencontainers.image.created={{.Date}}"
     - "--label=org.opencontainers.image.title=tyk-plugin-compiler"
