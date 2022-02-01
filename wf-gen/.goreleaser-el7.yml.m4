@@ -18,3 +18,15 @@ archives:
 ifelse(xREPO, <<tyk>>,
 dockers:
 include(goreleaser/plugin-compiler.m4))
+
+checksum:
+  disable: true
+
+release:
+  disable: true
+  github:
+    owner: TykTechnologies
+    name: xREPO
+  prerelease: auto
+  draft: true
+  name_template: "{{.ProjectName}}-v{{.Version}}"

@@ -98,6 +98,7 @@ ifelse(xREPO, <<tyk-analytics>>, <<
     homepage: "https://tyk.io"
     maintainer: "Tyk <info@tyk.io>"
     description: "PAYG Dashboard for the Tyk API Gateway"
+    package_name: xCOMPATIBILITY_NAME
     file_name_template: "{{ .ProjectName }}_PAYG_{{ .Version }}_{{ .Os }}_{{ .Arch }}"
     builds:
       - payg

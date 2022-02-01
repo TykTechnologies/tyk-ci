@@ -32,11 +32,7 @@ include(goreleaser/publishers.m4)
 include(goreleaser/archives.m4)
 
 checksum:
-  disable: false
-
-signs:
-  - id: std
-    artifacts: checksum
+  disable: true
 
 release:
   disable: true
