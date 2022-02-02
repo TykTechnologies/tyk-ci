@@ -11,11 +11,11 @@ ifelse(xCGO, <<1>>, <<
           - golang_cross: 1.15-el7
             goreleaser: '.goreleaser-el7.yml'
             rpmvers: 'el/7'
-            debvers: 'ubuntu/xenial'
+            debvers: 'ubuntu/xenial ubuntu/bionic'
           - golang_cross: 1.15
             goreleaser: '.goreleaser.yml'
             rpmvers: 'el/8'
-            debvers: 'ubuntu/bionic ubuntu/focal debian/jessie'
+            debvers: 'ubuntu/focal debian/jessie'
 >>)
     outputs:
       tag: ${{ steps.targets.outputs.tag }}
