@@ -18,5 +18,30 @@ define(xEL7_SUFFIX)dnl
   goos: linux
   dockerfile: images/plugin-compiler/Dockerfile
   extra_files:
-    - "images/plugin-compiler/"
-    - "go.mod"
+    - images/plugin-compiler
+    - go.mod
+    - apidef
+    - certs
+    - checkup
+    - cli
+    - config
+    - coprocess
+    - ctx
+    - dlpython
+    - dnscache
+    - gateway
+    - goplugin
+    - headers
+    - integration
+    - log
+    - regexp
+    - request
+    - rpc
+    - signature_validator
+    - storage
+    - tcp
+    - templates
+    - test
+    - testdata
+    - trace
+    - user
