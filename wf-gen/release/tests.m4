@@ -68,7 +68,6 @@ ifelse(xREPO, <<tyk>>, <<format(%10s)tags: test-${{ matrix.distro }}-${{ matrix.
         distro:
           - ubi7/ubi
           - ubi8/ubi
-          - ubi9/ubi
 
     steps:
       - uses: actions/checkout@v2
@@ -84,7 +83,7 @@ ifelse(xREPO, <<tyk>>, <<format(%10s)tags: test-${{ matrix.distro }}-${{ matrix.
       - name: generate dockerfile
         run: |
           echo 'FROM registry.access.redhat.com/${{ matrix.distro }}
-          COPY xCOMPATIBILITY_NAME*_x86_64.rpm /xCOMPATIBILITY_NAME.rpm
+          COPY xCOMPATIBILITY_NAME*.x86_64.rpm /xCOMPATIBILITY_NAME.rpm
           RUN yum install -y curl
 ifelse(xPC_PRIVATE, <<0>>, <<
           RUN curl -s https://packagecloud.io/install/repositories/tyk/xPC_REPO/script.rpm.sh | bash && yum install -y xCOMPATIBILITY_NAME-xUPGRADE_FROM-1>>, <<
