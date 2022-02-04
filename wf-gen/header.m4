@@ -9,7 +9,7 @@ define(<<xPC_PRIVATE>>, ifelse(xREPO, <<tyk-sink>>, <<1>>, <<0>>))dnl
 define(<<xCGO>>, ifelse(xREPO, <<tyk>>, <<1>>, xREPO, <<tyk-analytics>>, <<1>>, xREPO, <<raava>>, <<1>>, <<0>>))dnl
 define(<<xCONFIG_FILE>>, <<ifelse(xREPO, <<tyk-analytics>>, <<tyk_analytics.conf>>, xREPO, <<tyk-sink>>, <<tyk_sink.conf>>, xREPO, <<tyk-identity-broker>>, <<tib.conf>>, xREPO, <<tyk-pump>>, <<pump.conf>>, xREPO.conf)>>)dnl
 dnl The version to test upgrades from, chosen to be the last versions before the wf-gen era, every repo should be explicity featured here
-define(<<xUPGRADE_FROM>>, ifelse(xREPO, <<tyk>>, <<3.0.9>>, xREPO, <<tyk-analytics>>, <<3.0.9>>, xREPO, <<tyk-pump>>, <<1.2.0>>, xREPO, <<tyk-identity-broker>>, <<1.1.0>>, xREPO, <<tyk-sink>>, <<1.7.7>>, xREPO, <<raava>>, <<0.0.0>>))dnl
+define(<<xUPGRADE_FROM>>, ifelse(xREPO, <<tyk>>, <<3.0.8>>, xREPO, <<tyk-analytics>>, <<3.0.9>>, xREPO, <<tyk-pump>>, <<1.2.0>>, xREPO, <<tyk-identity-broker>>, <<1.1.0>>, xREPO, <<tyk-sink>>, <<1.7.7>>, xREPO, <<raava>>, <<0.0.0>>))dnl
 
 dnl xPKG_NAME is the package in which version.go lives
 define(<<xPKG_NAME>>, <<ifelse(xREPO, <<tyk>>, <<github.com/TykTechnologies/tyk/gateway>>, xREPO, <<tyk-analytics>>, <<github.com/TykTechnologies/tyk-analytics/dashboard>>, xREPO, <<tyk-pump>>, <<github.com/TykTechnologies/tyk-pump/pumps>>, <<github.com/TykTechnologies/xREPO/main>>)>>)dnl
