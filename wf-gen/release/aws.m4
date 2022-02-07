@@ -1,6 +1,6 @@
   # AWS updates only for stable releases
   aws-mktplace-byol:
-    if: startsWith(github.ref, 'refs/tags/v4.0')
+    if: 'a' == 'b'
     runs-on: ubuntu-latest
     needs:
       - smoke-tests
