@@ -86,9 +86,9 @@ ifelse(xREPO, <<tyk>>, <<format(%10s)tags: test-${{ matrix.distro }}-${{ matrix.
           COPY xCOMPATIBILITY_NAME*.x86_64.rpm /xCOMPATIBILITY_NAME.rpm
           RUN yum install -y curl
 ifelse(xPC_PRIVATE, <<0>>, <<
-          RUN curl -s https://packagecloud.io/install/repositories/tyk/xPC_REPO/script.rpm.sh | bash && yum install -y xCOMPATIBILITY_NAME-xUPGRADE_FROM-1>>, <<
+          RUN curl -fsSL https://packagecloud.io/install/repositories/tyk/xPC_REPO/script.rpm.sh | bash && yum install -y xCOMPATIBILITY_NAME-xUPGRADE_FROM-1>>, <<
           RUN curl -u ${{ secrets.PACKAGECLOUD_MASTER_TOKEN }}: -s https://packagecloud.io/install/repositories/tyk/xPC_REPO/script.rpm.sh | bash && yum install -y xCOMPATIBILITY_NAME-xUPGRADE_FROM-1>>)
-          RUN rpm -Uvh xCOMPATIBILITY_NAME.rpm dnl
+          RUN rpm -Uvh --force xCOMPATIBILITY_NAME.rpm dnl
 ifelse(xREPO, <<tyk>>, <<
           RUN curl -fSL https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 --output /usr/local/bin/jq && chmod a+x /usr/local/bin/jq
           RUN /opt/tyk-gateway/install/setup.sh --listenport=8080 --redishost=localhost --redisport=6379 --domain=""
@@ -112,6 +112,7 @@ ifelse(xREPO, <<tyk>>, <<format(%10s)tags: test-${{ matrix.distro }}
           docker run --rm test-${{ matrix.distro }}>>)
 
   smoke-tests:
+    if: startsWith(github.ref, 'refs/tags')
     needs:
       - goreleaser
     runs-on: ubuntu-latest
