@@ -1,6 +1,6 @@
   # AWS updates only for stable releases
   aws-mktplace-byol:
-    if: 'a' == 'b'
+    if: ( 'a' == 'b' )
     runs-on: ubuntu-latest
     needs:
       - smoke-tests
