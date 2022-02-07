@@ -11,7 +11,7 @@
           - ubuntu:xenial
           - ubuntu:bionic
           - ubuntu:focal
-          - debian:jessie
+          - debian:bullseye
 
     steps:
       - uses: actions/checkout@v2
@@ -37,7 +37,7 @@ ifelse(xPC_PRIVATE, <<0>>, <<
           RUN curl -u ${{ secrets.PACKAGECLOUD_MASTER_TOKEN }}: -fsSL https://packagecloud.io/install/repositories/tyk/xPC_REPO/script.deb.sh | bash && apt-get install -y xCOMPATIBILITY_NAME=xUPGRADE_FROM>>)
           RUN dpkg -i xCOMPATIBILITY_NAME.deb dnl
 ifelse(xREPO, <<tyk>>, <<
-          RUN apt-get install -y jq
+          RUN curl -fSL https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 --output /usr/local/bin/jq && chmod a+x /usr/local/bin/jq
           RUN /opt/tyk-gateway/install/setup.sh --listenport=8080 --redishost=localhost --redisport=6379 --domain=""
           COPY integration/smoke-tests/api-functionality/api_test.sh /
           COPY integration/smoke-tests/api-functionality/pkg_test.sh /
