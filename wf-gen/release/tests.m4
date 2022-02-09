@@ -11,8 +11,7 @@
           - ubuntu:xenial
           - ubuntu:bionic
           - ubuntu:focal
-          - debian:stretch
-          - debian:buster
+          - debian:bullseye
 
     steps:
       - uses: actions/checkout@v2
@@ -36,7 +35,15 @@
 ifelse(xPC_PRIVATE, <<0>>, <<
           RUN curl -fsSL https://packagecloud.io/install/repositories/tyk/xPC_REPO/script.deb.sh | bash && apt-get install -y xCOMPATIBILITY_NAME=xUPGRADE_FROM>>, <<
           RUN curl -u ${{ secrets.PACKAGECLOUD_MASTER_TOKEN }}: -fsSL https://packagecloud.io/install/repositories/tyk/xPC_REPO/script.deb.sh | bash && apt-get install -y xCOMPATIBILITY_NAME=xUPGRADE_FROM>>)
-          RUN dpkg -i /xCOMPATIBILITY_NAME.deb' > Dockerfile
+          RUN dpkg -i xCOMPATIBILITY_NAME.deb dnl
+ifelse(xREPO, <<tyk>>, <<
+          RUN apt-get install -y jq
+          RUN /opt/tyk-gateway/install/setup.sh --listenport=8080 --redishost=localhost --redisport=6379 --domain=""
+          COPY integration/smoke-tests/api-functionality/api_test.sh /
+          COPY integration/smoke-tests/api-functionality/pkg_test.sh /
+          COPY integration/smoke-tests/api-functionality/data/api.json /opt/tyk-gateway/apps/
+          CMD [ "/pkg_test.sh" ]
+          >>)' > Dockerfile
 
       - name: install on ${{ matrix.distro }}
         uses: docker/build-push-action@v2
@@ -45,6 +52,12 @@ ifelse(xPC_PRIVATE, <<0>>, <<
           platforms: linux/${{ matrix.arch }}
           file: Dockerfile
           push: false
+ifelse(xREPO, <<tyk>>, <<format(%10s)tags: test-${{ matrix.distro }}-${{ matrix.arch }}
+          load: true
+
+      - name: Test the built container image with api functionality test.
+        run: |
+          docker run --rm test-${{ matrix.distro }}-${{ matrix.arch }}>>)
 
   upgrade-rpm:
     needs: goreleaser
@@ -53,8 +66,8 @@ ifelse(xPC_PRIVATE, <<0>>, <<
       fail-fast: false
       matrix:
         distro:
-          - ubi7/ubi:7.9
-          - ubi8/ubi:8.3
+          - ubi7/ubi
+          - ubi8/ubi
 
     steps:
       - uses: actions/checkout@v2
@@ -70,12 +83,20 @@ ifelse(xPC_PRIVATE, <<0>>, <<
       - name: generate dockerfile
         run: |
           echo 'FROM registry.access.redhat.com/${{ matrix.distro }}
-          COPY xCOMPATIBILITY_NAME*_x86_64.rpm /xCOMPATIBILITY_NAME.rpm
+          COPY xCOMPATIBILITY_NAME*.x86_64.rpm /xCOMPATIBILITY_NAME.rpm
           RUN yum install -y curl
 ifelse(xPC_PRIVATE, <<0>>, <<
-          RUN curl -s https://packagecloud.io/install/repositories/tyk/xPC_REPO/script.rpm.sh | bash && yum install -y xCOMPATIBILITY_NAME-xUPGRADE_FROM-1>>, <<
+          RUN curl -fsSL https://packagecloud.io/install/repositories/tyk/xPC_REPO/script.rpm.sh | bash && yum install -y xCOMPATIBILITY_NAME-xUPGRADE_FROM-1>>, <<
           RUN curl -u ${{ secrets.PACKAGECLOUD_MASTER_TOKEN }}: -s https://packagecloud.io/install/repositories/tyk/xPC_REPO/script.rpm.sh | bash && yum install -y xCOMPATIBILITY_NAME-xUPGRADE_FROM-1>>)
-          RUN rpm -Uvh /xCOMPATIBILITY_NAME.rpm' > Dockerfile
+          RUN rpm -Uvh --force xCOMPATIBILITY_NAME.rpm dnl
+ifelse(xREPO, <<tyk>>, <<
+          RUN curl -fSL https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 --output /usr/local/bin/jq && chmod a+x /usr/local/bin/jq
+          RUN /opt/tyk-gateway/install/setup.sh --listenport=8080 --redishost=localhost --redisport=6379 --domain=""
+          COPY integration/smoke-tests/api-functionality/data/api.json /opt/tyk-gateway/apps/
+          COPY integration/smoke-tests/api-functionality/api_test.sh /
+          COPY integration/smoke-tests/api-functionality/pkg_test.sh /
+          CMD [ "/pkg_test.sh" ]
+          >>)' > Dockerfile
 
       - name: install on ${{ matrix.distro }}
         uses: docker/build-push-action@v2
@@ -83,9 +104,15 @@ ifelse(xPC_PRIVATE, <<0>>, <<
           context: "."
           file: Dockerfile
           push: false
+ifelse(xREPO, <<tyk>>, <<format(%10s)tags: test-${{ matrix.distro }}
+          load: true
+
+      - name: Test the built container image with api functionality test.
+        run: |
+          docker run --rm test-${{ matrix.distro }}>>)
 
   smoke-tests:
-    if: needs.goreleaser.outputs.upload == 'true'
+    if: startsWith(github.ref, 'refs/tags')
     needs:
       - goreleaser
     runs-on: ubuntu-latest
@@ -106,7 +133,7 @@ ifelse(xPC_PRIVATE, <<0>>, <<
           for d in integration/smoke-tests/*/
           do
               echo Attempting to test $d
-              if [ -d $d ]; then
+              if [ -d $d ] && [ -e $d/test.sh ]; then
                   cd $d
                   ./test.sh ${{ needs.goreleaser.outputs.tag }}
                   cd -

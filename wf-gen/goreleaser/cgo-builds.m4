@@ -10,15 +10,6 @@ ifelse(xREPO, <<tyk>>, <<
       - linux
     goarch:
       - amd64
-  - id: std-darwin
-    ldflags:
-      - -X xPKG_NAME.VERSION={{.Version}} -X xPKG_NAME.Commit={{.FullCommit}} -X xPKG_NAME.buildDate={{.Date}} -X xPKG_NAME.builtBy=goreleaser
-    env:
-      - CC=o64-clang
-    goos:
-      - darwin
-    goarch:
-      - amd64
   - id: std-arm64
 ifelse(xREPO, <<tyk>>, <<
     flags:
