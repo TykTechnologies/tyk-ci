@@ -1,3 +1,5 @@
+dnl generate the contents only for cgo builds
+ifelse(xCGO, <<1>>,
 include(header.m4)
 
 # Check the documentation at http://goreleaser.com
@@ -30,3 +32,4 @@ release:
   prerelease: auto
   draft: true
   name_template: "{{.ProjectName}}-v{{.Version}}"
+>>)
