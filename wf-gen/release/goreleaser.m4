@@ -5,7 +5,7 @@
     strategy:
       fail-fast: false
       matrix:
-ifelse(xCGO, <<0>>, <<        golang_cross: [ 1.15 ]>>)ifelse(xCGO, <<1>>, <<        golang_cross: [ 1.15, 1.15-el7 ]>>)
+        golang_cross: [ 1.15 ifelse(xCGO, <<1>>, <<, 1.15-el7>>) ]
         include:ifelse(xCGO, <<1>>,<<
           - golang_cross: 1.15-el7
             goreleaser: '.goreleaser-el7.yml'
