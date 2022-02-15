@@ -1,21 +1,23 @@
   goreleaser:
     name: '${{ matrix.golang_cross }}'
     runs-on: ubuntu-latest
-ifelse(xCGO, <<1>>, <<
     container: 'tykio/golang-cross:${{ matrix.golang_cross }}'
     strategy:
       fail-fast: false
       matrix:
-        golang_cross: [ 1.15, 1.15-el7 ]
-        include:
+        golang_cross: [ 1.15 ifelse(xCGO, <<1>>, <<, 1.15-el7>>) ]
+        include:ifelse(xCGO, <<1>>,<<
           - golang_cross: 1.15-el7
             goreleaser: '.goreleaser-el7.yml'
             rpmvers: 'el/7'
-            debvers: 'ubuntu/xenial ubuntu/bionic debian/jessie'
+            debvers: 'ubuntu/xenial ubuntu/bionic debian/jessie'>>)
           - golang_cross: 1.15
-            goreleaser: '.goreleaser.yml'
+            goreleaser: '.goreleaser.yml'ifelse(xCGO, <<1>>, <<
             rpmvers: 'el/8'
             debvers: 'ubuntu/focal debian/buster debian/bullseye'
+>>)ifelse(xCGO, <<0>>, <<
+            rpmvers: 'el/7 el/8'
+            debvers: 'ubuntu/xenial ubuntu/bionic debian/jessie ubuntu/focal debian/buster debian/bullseye'
 >>)
     outputs:
       tag: ${{ steps.targets.outputs.tag }}
@@ -27,7 +29,6 @@ ifelse(xCGO, <<1>>, <<
         run: >
           git config --global url."https://${TOKEN}@github.com".insteadOf "https://github.com"
 
-      # v1 reqd to support older git in -el7
       - name: Checkout of xREPO
         uses: actions/checkout@v2
         with:
