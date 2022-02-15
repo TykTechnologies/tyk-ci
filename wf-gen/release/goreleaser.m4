@@ -29,7 +29,6 @@ ifelse(xCGO, <<0>>, <<        golang_cross: [ 1.15 ]>>)ifelse(xCGO, <<1>>, <<   
         run: >
           git config --global url."https://${TOKEN}@github.com".insteadOf "https://github.com"
 
-      # v1 reqd to support older git in -el7
       - name: Checkout of xREPO
         uses: actions/checkout@v2
         with:

@@ -88,6 +88,8 @@ ifelse(xREPO, <<tyk>>, <<format(%10s)tags: test-${{ matrix.distro }}-${{ matrix.
 ifelse(xPC_PRIVATE, <<0>>, <<
           RUN curl -fsSL https://packagecloud.io/install/repositories/tyk/xPC_REPO/script.rpm.sh | bash && yum install -y xCOMPATIBILITY_NAME-xUPGRADE_FROM-1>>, <<
           RUN curl -u ${{ secrets.PACKAGECLOUD_MASTER_TOKEN }}: -s https://packagecloud.io/install/repositories/tyk/xPC_REPO/script.rpm.sh | bash && yum install -y xCOMPATIBILITY_NAME-xUPGRADE_FROM-1>>)
+          RUN curl https://keyserver.tyk.io/tyk.io.rpm.signing.key.2020 -o xPC_REPO.key && rpm --import xPC_REPO.key
+          RUN rpm --checksig xCOMPATIBILITY_NAME.rpm
           RUN rpm -Uvh --force xCOMPATIBILITY_NAME.rpm dnl
 ifelse(xREPO, <<tyk>>, <<
           RUN curl -fSL https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 --output /usr/local/bin/jq && chmod a+x /usr/local/bin/jq
