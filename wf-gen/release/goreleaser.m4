@@ -5,7 +5,7 @@
     strategy:
       fail-fast: false
       matrix:
-ifelse(xCGO, <<0>>, <<format(%8s)golang_cross: [ 1.15 ]>>)ifelse(xCGO, <<1>>, <<format(%8s)golang_cross: [ 1.15, 1.15-el7 ]>>)
+ifelse(xCGO, <<0>>, <<        golang_cross: [ 1.15 ]>>)ifelse(xCGO, <<1>>, <<        golang_cross: [ 1.15, 1.15-el7 ]>>)
         include:ifelse(xCGO, <<1>>,<<
           - golang_cross: 1.15-el7
             goreleaser: '.goreleaser-el7.yml'
@@ -13,10 +13,10 @@ ifelse(xCGO, <<0>>, <<format(%8s)golang_cross: [ 1.15 ]>>)ifelse(xCGO, <<1>>, <<
             debvers: 'ubuntu/xenial ubuntu/bionic debian/jessie'>>)
           - golang_cross: 1.15
             goreleaser: '.goreleaser.yml'ifelse(xCGO, <<1>>, <<
-format(%12s)rpmvers: 'el/8'
+            rpmvers: 'el/8'
             debvers: 'ubuntu/focal debian/buster debian/bullseye'
 >>)ifelse(xCGO, <<0>>, <<
-format(%12s)rpmvers: 'el/7 el/8'
+            rpmvers: 'el/7 el/8'
             debvers: 'ubuntu/xenial ubuntu/bionic debian/jessie ubuntu/focal debian/buster debian/bullseye'
 >>)
     outputs:
