@@ -1,5 +1,3 @@
-dnl generate the contents only for cgo builds
-ifelse(xCGO, <<1>>,
 include(header.m4)
 
 # Check the documentation at http://goreleaser.com
@@ -7,8 +5,8 @@ include(header.m4)
 # - arm64
 # - amd64
 
-ifelse(xCGO, <<1>>, include(goreleaser/cgo-builds.m4), include(goreleaser/builds.m4))
-
+ifelse(xCGO, <<1>>, << 
+include(goreleaser/cgo-builds.m4)
 include(goreleaser/nfpm.m4)
 include(goreleaser/publishers.m4)
 
@@ -31,5 +29,4 @@ release:
     name: xREPO
   prerelease: auto
   draft: true
-  name_template: "{{.ProjectName}}-v{{.Version}}"
->>)
+  name_template: "{{.ProjectName}}-v{{.Version}}">>)
