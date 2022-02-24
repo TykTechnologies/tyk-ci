@@ -115,7 +115,6 @@ ifelse(xREPO, <<tyk>>,
           GOLANG_CROSS: ${{ matrix.golang_cross }}
           DEBVERS: ${{ matrix.debvers }}
           RPMVERS: ${{ matrix.rpmvers }}
-          REPO: tyk/tyk-gateway-unstable
           PACKAGECLOUD_TOKEN: ${{ secrets.PACKAGECLOUD_TOKEN }}
 
       - uses: actions/upload-artifact@v2
