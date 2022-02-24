@@ -39,9 +39,9 @@ ifelse(xPC_PRIVATE, <<0>>, <<
 ifelse(xREPO, <<tyk>>, <<
           RUN apt-get install -y jq
           RUN /opt/tyk-gateway/install/setup.sh --listenport=8080 --redishost=localhost --redisport=6379 --domain=""
-          COPY integration/smoke-tests/api-functionality/api_test.sh /
-          COPY integration/smoke-tests/api-functionality/pkg_test.sh /
-          COPY integration/smoke-tests/api-functionality/data/api.json /opt/tyk-gateway/apps/
+          COPY ci/tests/api-functionality/api_test.sh /
+          COPY ci/tests/api-functionality/pkg_test.sh /
+          COPY ci/tests/api-functionality/data/api.json /opt/tyk-gateway/apps/
           CMD [ "/pkg_test.sh" ]
           >>)' > Dockerfile
 
@@ -94,9 +94,9 @@ ifelse(xPC_PRIVATE, <<0>>, <<
 ifelse(xREPO, <<tyk>>, <<
           RUN curl -fSL https://github.com/stedolan/jq/releases/download/jq-1.6/jq-linux64 --output /usr/local/bin/jq && chmod a+x /usr/local/bin/jq
           RUN /opt/tyk-gateway/install/setup.sh --listenport=8080 --redishost=localhost --redisport=6379 --domain=""
-          COPY integration/smoke-tests/api-functionality/data/api.json /opt/tyk-gateway/apps/
-          COPY integration/smoke-tests/api-functionality/api_test.sh /
-          COPY integration/smoke-tests/api-functionality/pkg_test.sh /
+          COPY ci/tests/api-functionality/data/api.json /opt/tyk-gateway/apps/
+          COPY ci/tests/api-functionality/api_test.sh /
+          COPY ci/tests/api-functionality/pkg_test.sh /
           CMD [ "/pkg_test.sh" ]
           >>)' > Dockerfile
 
@@ -128,11 +128,23 @@ ifelse(xREPO, <<tyk>>, <<format(%10s)tags: test-${{ matrix.distro }}
         shell: bash
         run: |
           set -eaxo pipefail
-          if [ ! -d integration/smoke-tests ]; then
-             echo "::warning No smoke tests defined"
+          if [ ! -d smoke-tests ]; then
+             echo "::warning No repo specific smoke tests defined"
+          fi
+          if [ ! -d ci/tests ]; then
+             echo "::warning No ci tests defined"
              exit 0
           fi
-          for d in integration/smoke-tests/*/
+          for d in ci/tests/*/
+          do
+              echo Attempting to test $d
+              if [ -d $d ] && [ -e $d/test.sh ]; then
+                  cd $d
+                  ./test.sh ${{ needs.goreleaser.outputs.tag }}
+                  cd -
+              fi
+          done
+          for d in smoke-tests/*/
           do
               echo Attempting to test $d
               if [ -d $d ] && [ -e $d/test.sh ]; then

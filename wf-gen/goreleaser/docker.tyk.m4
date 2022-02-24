@@ -12,9 +12,9 @@
   use: buildx
   goarch: amd64
   goos: linux
-  dockerfile: images/hybrid/Dockerfile
+  dockerfile: ci/images/hybrid/Dockerfile
   extra_files:
-    - "images/hybrid/"
+    - "ci/images/hybrid/"
 
 # Build gateway hybrid container arm64
 - ids:
@@ -30,8 +30,8 @@
   use: buildx
   goarch: arm64
   goos: linux
-  dockerfile: images/hybrid/Dockerfile
+  dockerfile: ci/images/hybrid/Dockerfile
   extra_files:
-    - "images/hybrid/"
+    - "ci/images/hybrid/"
 
 include(goreleaser/plugin-compiler.m4)

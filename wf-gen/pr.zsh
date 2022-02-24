@@ -101,7 +101,7 @@ function process_repo {
 	echo "FILE: $file, REPO: $r"
 	# Extend this for more special conditions. Associative arrays have limitations.
 	case $file in
-	    .goreleaser-el7.yml)
+	    ci/goreleaser/goreleaser-el7.yml)
 		cmd="m4 -E -DxEL7_SUFFIX=-el7 -DxREPO=${r}"
 		;;
 	    *)

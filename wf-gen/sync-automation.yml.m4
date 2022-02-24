@@ -9,9 +9,9 @@ on:
     branches:
       - xSRC_BRANCH
     paths:
-      - .github/workflows/*
-      - integration/*
-      - .goreleaser.yml
+      - .github/workflows/release.yml
+      - .github/workflows/api-tests.yml
+      - ci/*
 
 env:
   FILES: xAUTO_FILES

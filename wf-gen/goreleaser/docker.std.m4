@@ -14,9 +14,9 @@
   use: buildx
   goarch: amd64
   goos: linux
-  dockerfile: Dockerfile.std
+  dockerfile: ci/Dockerfile.std
   extra_files:
-    - "install/"
+    - "ci/install/"
     - "README.md"
 ifelse(xREPO, <<tyk-analytics>>,<<
     - "EULA.md"
@@ -54,9 +54,9 @@ ifelse(xREPO, <<tyk-analytics>>,<<
   use: buildx
   goarch: arm64
   goos: linux
-  dockerfile: Dockerfile.std
+  dockerfile: ci/Dockerfile.std
   extra_files:
-    - "install/"
+    - "ci/install/"
     - "README.md"
 ifelse(xREPO, <<tyk-analytics>>,<<
     - "EULA.md"

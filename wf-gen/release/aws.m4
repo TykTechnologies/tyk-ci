@@ -22,7 +22,7 @@
           path: aws
 
       - name: Packer build
-        working-directory: ./aws
+        working-directory: ./ci/aws
         run: |
           export VERSION=${{ needs.goreleaser.outputs.tag }}
           packer validate -var-file=${{ matrix.flavour }}.vars.json byol.pkr.hcl
@@ -57,7 +57,7 @@ ifelse(xREPO, <<tyk-analytics>>, <<
           path: aws
 
       - name: Packer build
-        working-directory: ./aws
+        working-directory: ./ci/aws
         env:
           ONE_GW: ${{ secrets.PAYG_ONE_GW }}
           TWO_GW: ${{ secrets.PAYG_TWO_GW }}
