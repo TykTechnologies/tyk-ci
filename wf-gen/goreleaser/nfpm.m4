@@ -18,11 +18,11 @@ ifelse(xCGO, <<1>>,<<
     contents:
       - src: "README.md"
         dst: "/opt/share/docs/xCOMPATIBILITY_NAME/README.md"
-      - src: "install/*"
+      - src: "ci/install/*"
         dst: "/opt/xCOMPATIBILITY_NAME/install"
-      - src: install/inits/systemd/system/xCOMPATIBILITY_NAME.service
+      - src: ci/install/inits/systemd/system/xCOMPATIBILITY_NAME.service
         dst: /lib/systemd/system/xCOMPATIBILITY_NAME.service
-      - src: install/inits/sysv/init.d/xCOMPATIBILITY_NAME
+      - src: ci/install/inits/sysv/init.d/xCOMPATIBILITY_NAME
         dst: /etc/init.d/xCOMPATIBILITY_NAME
 ifelse(xREPO, <<tyk-analytics>>,<<
       - src: /opt/xCOMPATIBILITY_NAME
@@ -108,11 +108,11 @@ ifelse(xREPO, <<tyk-analytics>>, <<
     contents:
       - src: "README.md"
         dst: "/opt/share/docs/xCOMPATIBILITY_NAME/README.md"
-      - src: "install/*"
+      - src: "ci/install/*"
         dst: "/opt/xCOMPATIBILITY_NAME/install"
-      - src: install/inits/systemd/system/xCOMPATIBILITY_NAME.service
+      - src: ci/install/inits/systemd/system/xCOMPATIBILITY_NAME.service
         dst: /lib/systemd/system/xCOMPATIBILITY_NAME.service
-      - src: install/inits/sysv/init.d/xCOMPATIBILITY_NAME
+      - src: ci/install/inits/sysv/init.d/xCOMPATIBILITY_NAME
         dst: /etc/init.d/xCOMPATIBILITY_NAME
       - src: /opt/xCOMPATIBILITY_NAME
         dst: /opt/xREPO

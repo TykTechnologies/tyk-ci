@@ -1,7 +1,7 @@
     scripts:
-      preinstall: "install/before_install.sh"
-      postinstall: "install/post_install.sh"
-      postremove: "install/post_remove.sh"
+      preinstall: "ci/install/before_install.sh"
+      postinstall: "ci/install/post_install.sh"
+      postremove: "ci/install/post_remove.sh"
     bindir: "/opt/xCOMPATIBILITY_NAME"
     overrides:
       rpm:
@@ -16,7 +16,7 @@
           arm: arm64
     rpm:
       scripts:
-        posttrans: install/post_trans.sh
+        posttrans: ci/install/post_trans.sh
       signature:
         key_file: tyk.io.signing.key
     deb:

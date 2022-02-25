@@ -9,7 +9,7 @@ ifelse(xCGO, <<1>>,<<
 >>)dnl
   files:
     - README.md
-    - "install/*"
+    - "ci/install/*"
 ifelse(xREPO, <<tyk-analytics>>,
 <<    - EULA.md
     - CHANGELOG.md

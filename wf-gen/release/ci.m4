@@ -21,7 +21,7 @@ ifelse(xREPO, <<tyk-analytics>>,
       - name: Get AWS creds from Terraform remote state
         id: aws-creds
         run: |
-          cd integration/terraform
+          cd ci/terraform
           terraform init -input=false
           terraform refresh 2>&1 >/dev/null
           eval $(terraform output -json xREPO | jq -r 'to_entries[] | [.key,.value] | join("=")')
@@ -55,7 +55,7 @@ ifelse(xREPO, <<tyk-analytics>>,
         with:
           push: true
           context: "."
-          file: Dockerfile.std
+          file: ci/Dockerfile.std
           platforms: linux/amd64,linux/arm64
           tags: |
             ${{ steps.login-ecr.outputs.registry }}/xREPO:${{ needs.goreleaser.outputs.tag }}

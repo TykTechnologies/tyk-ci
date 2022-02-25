@@ -8,11 +8,11 @@
         golang_cross: [ 1.15 ifelse(xCGO, <<1>>, <<, 1.15-el7>>) ]
         include:ifelse(xCGO, <<1>>,<<
           - golang_cross: 1.15-el7
-            goreleaser: '.goreleaser-el7.yml'
+            goreleaser: 'ci/goreleaser/goreleaser-el7.yml'
             rpmvers: 'el/7'
             debvers: 'ubuntu/xenial ubuntu/bionic debian/jessie'>>)
           - golang_cross: 1.15
-            goreleaser: '.goreleaser.yml'ifelse(xCGO, <<1>>, <<
+            goreleaser: 'ci/goreleaser/goreleaser.yml'ifelse(xCGO, <<1>>, <<
             rpmvers: 'el/8'
             debvers: 'ubuntu/focal debian/buster debian/bullseye'
 >>)ifelse(xCGO, <<0>>, <<
@@ -64,7 +64,7 @@ ifelse(xREPO, <<tyk-analytics>>,
           GPG_FINGERPRINT: 12B5D62C28F57592D1575BD51ED14C59E37DAC20
           PKG_SIGNING_KEY: ${{ secrets.SIGNING_KEY }}
         run: |
-          bin/unlock-agent.sh
+          ci/bin/unlock-agent.sh
           current_tag=${GITHUB_REF##*/}
           echo "::set-output name=tag::${current_tag}"
 

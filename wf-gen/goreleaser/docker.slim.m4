@@ -13,9 +13,9 @@
     - "--label=org.opencontainers.image.version={{.Version}}"
   goarch: amd64
   goos: linux
-  dockerfile: Dockerfile.slim
+  dockerfile: ci/Dockerfile.slim
   extra_files:
-    - "install/"
+    - "ci/install/"
     - "README.md"
 ifelse(xREPO, <<tyk-analytics>>,<<
     - "EULA.md"

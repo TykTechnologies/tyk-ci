@@ -16,9 +16,9 @@ define(xEL7_SUFFIX)dnl
     - "--build-arg=GOLANG_CROSS={{ .Env.GOLANG_CROSS }}"
   goarch: amd64
   goos: linux
-  dockerfile: images/plugin-compiler/Dockerfile
+  dockerfile: ci/images/plugin-compiler/Dockerfile
   extra_files:
-    - images/plugin-compiler
+    - ci/images/plugin-compiler
     - go.mod
     - apidef
     - certs
@@ -32,7 +32,6 @@ define(xEL7_SUFFIX)dnl
     - gateway
     - goplugin
     - headers
-    - integration
     - log
     - regexp
     - request
