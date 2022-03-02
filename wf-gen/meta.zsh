@@ -20,7 +20,7 @@ RELEASE_BRANCHES[master,tyk]='release-4-lts, release-3.2.3, release-4'
 
 RELEASE_BRANCHES[master,tyk-analytics]='release-4-lts, release-3.2.3, release-4'
 
-RELEASE_BRANCHES[master,tyk-pump]='release-4-lts, release-3.2.3, release-4'
+RELEASE_BRANCHES[master,tyk-pump]='release-1.5'
 
 function parse_options {
     # Defaults
