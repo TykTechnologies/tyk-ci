@@ -11,6 +11,7 @@ on:
     paths:
       - .github/workflows/release.yml
       - .github/workflows/api-tests.yml
+      - .github/workflows/ui-tests.yml
       - ci/*
 
 env:

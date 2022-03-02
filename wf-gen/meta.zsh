@@ -22,6 +22,8 @@ RELEASE_BRANCHES[master,tyk-analytics]='release-4-lts, release-3.2.3, release-4'
 
 RELEASE_BRANCHES[master,tyk-pump]='release-1.5'
 
+RELEASE_BRANCHES[master,tyk-sink]='release-1.8 release-1.9'
+
 function parse_options {
     # Defaults
     local -a o_repos=(repos $REPOS)
@@ -128,7 +130,7 @@ function process_repo_branch {
     # :t is basename
     local src="${target:t}.${SOURCE_SUFFIX}"
 
-    cmd="m4 -E -DxSRC_BRANCH='$branch' -DxRELEASE_BRANCHES='$RELEASE_BRANCHES[$branch,$r]' -DxAUTO_FILES='$TARGETS'"
+    cmd="m4 -E -DxSRC_BRANCH='$branch' -DxRELEASE_BRANCHES='$RELEASE_BRANCHES[$branch,$r]' -DxAUTO_FILES='$SYNC_AUTO_TARGETS'"
 
     print Running: $cmd $src with output to $target
     mkdir -p $dirpath || exit 1
