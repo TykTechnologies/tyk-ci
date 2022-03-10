@@ -12,7 +12,7 @@ on:
       - .github/workflows/release.yml
       - .github/workflows/api-tests.yml
       - .github/workflows/ui-tests.yml
-      - ci/*
+      - ci/**
 
 env:
   FILES: xAUTO_FILES
