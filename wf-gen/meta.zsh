@@ -10,19 +10,17 @@ typeset -A SOURCE_BRANCHES
 SOURCE_BRANCHES[tyk]='master'
 SOURCE_BRANCHES[tyk-analytics]='master'
 SOURCE_BRANCHES[tyk-pump]='master'
-SOURCE_BRANCHES[tyk-pump]='master'
 SOURCE_BRANCHES[tyk-sink]='master'
+SOURCE_BRANCHES[tyk-identity-broker]='master'
 
 # Release branches for known repos, all automation will be sync'd to these branches when pushed to the corresponding SOURCE_BRANCH by sync-automation.yml
 # Needs to be a comma-separated list as it it goes into a YAML array.
 typeset -A RELEASE_BRANCHES
 RELEASE_BRANCHES[master,tyk]='release-4-lts, release-3.2.3, release-4'
-
 RELEASE_BRANCHES[master,tyk-analytics]='release-4-lts, release-3.2.3, release-4'
-
 RELEASE_BRANCHES[master,tyk-pump]='release-1.5'
-
 RELEASE_BRANCHES[master,tyk-sink]='release-1.8, release-1.9'
+RELEASE_BRANCHES[master,tyk-identity-broker]='release-1.2, release-1.3'
 
 function parse_options {
     # Defaults
