@@ -11,11 +11,12 @@ on:
     paths:
       - .github/workflows/release.yml
       - .github/workflows/api-tests.yml
-      - ci/*
+      - .github/workflows/ui-tests.yml
+      - ci/**
 
 env:
   FILES: xAUTO_FILES
-  
+
 jobs:
   sync:
     runs-on: ubuntu-latest
@@ -24,11 +25,12 @@ jobs:
       fail-fast: false
       matrix:
         branch: [ xRELEASE_BRANCHES ]
-          
+
     steps:
       - uses: actions/checkout@v2
         with:
           ref: ${{matrix.branch}}
+          token: ${{ secrets.ORG_GH_TOKEN }}
 
       - name: sync ${{matrix.branch}} from xSRC_BRANCH
         run: |
