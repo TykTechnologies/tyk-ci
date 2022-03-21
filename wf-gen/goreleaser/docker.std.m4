@@ -36,6 +36,10 @@ ifelse(xREPO, <<tyk-analytics>>,<<
 >>, xREPO, <<tyk-pump>>,<<
     - "LICENSE.md"
     - "pump.example.conf"
+>>, xREPO, <<portal>>,
+<<    - "app/*"
+    - "themes/*"
+    - "public/system/*"
 >>)dnl
 
 # Build tykio/xDH_REPO, cloudsmith/xCOMPATIBILITY_NAME (arm64)
@@ -76,4 +80,8 @@ ifelse(xREPO, <<tyk-analytics>>,<<
 >>, xREPO, <<tyk-pump>>,<<
     - "LICENSE.md"
     - "pump.example.conf"
+>>, xREPO, <<portal>>,
+<<    - "app/*"
+    - "themes/*"
+    - "public/system/*"
 >>)dnl

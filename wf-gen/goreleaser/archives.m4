@@ -32,4 +32,8 @@ ifelse(xREPO, <<tyk-analytics>>,
 <<    - "LICENSE.md"
     - CHANGELOG.md
     - pump.example.conf
+>>, xREPO, <<portal>>,
+<<    - "app/*"
+    - "themes/*"
+    - "public/system/*"  
 >>)

@@ -10,6 +10,7 @@ ifelse(xREPO, <<tyk>>, <<
       - linux
     goarch:
       - amd64
+    binary: xBINARY
   - id: std-arm64
 ifelse(xREPO, <<tyk>>, <<
     flags:
@@ -23,6 +24,7 @@ ifelse(xREPO, <<tyk>>, <<
       - linux
     goarch:
       - arm64
+    binary: xBINARY
   # static builds strip symbols and do not allow plugins
   - id: static-amd64
     ldflags:
@@ -32,6 +34,7 @@ ifelse(xREPO, <<tyk>>, <<
       - linux
     goarch:
       - amd64
+    binary: xBINARY
 ifelse(xREPO, <<tyk-analytics>>, <<
   # With special license pubkey
   - id: payg
@@ -45,4 +48,5 @@ ifelse(xREPO, <<tyk-analytics>>, <<
       - linux
     goarch:
       - amd64
+    binary: xBINARY
 >>)

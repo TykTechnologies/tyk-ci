@@ -80,8 +80,8 @@ ifelse(xREPO, <<tyk-analytics>>,<<
       - src: tyk_sink_sample.conf
         dst: /opt/xCOMPATIBILITY_NAME/xCONFIG_FILE
         type: "config|noreplace"
->>, xREPO, <<raava>>, <<
-      - src: raava.conf
+>>, xREPO, <<portal>>, <<
+      - src: portal.conf
         dst: /opt/xCOMPATIBILITY_NAME/xCONFIG_FILE
         type: "config|noreplace"
       - src: app/*
