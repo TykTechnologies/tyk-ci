@@ -1,7 +1,10 @@
 include(header.m4)
 FROM gcr.io/distroless/static-debian10
 WORKDIR /opt/xREPO
+ifelse(xREPO, <<portal>>,
+COPY xBINARY .,
 COPY xREPO .
+)
 ifelse(xREPO, <<tyk>>,
 COPY apps/app_sample.json apps/app_sample.json
 COPY tyk.conf.example tyk.conf,
@@ -11,7 +14,6 @@ COPY tyk_config_sample.config tyk-analytics.conf,
 xREPO, <<tyk-pump>>,
 COPY pump.example.conf tyk-pump.conf,
 xREPO, <<portal>>,
-COPY dev-portal .
 COPY app app
 COPY themes themes
 COPY public public
