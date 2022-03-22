@@ -9,9 +9,18 @@ xREPO, <<tyk-analytics>>,
 COPY portal schemas webclient/lang ./
 COPY tyk_config_sample.config tyk-analytics.conf,
 xREPO, <<tyk-pump>>,
-COPY pump.example.conf tyk-pump.conf)
+COPY pump.example.conf tyk-pump.conf,
+xREPO, <<portal>>,
+COPY dev-portal .
+COPY app app
+COPY themes themes
+COPY public public
+)
 ARG PORTS
 EXPOSE $PORTS
 
+ifelse(xREPO, <<portal>>,
+ENTRYPOINT ["/opt/xCOMPATIBILITY_NAME/xBINARY" ],
 ENTRYPOINT ["/opt/xCOMPATIBILITY_NAME/xREPO" ]
+)
 CMD [ "--conf=/opt/xCOMPATIBILITY_NAME/xCONFIG_FILE" ]
