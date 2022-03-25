@@ -5,6 +5,12 @@ include(header.m4)
 # - arm64
 # - amd64
 
+ifelse(xREPO,<<portal>>,<<
+before:
+  hooks:
+    - go mod tidy
+    - ./copy-framework-files.sh
+>>)dnl
 ifelse(xCGO, <<1>>, include(goreleaser/cgo-builds.m4), include(goreleaser/builds.m4))
 
 dockers:

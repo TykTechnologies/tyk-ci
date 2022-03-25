@@ -3,7 +3,9 @@
     - std
   image_templates:
     - "tykio/xDH_REPO:{{ .Tag }}-amd64"
+ifelse(xREPO,<<portal>>,<<>>,<<dnl
     - "docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:{{ .Tag }}"
+>>)dnl
   build_flag_templates:
     - "--build-arg=PORTS=xPORTS"
     - "--platform=linux/amd64"
@@ -36,10 +38,6 @@ ifelse(xREPO, <<tyk-analytics>>,<<
 >>, xREPO, <<tyk-pump>>,<<
     - "LICENSE.md"
     - "pump.example.conf"
->>, xREPO, <<portal>>,
-<<    - "app/*"
-    - "themes/*"
-    - "public/system/*"
 >>)dnl
 
 # Build tykio/xDH_REPO, cloudsmith/xCOMPATIBILITY_NAME (arm64)
@@ -47,7 +45,9 @@ ifelse(xREPO, <<tyk-analytics>>,<<
     - std
   image_templates:
     - "tykio/xDH_REPO:{{ .Tag }}-arm64"
+ifelse(xREPO,<<portal>>,<<>>,<<dnl
     - "docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:{{ .Tag }}-arm64"
+>>)dnl
   build_flag_templates:
     - "--build-arg=PORTS=xPORTS"
     - "--platform=linux/arm64"
@@ -80,8 +80,4 @@ ifelse(xREPO, <<tyk-analytics>>,<<
 >>, xREPO, <<tyk-pump>>,<<
     - "LICENSE.md"
     - "pump.example.conf"
->>, xREPO, <<portal>>,
-<<    - "app/*"
-    - "themes/*"
-    - "public/system/*"
 >>)dnl
