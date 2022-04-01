@@ -4,13 +4,8 @@ include(header.m4)
 # This project needs CGO_ENABLED=1 and the cross-compiler toolchains for
 # - arm64
 # - amd64
-
-ifelse(xREPO,<<portal>>,<<
-before:
-  hooks:
-    - go mod tidy
-    - ./copy-framework-files.sh
->>)dnl
+#
+include(goreleaser/before-hooks.m4)
 ifelse(xCGO, <<1>>, include(goreleaser/cgo-builds.m4), include(goreleaser/builds.m4))
 
 dockers:
