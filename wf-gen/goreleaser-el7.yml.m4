@@ -5,6 +5,7 @@ include(header.m4)
 # - arm64
 # - amd64
 
+include(goreleaser/before-hooks.m4)
 ifelse(xCGO, <<1>>, << 
 include(goreleaser/cgo-builds.m4)
 include(goreleaser/nfpm.m4)

@@ -3,8 +3,10 @@
   image_templates:
     - "tykio/xDH_REPO:s{{ .Version }}"
     - "tykio/xDH_REPO:s{{ .Major }}.{{ .Minor }}"
+ifelse(xREPO,<<portal>>,<<>>,<<dnl
     - "docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:s{{ .Version }}"
     - "docker.tyk.io/xCOMPATIBILITY_NAME/xCOMPATIBILITY_NAME:s{{ .Major }}.{{ .Minor }}"
+>>)dnl
   build_flag_templates:
     - "--build-arg=PORTS=xPORTS"
     - "--label=org.opencontainers.image.created={{.Date}}"
@@ -35,4 +37,8 @@ ifelse(xREPO, <<tyk-analytics>>,<<
 >>, xREPO, <<tyk-pump>>,<<
     - "LICENSE.md"
     - "pump.example.conf"
+>>, xREPO, <<portal>>,<<
+    - "app/"
+    - "themes/"
+    - "public/"
 >>)dnl
