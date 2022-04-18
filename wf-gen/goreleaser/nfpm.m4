@@ -86,8 +86,8 @@ ifelse(xREPO, <<tyk-analytics>>,<<
         type: "config|noreplace"
       - src: app/*
         dst: /opt/xCOMPATIBILITY_NAME/app/
-      - src: themes/*
-        dst: /opt/xCOMPATIBILITY_NAME/themes/
+      - src: themes
+        dst: /opt/xCOMPATIBILITY_NAME/themes
       - src: public/system/*
         dst: /opt/xCOMPATIBILITY_NAME/public/system/
 >>)dnl

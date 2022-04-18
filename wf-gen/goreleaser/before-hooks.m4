@@ -2,5 +2,5 @@ ifelse(xREPO,<<portal>>,<<
 before:
   hooks:
     - go mod tidy
-    - ./copy-framework-files.sh
+    - ./ci/copy-framework-files.sh
 >>)dnl
