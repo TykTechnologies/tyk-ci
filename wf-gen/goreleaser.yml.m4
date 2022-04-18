@@ -22,6 +22,17 @@ docker_manifests:
     - tykio/xDH_REPO:{{ .Tag }}-amd64
     - tykio/xDH_REPO:{{ .Tag }}-arm64
 ifelse(xREPO, <<tyk>>, <<
+docker_manifests:
+  - name_template: tykio/tyk-plugin-compiler:{{ .Tag }}xEL7_SUFFIX
+    image_templates:
+    - tykio/tyk-plugin-compiler:{{ .Tag }}xEL7_SUFFIX-amd64
+    - tykio/tyk-plugin-compiler:{{ .Tag }}xEL7_SUFFIX-arm64
+  - name_template: tykio/tyk-plugin-compiler:v{{ .Major }}.{{ .Minor }}{{.Prerelease}}xEL7_SUFFIX
+    image_templates:
+    - tykio/tyk-plugin-compiler:{{ .Tag }}xEL7_SUFFIX-amd64
+    - tykio/tyk-plugin-compiler:{{ .Tag }}xEL7_SUFFIX-arm64
+>>)
+ifelse(xREPO, <<tyk>>, <<
   - name_template: tykio/tyk-hybrid-docker:{{ .Tag }}
     image_templates:
     - tykio/tyk-hybrid-docker:{{ .Tag }}-amd64

@@ -20,6 +20,16 @@ ifelse(xREPO, <<tyk>>,
 dockers:
 include(goreleaser/plugin-compiler.m4))
 
+docker_manifests:
+  - name_template: tykio/tyk-plugin-compiler:{{ .Tag }}xEL7_SUFFIX
+    image_templates:
+    - tykio/tyk-plugin-compiler:{{ .Tag }}xEL7_SUFFIX-amd64
+    - tykio/tyk-plugin-compiler:{{ .Tag }}xEL7_SUFFIX-arm64
+  - name_template: tykio/tyk-plugin-compiler:v{{ .Major }}.{{ .Minor }}{{.Prerelease}}xEL7_SUFFIX
+    image_templates:
+    - tykio/tyk-plugin-compiler:{{ .Tag }}xEL7_SUFFIX-amd64
+    - tykio/tyk-plugin-compiler:{{ .Tag }}xEL7_SUFFIX-arm64
+
 checksum:
   disable: true
 
