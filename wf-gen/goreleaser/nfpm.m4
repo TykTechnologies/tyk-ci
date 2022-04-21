@@ -84,12 +84,16 @@ ifelse(xREPO, <<tyk-analytics>>,<<
       - src: portal.conf
         dst: /opt/xCOMPATIBILITY_NAME/xCONFIG_FILE
         type: "config|noreplace"
-      - src: app/*
-        dst: /opt/xCOMPATIBILITY_NAME/app/
-      - src: themes/*
-        dst: /opt/xCOMPATIBILITY_NAME/themes/
-      - src: public/system/*
-        dst: /opt/xCOMPATIBILITY_NAME/public/system/
+      - src: ci/entrypoint.sh
+        dst: /opt/portal/entrypoint.sh
+        file_info:
+          mode: 0775
+      - src: app
+        dst: /opt/xCOMPATIBILITY_NAME/app
+      - src: themes
+        dst: /opt/xCOMPATIBILITY_NAME/themes
+      - src: public/system
+        dst: /opt/xCOMPATIBILITY_NAME/public/system
 >>)dnl
 include(goreleaser/nfpm-common.m4)
 ifelse(xREPO, <<tyk-analytics>>, <<
