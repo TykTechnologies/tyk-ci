@@ -26,9 +26,6 @@
          "Sid":"AllowPush",
          "Effect":"Allow",
          "Action":[
-            "ecr:GetDownloadUrlForLayer",
-            "ecr:BatchGetImage",
-            "ecr:BatchCheckLayerAvailability",
             "ecr:PutImage",
             "ecr:InitiateLayerUpload",
             "ecr:UploadLayerPart",

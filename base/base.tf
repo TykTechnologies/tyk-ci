@@ -186,8 +186,9 @@ resource "aws_iam_user_policy" "devshared" {
 }
 
 data "template_file" "devshared_access" {
+  for_each = toset(local.repos)
   template = templatefile("templates/devshared.tpl",
-  { resources = [for repo in local.repos : aws_ecr_repository.integration[repo].arn] })
+  { resources = [aws_ecr_repository.integration[each.value].arn] })
 }
 
 # terraform apply -target=null_resource.debug will show the rendered template
