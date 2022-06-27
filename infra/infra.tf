@@ -161,19 +161,6 @@ resource "aws_security_group" "efs" {
   }
 }
 
-resource "aws_security_group" "mongo" {
-  name        = "mongo"
-  description = "Allow mongo inbound traffic from anywhere in the VPC"
-  vpc_id      = module.vpc.vpc_id
-
-  ingress {
-    from_port   = 27017
-    to_port     = 27017
-    protocol    = "tcp"
-    cidr_blocks = [module.vpc.vpc_cidr_block]
-  }
-}
-
 resource "aws_security_group" "ssh" {
   name        = "ssh"
   description = "Allow ssh inbound traffic from anywhere"
@@ -197,39 +184,6 @@ resource "aws_security_group" "egress-all" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
-resource "aws_instance" "mongo" {
-  ami                    = data.aws_ami.mongo.id
-  instance_type          = "t3.micro"
-  key_name               = var.key_name
-  subnet_id              = module.vpc.private_subnets[0]
-  vpc_security_group_ids = [aws_security_group.mongo.id, aws_security_group.ssh.id, aws_security_group.egress-all.id]
-  user_data              = file("scripts/mongo-setup.sh")
-
-  tags = local.common_tags
-}
-
-data "aws_ami" "mongo" {
-  most_recent = true
-  # Bitnami
-  owners = ["979382823631"]
-  filter {
-    name   = "name"
-    values = ["bitnami-mongo*"]
-  }
-  filter {
-    name   = "architecture"
-    values = ["x86_64"]
-  }
-  filter {
-    name   = "root-device-type"
-    values = ["ebs"]
-  }
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
   }
 }
 
@@ -294,7 +248,7 @@ resource "aws_instance" "bastion" {
   instance_type          = "t2.micro"
   key_name               = var.key_name
   subnet_id              = module.vpc.public_subnets[0]
-  vpc_security_group_ids = [aws_security_group.efs.id, aws_security_group.mongo.id, aws_security_group.ssh.id, aws_security_group.egress-all.id]
+  vpc_security_group_ids = [aws_security_group.efs.id, aws_security_group.ssh.id, aws_security_group.egress-all.id]
   user_data_base64       = data.template_cloudinit_config.bastion.rendered
 
   tags = local.common_tags
@@ -352,12 +306,11 @@ resource "aws_route53_record" "bastion" {
 
   records = [aws_instance.bastion.public_ip]
 }
-
 resource "aws_route53_record" "mongo" {
   zone_id = aws_route53_zone.dev_tyk_tech.zone_id
   name    = "mongo"
-  type    = "A"
+  type    = "CNAME"
   ttl     = "300"
 
-  records = [aws_instance.mongo.private_ip]
+  records = [replace(module.tf-mongodbatlas.atlas_cluster_connection_strings.0.standard_srv, "mongodb+srv://", "")]
 }
