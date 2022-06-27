@@ -21,3 +21,14 @@ devenv-euc1-test:
 	@echo Generating plan upto vpc, for mount targets, and r53, for cloudflare NS entries
 	terraform plan -var-file=$(@).tfvars -target=module.vpc -target=aws_route53_zone.dev_tyk_tech -out=$(@).plan
 	terraform apply $(@).plan
+
+prereq:
+	test -n "$(MONGODB_ATLAS_PUBLIC_KEY)"
+	test -n "$(MONGODB_ATLAS_PRIVATE_KEY)"
+
+destroy-mongo: prereq
+	terraform plan -var-file=prod.tfvars -target=module.tf-mongodbatlas -target=aws_secretsmanager_secret.mongo-pass -target=aws_secretsmanager_secret_version.sversion -target=random_password.password -target=aws_route.peering-private -target=aws_route.peering-public -out=destroy.out -destroy
+	terraform apply destroy.out
+
+create: prereq
+	terraform apply -var-file=prod.tfvars -target=module.tf-mongodbatlas -target=aws_secretsmanager_secret.mongo-pass -target=aws_secretsmanager_secret_version.sversion -target=random_password.password -target=aws_route.peering-private -target=aws_route.peering-public
