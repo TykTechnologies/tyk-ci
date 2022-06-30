@@ -25,10 +25,7 @@ devenv-euc1-test:
 prereq:
 	test -n "$(MONGODB_ATLAS_PUBLIC_KEY)"
 	test -n "$(MONGODB_ATLAS_PRIVATE_KEY)"
-
-destroy-mongo: prereq
-	terraform plan -var-file=prod.tfvars -target=module.tf-mongodbatlas -target=aws_secretsmanager_secret.mongo-pass -target=aws_secretsmanager_secret_version.sversion -target=random_password.password -target=aws_route.peering-private -target=aws_route.peering-public -out=destroy.out -destroy
-	terraform apply destroy.out
-
-create: prereq
-	terraform apply -var-file=prod.tfvars -target=module.tf-mongodbatlas -target=aws_secretsmanager_secret.mongo-pass -target=aws_secretsmanager_secret_version.sversion -target=random_password.password -target=aws_route.peering-private -target=aws_route.peering-public
+	test -n "$(CLOUDFLARE_API_TOKEN)"
+	test -n "$(CLOUDFLARE_ACCOUNT_ID)"
+	test -n "$(AWS_ACCESS_KEY_ID)"
+	test -n "$(AWS_SECRET_ACCESS_KEY)"
