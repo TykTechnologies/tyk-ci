@@ -29,26 +29,28 @@ output "cd" {
 
 # MongoAtlas Output
 output "atlas_project_id" {
-  value       = module.tf-mongodbatlas.mongodbatlas_project.ara.id
+  value       = module.tf-mongodbatlas.atlas_project_id
   description = "MongoDB Atlas project ID"
 }
 
 output "atlas_cluster_connection_strings" {
-  value       = module.tf-mongodbatlas.mongodbatlas_cluster.ara.connection_strings
+  value       = module.tf-mongodbatlas.atlas_cluster_connection_strings
   description = "List of MongoDB Atlas cluster connection strings"
 }
 
-output "atlas_cluster_standard_conn_string" {
-  value = module.tf-mongodbatlas.mongodbatlas_cluster.ara.connection_strings.0.standard
+output "mongo_host" {
+  value = module.tf-mongodbatlas.atlas_cluster_ara_conn_string
   description = "MongoDB Ara cluster connection string"
 }
 
-output "atlas_admin_username" {
-  value       = module.tf-mongodbatlas.mongodbatlas_database_user.ara_admin.username
+output "mongo_admin_username" {
+  value       = module.tf-mongodbatlas.atlas_admin_username
+  sensitive = true
   description = "MongoDB Atlas cluster admin username"
 }
 
-output "atlas_admin_password" {
-  value       = module.tf-mongodbatlas.mongodbatlas_database_user.ara_admin.password
+output "mongo_admin_password" {
+  value       = module.tf-mongodbatlas.atlas_admin_password
+  sensitive = true
   description = "MongoDB Atlas cluster admin password"
 }
