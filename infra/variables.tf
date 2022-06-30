@@ -38,3 +38,9 @@ variable "cfssl_image" {
 variable "gromit_image" {
   description = "Full repo URL with tag of the gromit image to use"
 }
+
+variable "atlas_cidr" {
+  description = "CIDR for ATLAS"
+  type = string
+  default = "10.92.0.0/21"
+}

@@ -1,8 +1,3 @@
-output "mongo_host" {
-  value       = aws_instance.mongo.private_ip
-  description = "Shared with all environments"
-}
-
 output "vpc_id" {
   value       = module.vpc.vpc_id
   description = "VPC for infra"
@@ -30,4 +25,32 @@ output "cd" {
     "secret" = aws_iam_access_key.deployment.secret
   })
   description = "Service account for continuous deployment"
+}
+
+# MongoAtlas Output
+output "atlas_project_id" {
+  value       = module.tf-mongodbatlas.atlas_project_id
+  description = "MongoDB Atlas project ID"
+}
+
+output "atlas_cluster_connection_strings" {
+  value       = module.tf-mongodbatlas.atlas_cluster_connection_strings
+  description = "List of MongoDB Atlas cluster connection strings"
+}
+
+output "mongo_host" {
+  value = module.tf-mongodbatlas.atlas_cluster_ara_conn_string
+  description = "MongoDB Ara cluster connection string"
+}
+
+output "mongo_admin_username" {
+  value       = module.tf-mongodbatlas.atlas_admin_username
+  sensitive = true
+  description = "MongoDB Atlas cluster admin username"
+}
+
+output "mongo_admin_password" {
+  value       = module.tf-mongodbatlas.atlas_admin_password
+  sensitive = true
+  description = "MongoDB Atlas cluster admin password"
 }
