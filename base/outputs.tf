@@ -33,6 +33,16 @@ output "portal" {
   description = "portal"
 }
 
+output "tyk-sync" {
+  sensitive = true
+  value = tomap({
+    key = aws_iam_access_key.integration["tyk-sync"].id,
+    secret = aws_iam_access_key.integration["tyk-sync"].secret,
+    ecr = aws_ecr_repository.integration["tyk-sync"].repository_url,
+  })
+  description = "tyk-sync"
+}
+
 output "tyk-analytics" {
   sensitive = true
   value = tomap({

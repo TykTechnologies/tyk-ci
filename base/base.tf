@@ -17,7 +17,7 @@ locals {
   # name should match the tf workspace name
   name = "base-prod"
   # Repositories to create with per-repo access keys
-  repos = ["tyk", "tyk-analytics", "tyk-pump", "tyk-sink", "tyk-identity-broker", "portal"]
+  repos = ["tyk", "tyk-analytics", "tyk-pump", "tyk-sink", "tyk-identity-broker", "portal", "tyk-sync"]
   # An additional repo that will be linked to the tyk user from repos above
   tyk_repos = ["tyk-plugin-compiler"]
   common_tags = {
