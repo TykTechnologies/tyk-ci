@@ -61,6 +61,7 @@ resource "aws_ecr_repository" "integration" {
 resource "aws_ecr_lifecycle_policy" "retain_2w" {
   for_each = toset(concat(local.repos, local.tyk_repos))
 
+  depends_on = [aws_ecr_repository.integration]
   repository = each.key
 
   policy = <<EOF
