@@ -17,7 +17,7 @@ locals {
   # name should match the tf workspace name
   name = "base-prod"
   # Repositories to create with per-repo access keys
-  repos = ["tyk", "tyk-analytics", "tyk-pump", "tyk-sink", "tyk-identity-broker", "portal"]
+  repos = ["tyk", "tyk-analytics", "tyk-pump", "tyk-sink", "tyk-identity-broker", "portal", "tyk-sync"]
   # An additional repo that will be linked to the tyk user from repos above
   tyk_repos = ["tyk-plugin-compiler"]
   common_tags = {
@@ -61,6 +61,7 @@ resource "aws_ecr_repository" "integration" {
 resource "aws_ecr_lifecycle_policy" "retain_2w" {
   for_each = toset(concat(local.repos, local.tyk_repos))
 
+  depends_on = [aws_ecr_repository.integration]
   repository = each.key
 
   policy = <<EOF
