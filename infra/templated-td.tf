@@ -19,11 +19,11 @@ module "gateway-td-template" {
     name      = "tyk-template",
     command   = ["--conf=/conf/tyk.conf"],
     port      = 8181,
-		cpu				= 256,
-		memory		= 512,
+    cpu	      = 256,
+    memory    = 512,
     # To be Overrided
-		log_group = "dev-env",
-		# To be Overrided
+    log_group = "dev-env",
+    # To be Overrided
     image     = join(":", [data.terraform_remote_state.base.outputs.tyk["ecr"], "master"])
     mounts = [
       { src = "config", dest = "/conf", readonly = true }
@@ -43,8 +43,8 @@ module "redis-td-template" {
     name      = "redis-template",
     command   = [],
     port      = 6379,
-		cpu				= 256,
-		memory		= 512,
+    cpu	      = 256,
+    memory    = 512,
     log_group = "dev-env",
     image     = "redis"
     mounts = [],
@@ -63,8 +63,8 @@ module "dashboard-td-template" {
     name      = "tyk-analytics-template",
     command   = ["--conf=/conf/tyk-analytics.conf"],
     port      = 3000,
-		cpu				= 256,
-		memory		= 512,
+    cpu	      = 256,
+    memory    = 512,
     log_group = "dev-env",
     image     = join(":", [data.terraform_remote_state.base.outputs.tyk-analytics["ecr"], "master"])
     mounts = [
@@ -88,8 +88,8 @@ module "pump-td-template" {
     command   = ["--conf=/conf/tyk-pump.conf"],
     # pump doesn't listen, but the module expects a port
     port      = 443,
-		cpu				= 256,
-		memory		= 512,
+    cpu	      = 256,
+    memory    = 512,
     log_group = "dev-env",
     image     = join(":", [data.terraform_remote_state.base.outputs.tyk-pump["ecr"], "master"])
     mounts = [
