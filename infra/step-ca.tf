@@ -1,22 +1,23 @@
-# TLS infra provided by cfssl
-module "cfssl" {
+# TLS infra provided by step
+# The EFS mounts refer to cfssl which was used earlier
+module "step-ca" {
   source = "../modules/fg-service"
   cluster  = aws_ecs_cluster.internal.arn
   cdt = "templates/cd-awsvpc.tpl"
   # Container definition
   cd = {
-    name      = "cfssl",
+    name      = "ca",
     port      = 8888,
     log_group = "internal",
-    image     = var.cfssl_image,
-    command   = ["-port=8888", "-ca=rootca/rootca.pem", "-ca-key=rootca/rootca-key.pem", "-config=config.json", "-responder=rootca/ocsp.pem", "-responder-key=rootca/ocsp-key.pem", "-db-config=db.json", "-loglevel", "1"]
+    image     = var.stepca_image,
+    command   = [ "--password-file", "<(echo \"$CA_PASSWORD\")" ]
     mounts = [
-      { src = "cfssl", dest = "/cfssl", readonly = false },
+      { src = "cfssl", dest = "/home/step", readonly = false },
     ],
-    env = [
-      { name = "CFSSL_API_KEY", value = var.cfssl_apikey }
+    env = [],
+    secrets = [
+      { name = "CA_PASSWORD", valueFrom = "arn:aws:secretsmanager:eu-central-1:754489498669:secret:CAPassword-UvZ8OG" }
     ],
-    secrets = [],
     region  = var.region
   }
   trarn       = aws_iam_role.tr.arn
@@ -39,7 +40,7 @@ data "aws_iam_policy_document" "tr" {
 }
 
 resource "aws_iam_role" "tr" {
-  name = "cfssl"
+  name = "step-ca"
   assume_role_policy = data.aws_iam_policy_document.tr.json
 }
 

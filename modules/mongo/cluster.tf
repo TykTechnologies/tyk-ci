@@ -23,7 +23,6 @@ resource "mongodbatlas_cluster" "ara" {
   provider_instance_size_name = var.atlas_instance_size
   provider_region_name        = var.atlas_region
   provider_volume_type        = "STANDARD"
-  provider_encrypt_ebs_volume = true
   provider_backup_enabled     = var.backup_enabled
   disk_size_gb                 = var.atlas_disk_size_gb
   auto_scaling_disk_gb_enabled = true

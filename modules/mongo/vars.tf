@@ -93,11 +93,6 @@ variable "admin_password" {
 
 // General
 
-variable "aws_region" {
-  type        = string
-  description = "AWS region to use for cluster deployment"
-}
-
 variable "default_labels" {
   type = map
   description = "AWS default tags for different resources"

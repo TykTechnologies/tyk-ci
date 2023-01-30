@@ -32,7 +32,7 @@ module "sow" {
       { name = "GROMIT_CLUSTER_ZONEID", value = data.aws_route53_zone.dev_tyk_tech.zone_id }
     ],
     secrets = [
-      { name = "TF_API_TOKEN", from = "arn:aws:secretsmanager:eu-central-1:754489498669:secret:TFCloudAPI-1UnG8y" }
+      { name = "TF_API_TOKEN", valueFrom = "arn:aws:secretsmanager:eu-central-1:754489498669:secret:TFCloudAPI-1UnG8y" }
     ],
     region = var.region
   }
@@ -68,7 +68,7 @@ module "serve" {
       { name = "GROMIT_SERVE_CERT", value = local.gromit.serve_cert }
     ],
     secrets = [
-      { name = "GROMIT_SERVE_KEY", from = aws_secretsmanager_secret.gromit_serve_key.arn }
+      { name = "GROMIT_SERVE_KEY", valueFrom = aws_secretsmanager_secret.gromit_serve_key.arn }
     ],
     region  = var.region
   }
@@ -98,7 +98,7 @@ module "licenser" {
     ],
     env = [],
     secrets = [
-      { name = "GROMIT_LICENSER_TOKEN", from = aws_secretsmanager_secret.dash_token.arn }
+      { name = "GROMIT_LICENSER_TOKEN", valueFrom = aws_secretsmanager_secret.dash_token.arn }
     ],
     region = var.region
   }

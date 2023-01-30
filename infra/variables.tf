@@ -27,11 +27,7 @@ variable "key_name" {
   type        = string
 }
 
-variable "cfssl_apikey" {
-  description = "API key for cfssl requests"
-}
-
-variable "cfssl_image" {
+variable "stepca_image" {
   description = "Full repo URL with tag of the cfssl image to use"
 }
 

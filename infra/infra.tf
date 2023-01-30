@@ -66,6 +66,9 @@ m+gZMbj+s40v4g==
 -----END CERTIFICATE-----
 EOF
   }
+  # Atlas regions are like AWS regions but different, see
+  # https://www.mongodb.com/docs/atlas/reference/amazon-aws/
+  atlas_region = upper(replace(var.region, "-", "_"))
   # Managed policies for task role
   policies = [
     "AmazonRoute53FullAccess",
@@ -187,7 +190,7 @@ resource "aws_security_group" "egress-all" {
   }
 }
 
-# config and cfssl mount targets for all public subnets
+# config and ca mount targets for all public subnets
 
 data "template_file" "mount_config" {
   template = file("scripts/setup-efs.sh")
@@ -197,11 +200,11 @@ data "template_file" "mount_config" {
   }
 }
 
-data "template_file" "mount_cfssl_keys" {
+data "template_file" "mount_ca_keys" {
   template = file("scripts/setup-efs.sh")
   vars = {
-    efs_id      = data.terraform_remote_state.base.outputs.cfssl_efs
-    mount_point = "/cfssl"
+    efs_id      = data.terraform_remote_state.base.outputs.ca_efs
+    mount_point = "/ca"
   }
 }
 
@@ -216,7 +219,7 @@ data "template_cloudinit_config" "bastion" {
 
   part {
     content_type = "text/x-shellscript"
-    content      = data.template_file.mount_cfssl_keys.rendered
+    content      = data.template_file.mount_ca_keys.rendered
   }
 
   part {
@@ -225,10 +228,10 @@ data "template_cloudinit_config" "bastion" {
   }
 }
 
-resource "aws_efs_mount_target" "cfssl" {
+resource "aws_efs_mount_target" "ca" {
   for_each = toset(module.vpc.public_subnets)
 
-  file_system_id  = data.terraform_remote_state.base.outputs.cfssl_efs
+  file_system_id  = data.terraform_remote_state.base.outputs.ca_efs
   subnet_id       = each.value
   security_groups = [aws_security_group.efs.id]
 }

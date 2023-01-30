@@ -1,5 +1,5 @@
 provider "cloudflare" {
-  account_id = "35b8134b47c7d01ee8198bb2b82a8dc5"
+  # account_id = "35b8134b47c7d01ee8198bb2b82a8dc5"
 }
 
 resource "cloudflare_record" "dev_tyk_tech" {
