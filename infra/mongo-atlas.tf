@@ -1,3 +1,8 @@
+provider "mongodbatlas" {
+  public_key   = data.sops_file.secrets.data["atlas-pubkey"]
+  private_key  = data.sops_file.secrets.data["atlas-privkey"]
+}
+
 // Mongo Atlas
 module "tf-mongodbatlas" {
   # TBFixed once we ensure current module changes are compatible with ARA
@@ -8,7 +13,6 @@ module "tf-mongodbatlas" {
   atlas_teams 		= []
   atlas_instance_size  	= "M10"
   atlas_region 		= local.atlas_region
-  backup_enabled 	= false
   atlas_disk_size_gb 	= 10
   atlas_cidr 		= var.atlas_cidr
   atlas_allowed_cidrs   = [module.vpc.vpc_cidr_block]

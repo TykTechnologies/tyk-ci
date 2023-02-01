@@ -1,6 +1,5 @@
 base            = "base-prod"
 name_prefix     = "prod"
-domain          = "dev"
 cidr            = "10.91.0.0/16"
 atlas_cidr      = "10.92.0.0/21"
 region          = "eu-central-1"

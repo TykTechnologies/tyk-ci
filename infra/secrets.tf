@@ -1,11 +1,7 @@
 provider "sops" {}
 
-data "sops_file" "licenser_tokens" {
-  source_file = "licenser-tokens.yaml"
-}
-
-data "sops_file" "gromit_serve" {
-  source_file = "server-key.yaml"
+data "sops_file" "secrets" {
+  source_file = "secrets.yaml"
 }
 
 resource "aws_secretsmanager_secret" "dash_token" {
@@ -22,9 +18,14 @@ resource "aws_secretsmanager_secret" "mdcb_token" {
   tags = local.common_tags
 }
 
+resource "aws_secretsmanager_secret_version" "dash_token" {
+  secret_id     = aws_secretsmanager_secret.mdcb_token.id
+  secret_string = data.sops_file.secrets.data["dashboard-trial"]
+}
+
 resource "aws_secretsmanager_secret_version" "mdcb_token" {
   secret_id     = aws_secretsmanager_secret.mdcb_token.id
-  secret_string = data.sops_file.licenser_tokens.data["mdcb-trial"]
+  secret_string = data.sops_file.secrets.data["mdcb-trial"]
 }
 
 resource "aws_secretsmanager_secret" "gromit_serve_key" {
@@ -36,6 +37,6 @@ resource "aws_secretsmanager_secret" "gromit_serve_key" {
 
 resource "aws_secretsmanager_secret_version" "gromit_serve_key" {
   secret_id     = aws_secretsmanager_secret.gromit_serve_key.id
-  secret_string = data.sops_file.gromit_serve.data["key"]
+  secret_string = data.sops_file.secrets.data["key"]
 }
 

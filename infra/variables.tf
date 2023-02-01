@@ -8,11 +8,6 @@ variable "name_prefix" {
   type        = string
 }
 
-variable "domain" {
-  description = "Prefix added to .tyk.technology to construct the hosted zone"
-  type = string
-}
-
 variable "cidr" {
   description = "CIDR for VPC"
   type = string

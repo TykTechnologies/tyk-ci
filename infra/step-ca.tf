@@ -1,5 +1,4 @@
 # TLS infra provided by step
-# The EFS mounts refer to cfssl which was used earlier
 module "step-ca" {
   source = "../modules/fg-service"
   cluster  = aws_ecs_cluster.internal.arn
@@ -12,7 +11,7 @@ module "step-ca" {
     image     = var.stepca_image,
     command   = [ "--password-file", "<(echo \"$CA_PASSWORD\")" ]
     mounts = [
-      { src = "cfssl", dest = "/home/step", readonly = false },
+      { src = "ca", dest = "/home/step", readonly = false },
     ],
     env = [],
     secrets = [
@@ -24,7 +23,7 @@ module "step-ca" {
   tearn       = aws_iam_role.tr.arn
   vpc         = module.vpc.vpc_id
   subnets     = module.vpc.public_subnets
-  volume_map  = { cfssl = data.terraform_remote_state.base.outputs.cfssl_efs }
+  volume_map  = { ca = data.terraform_remote_state.base.outputs.ca_efs }
   common_tags = local.common_tags
 }
 

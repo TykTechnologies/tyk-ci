@@ -3,14 +3,14 @@ output "region" {
   description = "Region for base, infra and devenvs"
 }
 
-output "cfssl_efs" {
-  value       = aws_efs_file_system.cfssl.id
-  description = "Shared with all environments"
+output "ca_efs" {
+  value       = aws_efs_file_system.ca.id
+  description = "Certificate Authority, shared with all environments"
 }
 
 output "config_efs" {
   value       = aws_efs_file_system.config.id
-  description = "Shared with all environments"
+  description = "Config files shared with all environments"
 }
 
 output "tyk" {

@@ -1,4 +1,5 @@
 provider "cloudflare" {
+  api_token = data.sops_file.secrets.data["cf-apitoken"]
   # account_id = "35b8134b47c7d01ee8198bb2b82a8dc5"
 }
 

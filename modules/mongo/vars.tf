@@ -49,12 +49,6 @@ variable "cluster_provider_name" {
   default     = "AWS"
 }
 
-variable "backup_enabled" {
-  type = bool
-  description = "Mongo Atlas cluster backup flag"
-  default = true
-}
-
 // Network peering
 variable "peering_enabled" {
   type = bool
