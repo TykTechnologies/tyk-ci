@@ -311,12 +311,3 @@ resource "aws_route53_record" "bastion" {
 
   records = [aws_instance.bastion.public_ip]
 }
-
-resource "aws_route53_record" "mongo" {
-  zone_id = aws_route53_zone.dev_tyk_tech.zone_id
-  name    = "mongo"
-  type    = "CNAME"
-  ttl     = "300"
-
-  records = [replace(module.tf-mongodbatlas.atlas_cluster_connection_strings.0.standard_srv, "mongodb+srv://", "")]
-}

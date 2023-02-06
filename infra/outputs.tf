@@ -26,13 +26,3 @@ output "cd" {
   })
   description = "Service account for continuous deployment"
 }
-
-output "ci-atlas" {
-  sensitive = true
-  value = tomap({
-    cstrings    = module.tf-mongodbatlas.atlas_cluster_ci_conn_string
-    user        = module.tf-mongodbatlas.atlas_admin_username
-    password    = module.tf-mongodbatlas.atlas_admin_password
-  })
-  description = "MongoDB to store CI data"
-}
