@@ -303,7 +303,8 @@ resource "aws_route53_zone" "dev_tyk_tech" {
 }
 
 resource "aws_route53_record" "bastion" {
-  zone_id = data.terraform_remote_state.base.outputs.zone-id
+  zone_id = aws_route53_zone.dev_tyk_tech.zone_id
+
   name    = "bastion"
   type    = "A"
   ttl     = "300"
@@ -312,10 +313,10 @@ resource "aws_route53_record" "bastion" {
 }
 
 resource "aws_route53_record" "mongo" {
-  zone_id = data.terraform_remote_state.base.outputs.zone-id
+  zone_id = aws_route53_zone.dev_tyk_tech.zone_id
   name    = "mongo"
   type    = "CNAME"
   ttl     = "300"
 
-  records = [replace(data.terraform_remote_state.base.outputs.ci-atlas.cstrings.0.standard_srv, "mongodb+srv://", "")]
+  records = [replace(module.tf-mongodbatlas.atlas_cluster_connection_strings.0.standard_srv, "mongodb+srv://", "")]
 }

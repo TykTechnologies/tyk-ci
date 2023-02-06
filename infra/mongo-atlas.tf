@@ -20,30 +20,10 @@ module "tf-mongodbatlas" {
   admin_username 	= local.db_creds.username
   admin_password 	= local.db_creds.password
   # Peering
-  peering_enabled	= true
+  peering_enabled	= false
   peering_aws_region 	= var.region
   peering_aws_vpc_id 	= module.vpc.vpc_id
   peering_cidr		= module.vpc.vpc_cidr_block
-}
-
-// Peering - AWS side 
-## Peering on both private and public route tables
-## This is because we need instances sitting in public subnet (like bastion) to reach mongo
-
-## Should we embeed this into mongo atlas module?
-resource "aws_route" "peering-private" {
-  route_table_id            = module.vpc.private_route_table_ids.0
-  destination_cidr_block    = var.atlas_cidr
-  vpc_peering_connection_id = module.tf-mongodbatlas.atlas_network_peering_connection_id
-  depends_on                = [module.vpc.aws_route_table]
-}
-
-## Should we embeed this into mongo atlas module?
-resource "aws_route" "peering-public" {
-  route_table_id            = module.vpc.public_route_table_ids.0
-  destination_cidr_block    = var.atlas_cidr
-  vpc_peering_connection_id = module.tf-mongodbatlas.atlas_network_peering_connection_id
-  depends_on                = [module.vpc.aws_route_table]
 }
 
 // Secrets
