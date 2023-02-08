@@ -23,10 +23,6 @@ terraform {
     template = {
       source = "hashicorp/template"
     }
-    mongodbatlas = {
-      source  = "mongodb/mongodbatlas"
-      version = ">= 1.8.0"
-    }
   }
   required_version = ">= 1.3"
 }
