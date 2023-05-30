@@ -1,3 +1,5 @@
+**This is no longer used as Compose for ECS will be retired in Nov 2023**
+
 # Step CA
 Initialise the CA by generating root and intermediate certificates. This needs be done only _once_ per CA. In Tyk's case do the initialisation locally on your laptop and then copy over the directory with the generated files onto the EFS that `smallstep/step-ca` will use as a volume.
 
@@ -14,6 +16,7 @@ $ docker run -it --mount type=bind,source=$(pwd)/step,target=/home/step \
 The (auto-generated) password that the certificate keys are encrypted with will be shown in plaintext. This is required for `step-ca` to start. Add it into the file referenced by the `ca-key-pass` secret in the compose file.
 
 # Docker Compose
+
 Compose has [evolved](https://docs.docker.com/compose/compose-v2/) over the years which makes Google results confusing if you are not aware of the context. To work with ECS contexts from `docker compose` we need _Docker Compose "Cloud Integrations"_.
 
 ## Installation

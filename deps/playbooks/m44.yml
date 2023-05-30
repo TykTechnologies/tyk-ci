@@ -1,0 +1,28 @@
+- name: "Install Mongo 4.4"
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Import public key
+      get_url:
+        url: https://www.mongodb.org/static/pgp/server-4.4.asc
+        dest: /usr/share/keyrings/mongo-4.4.asc
+    
+    - name: Add repository
+      apt_repository:
+        filename: '/etc/apt/sources.list.d/mongodb-org-4.4.list'
+        repo: 'deb [signed-by=/usr/share/keyrings/mongo-4.4.asc] https://repo.mongodb.org/apt/ubuntu bionic/mongodb-org/4.4 multiverse'
+        state: present
+        update_cache: yes
+    
+    - name: Install
+      apt: 
+        name: mongodb-org
+        state: present
+        update_cache: yes
+
+    - name: Enable at boot
+      service: 
+        name: mongod 
+        enabled: yes
+        state: started
