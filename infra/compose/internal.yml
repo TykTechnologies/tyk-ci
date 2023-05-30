@@ -1,0 +1,23 @@
+version: '3.9'
+
+services:
+  ca:
+    image: smallstep/step-ca:0.23.2
+    ports:
+      - "9000:9000"
+    volumes:
+      - certs:/home/step
+    secrets:
+      - ca-key-pass
+    command: [ "step-ca", "--password-file", "/run/secrets/ca-key-pass" ]
+
+volumes:
+  certs:
+    external: true
+    name: arn:aws:elasticfilesystem:eu-central-1:754489498669:file-system/fs-0038a5fb4271adf70
+
+secrets:
+  ca-key-pass:
+    file: ca-key-pass
+
+x-aws-vpc: vpc-0a4fa75ffad403494

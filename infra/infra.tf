@@ -10,7 +10,6 @@ locals {
     infra      = "infra-prod"
     table      = "DeveloperEnvironments"
     repos      = "tyk,tyk-analytics,tyk-pump,tyk-sink,tyk-identity-broker,portal,tyk-sync"
-    domain     = "${var.domain}.tyk.technology"
     ca         = <<EOF
 -----BEGIN CERTIFICATE-----
 MIID4jCCAsqgAwIBAgIUZrB9yKVNOgt9g4MAj4Z8cjWVWNYwDQYJKoZIhvcNAQEL
@@ -66,6 +65,11 @@ m+gZMbj+s40v4g==
 -----END CERTIFICATE-----
 EOF
   }
+  # Atlas regions are like AWS regions but different, see
+  # https://www.mongodb.com/docs/atlas/reference/amazon-aws/
+  atlas_region = upper(replace(var.region, "-", "_"))
+  # R53 zone for all resources that need it
+  domain = "dev.tyk.technology"
   # Managed policies for task role
   policies = [
     "AmazonRoute53FullAccess",
@@ -187,7 +191,7 @@ resource "aws_security_group" "egress-all" {
   }
 }
 
-# config and cfssl mount targets for all public subnets
+# config and ca mount targets for all public subnets
 
 data "template_file" "mount_config" {
   template = file("scripts/setup-efs.sh")
@@ -197,11 +201,11 @@ data "template_file" "mount_config" {
   }
 }
 
-data "template_file" "mount_cfssl_keys" {
+data "template_file" "mount_ca_keys" {
   template = file("scripts/setup-efs.sh")
   vars = {
-    efs_id      = data.terraform_remote_state.base.outputs.cfssl_efs
-    mount_point = "/cfssl"
+    efs_id      = data.terraform_remote_state.base.outputs.ca_efs
+    mount_point = "/ca"
   }
 }
 
@@ -216,7 +220,7 @@ data "template_cloudinit_config" "bastion" {
 
   part {
     content_type = "text/x-shellscript"
-    content      = data.template_file.mount_cfssl_keys.rendered
+    content      = data.template_file.mount_ca_keys.rendered
   }
 
   part {
@@ -225,10 +229,10 @@ data "template_cloudinit_config" "bastion" {
   }
 }
 
-resource "aws_efs_mount_target" "cfssl" {
+resource "aws_efs_mount_target" "ca" {
   for_each = toset(module.vpc.public_subnets)
 
-  file_system_id  = data.terraform_remote_state.base.outputs.cfssl_efs
+  file_system_id  = data.terraform_remote_state.base.outputs.ca_efs
   subnet_id       = each.value
   security_groups = [aws_security_group.efs.id]
 }
@@ -293,24 +297,17 @@ resource "aws_cloudwatch_log_group" "internal" {
 # DNS
 
 resource "aws_route53_zone" "dev_tyk_tech" {
-  name = local.gromit.domain
+  name = local.domain
 
   tags = local.common_tags
 }
 
 resource "aws_route53_record" "bastion" {
   zone_id = aws_route53_zone.dev_tyk_tech.zone_id
+
   name    = "bastion"
   type    = "A"
   ttl     = "300"
 
   records = [aws_instance.bastion.public_ip]
-}
-resource "aws_route53_record" "mongo" {
-  zone_id = aws_route53_zone.dev_tyk_tech.zone_id
-  name    = "mongo"
-  type    = "CNAME"
-  ttl     = "300"
-
-  records = [replace(module.tf-mongodbatlas.atlas_cluster_connection_strings.0.standard_srv, "mongodb+srv://", "")]
 }

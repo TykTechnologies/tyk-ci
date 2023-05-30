@@ -1,9 +1,17 @@
 terraform {
-  required_providers {
-    aws = {
-      version = "> 3.0"
-      source  = "hashicorp/aws"
+  backend "remote" {
+    hostname     = "app.terraform.io"
+    organization = "Tyk"
+
+    workspaces {
+      prefix = "base-"
     }
   }
-  required_version = ">= 0.14"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 4.52.0"
+    }
+  }
+  required_version = ">= 1.3"
 }

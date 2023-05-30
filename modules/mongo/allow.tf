@@ -1,5 +1,5 @@
-resource "mongodbatlas_project_ip_access_list" "ara_custom" {
-  project_id = mongodbatlas_project.ara.id
+resource "mongodbatlas_project_ip_access_list" "ci_custom" {
+  project_id = mongodbatlas_project.ci.id
   comment    = "VPC network"
 
   for_each   = var.atlas_allowed_cidrs

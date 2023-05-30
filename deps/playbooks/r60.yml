@@ -1,0 +1,28 @@
+- name: "Install Redis 6.0"
+  hosts: localhost
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Import public key
+      get_url: 
+        url: https://packages.redis.io/gpg
+        dest: /usr/share/keyrings/redis.asc
+    
+    - name: Add repository
+      apt_repository:
+        filename: '/etc/apt/sources.list.d/redis.list'
+        repo: 'deb [signed-by=/usr/share/keyrings/redis.asc] https://packages.redis.io/deb stable main'
+        state: present
+        update_cache: yes
+    
+    - name: Install
+      apt: 
+        name: redis=5:6.0.16-1+deb11u2
+        state: present
+        update_cache: yes
+
+    - name: Enable at boot
+      service: 
+        name: redis
+        enabled: yes
+        state: started

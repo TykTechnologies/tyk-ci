@@ -8,11 +8,6 @@ variable "name_prefix" {
   type        = string
 }
 
-variable "domain" {
-  description = "Prefix added to .tyk.technology to construct the hosted zone"
-  type = string
-}
-
 variable "cidr" {
   description = "CIDR for VPC"
   type = string
@@ -27,20 +22,6 @@ variable "key_name" {
   type        = string
 }
 
-variable "cfssl_apikey" {
-  description = "API key for cfssl requests"
-}
-
-variable "cfssl_image" {
-  description = "Full repo URL with tag of the cfssl image to use"
-}
-
-variable "gromit_image" {
-  description = "Full repo URL with tag of the gromit image to use"
-}
-
-variable "atlas_cidr" {
-  description = "CIDR for ATLAS"
-  type = string
-  default = "10.92.0.0/21"
+variable "stepca_image" {
+  description = "Full repo URL with tag of the step-ca image to use"
 }

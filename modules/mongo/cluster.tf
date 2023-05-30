@@ -1,4 +1,4 @@
-resource "mongodbatlas_project" "ara" {
+resource "mongodbatlas_project" "ci" {
   name   = var.cluster_name
   org_id = var.atlas_org_id
 
@@ -11,9 +11,9 @@ resource "mongodbatlas_project" "ara" {
   }
 }
 
-resource "mongodbatlas_cluster" "ara" {
+resource "mongodbatlas_cluster" "ci" {
   name                   = var.cluster_name
-  project_id             = mongodbatlas_project.ara.id
+  project_id             = mongodbatlas_project.ci.id
   mongo_db_major_version = "4.2"
 
   num_shards         = 1
@@ -23,8 +23,6 @@ resource "mongodbatlas_cluster" "ara" {
   provider_instance_size_name = var.atlas_instance_size
   provider_region_name        = var.atlas_region
   provider_volume_type        = "STANDARD"
-  provider_encrypt_ebs_volume = true
-  provider_backup_enabled     = var.backup_enabled
   disk_size_gb                 = var.atlas_disk_size_gb
   auto_scaling_disk_gb_enabled = true
 
@@ -53,5 +51,5 @@ resource "mongodbatlas_cluster" "ara" {
     }
   }
 
-  depends_on = [mongodbatlas_network_container.ara]
+  depends_on = [mongodbatlas_network_container.ci]
 }

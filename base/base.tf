@@ -1,13 +1,3 @@
-terraform {
-  backend "remote" {
-    hostname     = "app.terraform.io"
-    organization = "Tyk"
-    workspaces {
-      prefix = "base-"
-    }
-  }
-}
-
 provider "aws" {
   region = "eu-central-1"
 }
@@ -33,8 +23,8 @@ data "aws_region" "current" {}
 
 # EFS filesystems
 
-resource "aws_efs_file_system" "cfssl" {
-  creation_token = "cfssl-keys"
+resource "aws_efs_file_system" "ca" {
+  creation_token = "ca-keys"
 
   tags = local.common_tags
 }
@@ -189,6 +179,19 @@ resource "aws_iam_user_policy" "devshared" {
 data "template_file" "devshared_access" {
   template = templatefile("templates/devshared.tpl",
   { resources = [for repo in local.repos : aws_ecr_repository.integration[repo].arn] })
+}
+
+# AWS - Github OIDC
+# https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc.html
+resource "aws_iam_openid_connect_provider" "github" {
+      url             = "https://token.actions.githubusercontent.com"
+      client_id_list  = ["sts.amazonaws.com"]
+      thumbprint_list = data.tls_certificate.github.certificates[*].sha1_fingerprint
+      tags            = local.common_tags
+}
+
+data "tls_certificate" "github" {
+  url = "https://token.actions.githubusercontent.com/.well-known/openid-configuration"
 }
 
 # terraform apply -target=null_resource.debug will show the rendered template
