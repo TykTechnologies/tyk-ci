@@ -1,0 +1,27 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+    
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - uses: actions/checkout@v3
+          
+      - name: CI env
+        run:
+          tar czf ci-env.tgz auto/
+
+      - uses: softprops/action-gh-release@v1
+        with:
+          token: ${{ secrets.ORG_GH_TOKEN }}
+          name: ${{ github.ref_name }}
+          tag_name: ${{ github.ref_name }}
+          body_path: auto/release.md
+          files: ci-env.tgz
