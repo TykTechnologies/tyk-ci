@@ -64,6 +64,7 @@ user_auth=$(curlf --header "admin-auth: 12345" \
 		  ${db_base}/admin/users | jq -r '.Message')
 
 echo "TYK_GW_SLAVEOPTIONS_APIKEY=${user_auth}"
+echo "USER_API_SECRET=${user_auth}"
 eval "sed ${sed_exp} "s/TYK_GW_SLAVEOPTIONS_APIKEY=.*/TYK_GW_SLAVEOPTIONS_APIKEY=${user_auth}/g" *.env"
 eval "sed ${sed_exp} "s/USER_API_SECRET=.*/USER_API_SECRET=${user_auth}/g" *.env"
 
