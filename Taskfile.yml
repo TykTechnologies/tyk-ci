@@ -29,6 +29,7 @@ tasks:
       env_file: local-{{.DB}}.env
     cmds:
       - |
+        git checkout -f confs/${VARIATION}.env
         cat "confs/${VARIATION}.env" "${env_file}" | sort -u > tmp.env
         mv tmp.env ${env_file}
         docker compose -p auto -f pro-ha.yml -f deps_pro-ha.yml -f ${DB}.yml --env-file master.env --profile master-datacenter up --quiet-pull -d

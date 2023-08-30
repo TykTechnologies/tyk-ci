@@ -66,7 +66,7 @@ user_auth=$(curlf --header "admin-auth: 12345" \
 echo "TYK_GW_SLAVEOPTIONS_APIKEY=${user_auth}"
 echo "USER_API_SECRET=${user_auth}"
 eval "sed ${sed_exp} "s/TYK_GW_SLAVEOPTIONS_APIKEY=.*/TYK_GW_SLAVEOPTIONS_APIKEY=${user_auth}/g" *.env"
-eval "sed ${sed_exp} "s/USER_API_SECRET=.*/USER_API_SECRET=${user_auth}/g" *.env"
+echo "USER_API_SECRET=${user_auth}" > pytest.env"
 
 
 # 3. Get user id of newly created user using user authentication
