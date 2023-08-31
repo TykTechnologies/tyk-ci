@@ -49,6 +49,8 @@ services:
     ports:    
       - "8061:8061"
     command: [ "--conf", "/conf/tyk-pump.conf" ]
+    depends_on:
+      - wait_deps
 
   gateway-checker:
     profiles: ["all"]
