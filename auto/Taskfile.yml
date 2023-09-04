@@ -1,9 +1,6 @@
 ---
 version: "3"
 
-vars:
-  auto_folder: auto
-
 tasks:
   login:
     desc: Logins into AWS ECR registry to allow pull required images from it
@@ -12,7 +9,6 @@ tasks:
 
   bootstrap:
     desc: Bootstraps dashboard with an organization and user
-    dir: '{{.auto_folder}}'
     cmds:
       - sleep 8
       - ./dash-bootstrap.sh http://localhost:3000
@@ -20,7 +16,6 @@ tasks:
 
   local:
     desc: Deploys infrastructure locally using docker compose manifest
-    dir: '{{.auto_folder}}'
     env:
       FLAVOUR: '{{ or .FLAVOUR "pro" }}'
       DB: '{{ or .DB "mongo44" }}'
@@ -41,7 +36,6 @@ tasks:
 
   clean:
     desc: Tears down all local infrastructure including networking
-    dir: '{{.auto_folder}}'
     env:
       DB: '{{ or .DB "mongo44" }}'
       confs_dir: '{{ or .confs_dir "./pro" }}'
@@ -54,7 +48,6 @@ tasks:
       Deploys pytest container that runs against local infrastructure using docker compose manifest
       - For mdcb you may want to use the ARGS "--ci -m "mdcb""
       - For non mdcb deployments something like "-m "not local and not mdcb""
-    dir: '{{.auto_folder}}'
     cmds: 
       - |
         docker run --rm --network auto_default --env-file ./pytest.env \
