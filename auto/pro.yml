@@ -1,6 +1,7 @@
 version: "3.9"
 services:
   tyk:
+    profiles: ["all"]
     container_name: tyk
     image: ${tyk_image}
     env_file:
@@ -20,6 +21,7 @@ services:
         /opt/tyk-gateway/tyk --conf /conf/tyk.conf
 
   tyk-analytics:
+    profiles: ["all"]
     container_name: tyk-analytics
     image: ${tyk_analytics_image}
     env_file:
@@ -37,6 +39,7 @@ services:
     restart: on-failure
 
   tyk-pump:
+    profiles: ["all"]
     container_name: tyk-pump
     image: ${tyk_pump_image}
     env_file:
@@ -46,16 +49,11 @@ services:
     ports:    
       - "8061:8061"
     command: [ "--conf", "/conf/tyk-pump.conf" ]
-
-  tyk-sink:
-    container_name: tyk-sink
-    env_file:
-      - ${env_file}
-    image: ${tyk_sink_image}
-    ports:
-    - "9090:9090"
+    depends_on:
+      - wait_deps
 
   gateway-checker:
+    profiles: ["all"]
     image: curlimages/curl
     command: tail -f /dev/null
     depends_on:
@@ -68,6 +66,7 @@ services:
       timeout: 10s
 
   dashboard-checker:
+    profiles: ["all"]
     image: curlimages/curl
     command: tail -f /dev/null
     depends_on:
@@ -80,6 +79,7 @@ services:
       timeout: 10s
 
   wait:
+    profiles: ["all"]
     image: hello-world:linux
     depends_on:
         gateway-checker:
