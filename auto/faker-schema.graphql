@@ -1,6 +1,7 @@
 #QA1042
 type Query {
   qa1042_query(input: QA1024_input): People
+  qa1043_query: QA1043_RootObject
 }
 
 input QA1024_input{
@@ -10,6 +11,16 @@ input QA1024_input{
 type People {
   name: String @examples(values: ["Wojciech"])
   age: Int @fake(type: number, options: {maxNumber: 80, minNumber: 1}) 
+}
+
+#QA1043
+type QA1043_RootObject {
+  subObject: QA1043_SubObject
+}
+
+type QA1043_SubObject{
+  works: String @examples(values: ["Works works"])
+  theOtherField: String @examples(values: ["theOtherValue"])
 }
 
 #QA1041
