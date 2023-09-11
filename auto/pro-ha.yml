@@ -4,6 +4,7 @@ services:
     profiles: ["all", "master-datacenter"]
     container_name: tyk
     image: ${tyk_image}
+    pull_policy: ${pull_policy}
     env_file:
       - ${env_file}
     volumes:
@@ -24,6 +25,7 @@ services:
     profiles: ["all", "master-datacenter"]
     container_name: tyk-analytics
     image: ${tyk_analytics_image}
+    pull_policy: ${pull_policy}
     env_file:
       - ${env_file}
     environment:
@@ -42,6 +44,7 @@ services:
     profiles: ["all", "master-datacenter"]
     container_name: tyk-pump
     image: ${tyk_pump_image}
+    pull_policy: ${pull_policy}
     env_file:
       - ${env_file}      
     volumes:
@@ -50,12 +53,13 @@ services:
       - "8061:8061"
     command: [ "--conf", "/conf/tyk-pump.conf" ]
     depends_on:
-      - wait_deps
+      - wait_db
 
   tyk-sink:
     profiles: ["all", "master-datacenter"]
     container_name: tyk-sink
     image: ${tyk_sink_image}
+    pull_policy: ${pull_policy}
     env_file:
       - ${env_file}
     environment:
@@ -70,6 +74,7 @@ services:
     profiles: ["all", "slave-datacenter"]
     container_name: tyk-gateway-datacenter-1-alfa
     image: ${tyk_alfa_image}
+    pull_policy: ${pull_policy}
     env_file:
       - ${env_file}
     environment:
@@ -87,6 +92,7 @@ services:
     profiles: ["all", "slave-datacenter"]
     container_name: tyk-gateway-datacenter-1-beta
     image: ${tyk_beta_image}
+    pull_policy: ${pull_policy}
     env_file:
       - ${env_file}
     environment:
@@ -104,6 +110,7 @@ services:
     profiles: ["all", "slave-datacenter"]
     container_name: tyk-gateway-datacenter-2-alfa
     image: ${tyk_alfa_image}
+    pull_policy: ${pull_policy}
     env_file:
       - ${env_file}
     environment:
@@ -121,6 +128,7 @@ services:
     profiles: ["all", "slave-datacenter"]
     container_name: tyk-gateway-datacenter-2-beta
     image: ${tyk_beta_image}
+    pull_policy: ${pull_policy}
     env_file:
       - ${env_file}
     environment:
