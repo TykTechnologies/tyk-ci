@@ -10,12 +10,24 @@ locals {
   repos = ["tyk", "tyk-analytics", "tyk-pump", "tyk-sink", "tyk-identity-broker", "portal", "tyk-sync"]
   # An additional repo that will be linked to the tyk user from repos above
   tyk_repos = ["tyk-plugin-compiler"]
+  # repo list based on release cadence
+  low_cadence_repos = ["tyk-pump", "tyk-sink", "tyk-identity-broker", "portal", "tyk-sync", "tyk-plugin-compiler","tyk-automated-tests"]
+  high_cadence_repos = ["tyk", "tyk-analytics"]
+
+  pr_policy1 = jsondecode(file("files/pr_policy.json"))
+  pr_policy2 = jsondecode(file("files/retain_all.json"))
+
+  combined_policy = jsonencode({
+    "rules": concat(local.pr_policy1.rules, local.pr_policy2.rules)
+  })
+
   common_tags = {
     "managed" = "automation",
     "ou"      = "devops",
     "purpose" = "ci",
     "env"     = local.name
   }
+
 }
 
 # This is exported in outputs.tf
@@ -48,45 +60,28 @@ resource "aws_ecr_repository" "integration" {
   tags = local.common_tags
 }
 
-resource "aws_ecr_lifecycle_policy" "retain_2w" {
-  for_each = toset(concat(local.repos, local.tyk_repos))
+resource "aws_ecr_lifecycle_policy" "low_cadence" {
+  
+  for_each = toset(local.low_cadence_repos)
 
   depends_on = [aws_ecr_repository.integration]
   repository = each.key
 
-  policy = <<EOF
-{
-    "rules": [
-        {
-            "rulePriority": 1,
-            "description": "Expire untagged images older than 1 week",
-            "selection": {
-                "tagStatus": "untagged",
-                "countType": "sinceImagePushed",
-                "countUnit": "days",
-                "countNumber": 7
-            },
-            "action": {
-                "type": "expire"
-            }
-        },
-        {
-            "rulePriority": 2,
-            "description": "Expire all images older than 2 weeks",
-            "selection": {
-                "tagStatus": "any",
-                "countType": "sinceImagePushed",
-                "countUnit": "days",
-                "countNumber": 14
-            },
-            "action": {
-                "type": "expire"
-            }
-        }
-    ]
+  policy = file("files/pr_policy.json")
+
 }
-EOF
+
+resource "aws_ecr_lifecycle_policy" "high_cadence" {
+  for_each = toset(local.high_cadence_repos)
+
+  depends_on = [aws_ecr_repository.integration]
+  repository = each.key
+
+  policy = local.combined_policy
+
 }
+
+
 
 # Per repo access keys
 

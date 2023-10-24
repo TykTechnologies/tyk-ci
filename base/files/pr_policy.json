@@ -1,0 +1,60 @@
+{
+	"rules":
+	[
+		{
+				"rulePriority": 1,
+				"description": "Delete 14 days old tagged images with prefix: pr-",
+				"selection": {
+						"tagStatus": "tagged",
+						"tagPrefixList": ["pr-"],
+						"countType": "sinceImagePushed",
+						"countUnit": "days",
+						"countNumber": 14
+				},
+				"action": {
+						"type": "expire"
+				}
+		},
+		{
+				"rulePriority": 2,
+				"description": "Delete 14 days old tagged images with prefix: sha-",
+				"selection": {
+						"tagStatus": "tagged",
+						"tagPrefixList": ["sha-"],
+						"countType": "sinceImagePushed",
+						"countUnit": "days",
+						"countNumber": 14
+				},
+				"action": {
+						"type": "expire"
+				}
+		},
+		{
+				"rulePriority": 3,
+				"description": "Delete 14 days old tagged images with prefix: v",
+				"selection": {
+						"tagStatus": "tagged",
+						"tagPrefixList": ["v"],
+						"countType": "sinceImagePushed",
+						"countUnit": "days",
+						"countNumber": 14
+				},
+				"action": {
+						"type": "expire"
+				}
+		},
+		{
+				"rulePriority": 9,
+				"description": "Expire untagged images older than 1 week",
+				"selection": {
+						"tagStatus": "untagged",
+						"countType": "sinceImagePushed",
+						"countUnit": "days",
+						"countNumber": 7
+				},
+				"action": {
+						"type": "expire"
+				}
+			}
+	]
+}
