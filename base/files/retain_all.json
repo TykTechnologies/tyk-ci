@@ -1,0 +1,18 @@
+{
+"rules":
+	[
+		{
+			"rulePriority": 10,
+			"description": "Expire any images older than 60 days",
+			"selection": {
+					"tagStatus": "any",
+					"countType": "sinceImagePushed",
+					"countUnit": "days",
+					"countNumber": 60
+			},
+			"action": {
+					"type": "expire"
+			}
+		}
+	]
+}
