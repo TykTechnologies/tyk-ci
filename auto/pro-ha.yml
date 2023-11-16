@@ -168,7 +168,73 @@ services:
       start_period: 10s
       timeout: 10s
 
-  wait:
+  gateway-checker-1a:
+    profiles: ["all", "slave-datacenter"]
+    image: curlimages/curl
+    command: tail -f /dev/null
+    depends_on:
+      - tyk-gateway-datacenter-1-alfa
+    healthcheck:
+      test: curl -s -k --fail https://tyk-gateway-datacenter-1-alfa:8181/hello | grep -o '.*status":"pass".*redis":{"status":"pass".*rpc":{"status":"pass"'
+      interval: 5s
+      retries: 10
+      start_period: 4s
+      timeout: 10s
+
+  gateway-checker-1b:
+    profiles: ["all", "slave-datacenter"]
+    image: curlimages/curl
+    command: tail -f /dev/null
+    depends_on:
+      - tyk-gateway-datacenter-1-beta
+    healthcheck:
+      test: curl -s -k --fail https://tyk-gateway-datacenter-1-beta:8182/hello | grep -o '.*status":"pass".*redis":{"status":"pass".*rpc":{"status":"pass"'
+      interval: 5s
+      retries: 10
+      start_period: 4s
+      timeout: 10s
+
+  gateway-checker-2a:
+    profiles: ["all", "slave-datacenter"]
+    image: curlimages/curl
+    command: tail -f /dev/null
+    depends_on:
+      - tyk-gateway-datacenter-2-alfa
+    healthcheck:
+      test: curl -s -k --fail https://tyk-gateway-datacenter-2-alfa:8281/hello | grep -o '.*status":"pass".*redis":{"status":"pass".*rpc":{"status":"pass"'
+      interval: 5s
+      retries: 10
+      start_period: 4s
+      timeout: 10s
+
+  gateway-checker-2b:
+    profiles: ["all", "slave-datacenter"]
+    image: curlimages/curl
+    command: tail -f /dev/null
+    depends_on:
+      - tyk-gateway-datacenter-2-beta
+    healthcheck:
+      test: curl -s -k --fail https://tyk-gateway-datacenter-2-beta:8282/hello | grep -o '.*status":"pass".*redis":{"status":"pass".*rpc":{"status":"pass"'
+      interval: 5s
+      retries: 10
+      start_period: 4s
+      timeout: 10s
+
+  wait_tyk_slaves:
+    profiles: ["all", "slave-datacenter"]
+    image: hello-world:linux
+    depends_on:
+        gateway-checker-1a:
+            condition: service_healthy
+        gateway-checker-1b:
+            condition: service_healthy 
+        gateway-checker-2a:
+            condition: service_healthy
+        gateway-checker-2b:
+            condition: service_healthy 
+
+
+  wait_tyk_components:
     profiles: ["all", "master-datacenter"]
     image: hello-world:linux
     depends_on:
