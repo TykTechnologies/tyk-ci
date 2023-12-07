@@ -30,23 +30,6 @@ locals {
 
 }
 
-# This is exported in outputs.tf
-data "aws_region" "current" {}
-
-# EFS filesystems
-
-resource "aws_efs_file_system" "ca" {
-  creation_token = "ca-keys"
-
-  tags = local.common_tags
-}
-
-resource "aws_efs_file_system" "config" {
-  creation_token = "dev-env-config"
-
-  tags = local.common_tags
-}
-
 resource "aws_ecr_repository" "integration" {
   for_each = toset(concat(local.repos, local.tyk_repos))
 
@@ -81,47 +64,63 @@ resource "aws_ecr_lifecycle_policy" "high_cadence" {
 
 }
 
-
-
-# Per repo access keys
-
-resource "aws_iam_access_key" "integration" {
-  for_each = toset(local.repos)
-
-  user = aws_iam_user.integration[each.key].name
+# AWS - Github OIDC
+# https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc.html
+resource "aws_iam_openid_connect_provider" "github" {
+      url             = "https://token.actions.githubusercontent.com"
+      client_id_list  = ["sts.amazonaws.com"]
+      thumbprint_list = data.tls_certificate.github.certificates[*].sha1_fingerprint
+      tags            = local.common_tags
 }
 
-resource "aws_iam_user" "integration" {
-  for_each = toset(local.repos)
-
-  name = "ecr-push_${each.value}"
-
-  tags = local.common_tags
+data "tls_certificate" "github" {
+  url = "https://token.actions.githubusercontent.com/.well-known/openid-configuration"
 }
 
-resource "aws_iam_user_policy" "integration" {
-  for_each = toset(local.repos)
+# Allow assume role from Github Actions
+data "aws_iam_policy_document" "github_actions" {
+  statement {
+    sid     = "gha"
+    effect  = "Allow"
+    actions = ["sts:AssumeRoleWithWebIdentity"]
 
-  name   = "ECRpush-${each.value}"
-  user   = "ecr-push_${each.value}"
-  policy = data.template_file.per_repo_access[each.value].rendered
+    condition {
+      test     = "StringLike"
+      variable = "token.actions.githubusercontent.com:aud"
+      values   = ["sts.amazonaws.com"]
+    }
+
+    condition {
+      test     = "StringLike"
+      variable = "token.actions.githubusercontent.com:sub"
+
+      values = [
+        "repo:TykTechnologies/*",
+        "repo:tyklabs/*",
+      ]
+    }
+
+    principals {
+      type        = "Federated"
+      identifiers = ["arn:aws:iam::754489498669:oidc-provider/token.actions.githubusercontent.com"]
+    }
+  }
 }
 
-data "template_file" "per_repo_access" {
-  for_each = toset(local.repos)
-
-  template = templatefile("templates/deployment.tpl",
-    {
-      ecrs = [aws_ecr_repository.integration[each.value].arn],
-  })
+resource "aws_iam_role" "ecr_rw_tyk" {
+  name               = "ecr_rw_tyk"
+  assume_role_policy = data.aws_iam_policy_document.github_actions.json
 }
 
-# Give the tyk user access to plugin-compiler repo
+resource "aws_iam_role_policy_attachment" "cipush" {
+  role       = aws_iam_role.ecr_rw_tyk.name
+  policy_arn = aws_iam_policy.cipush.arn
+}
 
-resource "aws_iam_policy" "plugin-compiler" {
-  name        = "plugin-compiler"
+resource "aws_iam_policy" "cipush" {
+  name        = "cipush"
   path        = "/"
-  description = "ecr-push_tyk user can push to plugin-compiler ECR"
+  description = "allow push to ECR from release.yml"
 
   # Terraform's "jsonencode" function converts a
   # Terraform expression result to valid JSON syntax.
@@ -140,53 +139,10 @@ resource "aws_iam_policy" "plugin-compiler" {
           "ecr:CompleteLayerUpload"
         ]
         Effect   = "Allow"
-        Resource = aws_ecr_repository.integration["tyk-plugin-compiler"].arn
+        Resource = "*"
       },
     ]
   })
-}
-
-resource "aws_iam_user_policy_attachment" "plugin-compiler" {
-  for_each = toset(local.tyk_repos)
-
-  user       = aws_iam_user.integration["tyk"].name
-  policy_arn = aws_iam_policy.plugin-compiler.arn
-}
-
-# shared dev access key
-
-resource "aws_iam_user" "devshared" {
-  name = "ecr-devshared"
-
-  tags = local.common_tags
-}
-
-resource "aws_iam_access_key" "devshared" {
-  user = aws_iam_user.devshared.name
-}
-
-resource "aws_iam_user_policy" "devshared" {
-  name   = "ECRpush-devshared"
-  user   = "ecr-devshared"
-  policy = data.template_file.devshared_access.rendered
-}
-
-data "template_file" "devshared_access" {
-  template = templatefile("templates/devshared.tpl",
-  { resources = [for repo in local.repos : aws_ecr_repository.integration[repo].arn] })
-}
-
-# AWS - Github OIDC
-# https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc.html
-resource "aws_iam_openid_connect_provider" "github" {
-      url             = "https://token.actions.githubusercontent.com"
-      client_id_list  = ["sts.amazonaws.com"]
-      thumbprint_list = data.tls_certificate.github.certificates[*].sha1_fingerprint
-      tags            = local.common_tags
-}
-
-data "tls_certificate" "github" {
-  url = "https://token.actions.githubusercontent.com/.well-known/openid-configuration"
 }
 
 # terraform apply -target=null_resource.debug will show the rendered template
