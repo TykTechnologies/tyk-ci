@@ -22,8 +22,8 @@ locals {
   })
 
   common_tags = {
-    "managed" = "automation",
-    "ou"      = "devops",
+    "managed" = "terraform",
+    "ou"      = "syse",
     "purpose" = "ci",
     "env"     = local.name
   }
@@ -143,6 +143,13 @@ resource "aws_iam_policy" "cipush" {
       },
     ]
   })
+}
+
+# Common filesystem for all resources
+resource "aws_efs_file_system" "shared" {
+  creation_token = "reproducible environments"
+
+  tags = local.common_tags
 }
 
 # terraform apply -target=null_resource.debug will show the rendered template

@@ -1,6 +1,6 @@
 # TLS infra provided by step
 module "step-ca" {
-  source = "../modules/fg-service"
+  source = "./modules/fg-service"
   cluster  = aws_ecs_cluster.internal.arn
   cdt = "templates/cd-awsvpc.tpl"
   # Container definition
@@ -25,7 +25,7 @@ module "step-ca" {
   tearn       = aws_iam_role.ca_tr.arn
   vpc         = module.vpc.vpc_id
   subnets     = module.vpc.public_subnets
-  volume_map  = { ca = data.terraform_remote_state.base.outputs.ca_efs }
+  volume_map  = { ca = data.terraform_remote_state.base.outputs.shared_efs }
   common_tags = local.common_tags
 }
 

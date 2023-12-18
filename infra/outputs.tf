@@ -12,17 +12,3 @@ output "zone-id" {
   value       = aws_route53_zone.dev_tyk_tech.zone_id
   description = "R53 zone id used by output "
 }
-
-output "tfstate_lock_table" {
-  value = aws_dynamodb_table.devenv_lock.id
-  description = "Table for tfstate locks for devenv remote backend"
-}
-
-output "cd" {
-  sensitive = true
-  value = tomap({
-    "key" = aws_iam_access_key.deployment.id,
-    "secret" = aws_iam_access_key.deployment.secret
-  })
-  description = "Service account for continuous deployment"
-}

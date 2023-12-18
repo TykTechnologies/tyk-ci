@@ -1,24 +1,23 @@
 terraform {
-  backend "remote" {
-    hostname     = "app.terraform.io"
+  cloud {
     organization = "Tyk"
 
     workspaces {
-      prefix = "infra-"
+      name = "infra-prod"
     }
   }
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = ">= 4.52.0"
+      version = ">= 5.31.0"
     }
     cloudflare = {
       source  = "cloudflare/cloudflare"
-      version = ">= 3.33.1"
+      version = ">= 4.20.0"
     }
     sops = {
       source  = "carlpett/sops"
-      version = ">= 0.5.3"
+      version = ">= 1.0.0"
     }
     template = {
       source = "hashicorp/template"
