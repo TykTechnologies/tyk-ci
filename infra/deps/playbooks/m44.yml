@@ -26,3 +26,17 @@
         name: mongod 
         enabled: yes
         state: started
+
+    - name: Bind mongo to 0.0.0.0
+      lineinfile:
+        dest: /etc/mongod.conf
+        regexp: '^(\w*)bindIp: \b\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}\b$'
+        line: '\1bindIp: 0.0.0.0'
+        state: present
+      notify:
+        - Restart
+
+  handlers:
+
+    - name: Restart
+      service: name=mongod state=restarted enabled=yes

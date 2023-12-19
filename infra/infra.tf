@@ -1,35 +1,16 @@
 provider "aws" {
   region = var.region
-}
-
-# Internal variables
-
-locals {
-  gromit = {
-    base  = "base-prod"
-    infra = "infra-prod"
-    repos = "tyk,tyk-analytics,tyk-pump,tyk-sink,tyk-identity-broker,portal,tyk-sync"
-  }
-  # R53 zone for all resources that need it
-  domain = "dev.tyk.technology"
-  # Managed policies for task role
-  policies = [
-    "AmazonRoute53FullAccess",
-    "AmazonECS_FullAccess",
-    "AmazonDynamoDBFullAccess",
-    "AmazonEC2ContainerRegistryReadOnly",
-    "AWSCloudMapFullAccess",
-    "AmazonS3FullAccess",
-    "AmazonEC2FullAccess"
-  ]
-  common_tags = {
-    "managed" = "terraform",
-    "ou"      = "devops",
-    "purpose" = "ci",
-    "env"     = var.name_prefix
+  default_tags {
+    tags = {
+      "managed" = "terraform",
+      "ou"      = "devops",
+      "purpose" = "ci",
+      "env"     = var.name_prefix
+    }
   }
 }
 
+# Persistence layer
 data "terraform_remote_state" "base" {
   backend = "remote"
 
@@ -79,13 +60,13 @@ module "vpc" {
   public_subnets      = module.public_subnets.networks[*].cidr_block
   public_subnet_tags  = { Type = "public" }
 
-  enable_nat_gateway = true
-  single_nat_gateway = true
+  enable_nat_gateway      = true
+  single_nat_gateway      = true
+  map_public_ip_on_launch = true
+
   # Need DNS to address EFS by name
   enable_dns_support   = true
   enable_dns_hostnames = true
-
-  tags = local.common_tags
 }
 
 resource "aws_security_group" "efs" {
@@ -127,7 +108,7 @@ resource "aws_security_group" "egress-all" {
   }
 }
 
-# shared and ca mount targets for all public subnets
+# shared mount targets for all public subnets
 
 data "template_file" "mount_shared" {
   template = file("scripts/setup-efs.sh")
@@ -162,18 +143,29 @@ resource "aws_efs_mount_target" "shared" {
 
 # Bastion
 
-resource "aws_instance" "bastion" {
+module "bastion" {
+  source = "terraform-aws-modules/ec2-instance/aws"
+
+  name = "bastion"
+
   ami                         = data.aws_ami.bastion.id
   instance_type               = "t2.micro"
   key_name                    = var.key_name
-  subnet_id                   = module.vpc.public_subnets[0]
-  associate_public_ip_address = true
+  monitoring                  = true
   vpc_security_group_ids      = [aws_security_group.efs.id, aws_security_group.ssh.id, aws_security_group.egress-all.id]
+  subnet_id                   = element(module.vpc.public_subnets, 0)
+  associate_public_ip_address = true
   user_data_base64            = data.template_cloudinit_config.bastion.rendered
-  metadata_options {
-    http_tokens = "required"	# IMDSv2
+
+  # Spot request specific attributes
+  spot_price                          = "0.1"
+  spot_wait_for_fulfillment           = true
+  spot_type                           = "persistent"
+  spot_instance_interruption_behavior = "terminate"
+
+  metadata_options = {
+    http_tokens = "required" # IMDSv2
   }
-  tags = local.common_tags
 }
 
 data "aws_ami" "bastion" {
@@ -197,27 +189,75 @@ data "aws_ami" "bastion" {
   }
 }
 
-# Internal cluster ancillaries
+data "aws_iam_policy_document" "ecs_assume_role_policy" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
+    }
+  }
+}
+
+# ter is required for the task to start
+resource "aws_iam_role" "ter" {
+  name = "ter"
+  path = "/cd/"
+
+  inline_policy {
+    name = "ter"
+
+    policy = jsonencode({
+      Version = "2012-10-17"
+      Statement = [
+        {
+	  Action = [
+            "ecr:GetAuthorizationToken",
+            "ecr:BatchCheckLayerAvailability",
+            "ecr:GetDownloadUrlForLayer",
+            "ecr:BatchGetImage",
+            "logs:CreateLogStream",
+	    "logs:PutLogEvents"
+	  ]
+          Effect   = "Allow"
+          Resource = "*"
+        },
+      ]
+    })
+  }
+  assume_role_policy = data.aws_iam_policy_document.ecs_assume_role_policy.json
+}
+
+# Everything logs to cloudwatch with prefixes
+resource "aws_cloudwatch_log_group" "logs" {
+  name = "cd"
+
+  retention_in_days = 7
+}
 
 resource "aws_ecs_cluster" "internal" {
   name = "internal"
-
-  tags = local.common_tags
+  configuration {
+    execute_command_configuration {
+      logging = "OVERRIDE"
+      log_configuration {
+        cloud_watch_log_group_name = aws_cloudwatch_log_group.logs.name
+      }
+    }
+  }
 }
 
-resource "aws_cloudwatch_log_group" "internal" {
-  name              = "internal"
-  retention_in_days = 5
-
-  tags = local.common_tags
-}
 
 # DNS
 
-resource "aws_route53_zone" "dev_tyk_tech" {
-  name = local.domain
+# resource "aws_service_discovery_private_dns_namespace" "cd" {
+#   name        = "dev.tyk.technology"
+#   description = "CD ECS resources"
+# }
 
-  tags = local.common_tags
+resource "aws_route53_zone" "dev_tyk_tech" {
+  name = "dev.tyk.technology"
 }
 
 resource "aws_route53_record" "bastion" {
@@ -227,5 +267,5 @@ resource "aws_route53_record" "bastion" {
   type = "A"
   ttl  = "300"
 
-  records = [aws_instance.bastion.public_ip]
+  records = [module.bastion.public_ip]
 }

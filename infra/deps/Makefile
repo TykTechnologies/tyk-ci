@@ -1,6 +1,10 @@
+AWS_ACCOUNT_ID ?= $(shell aws sts get-caller-identity --query 'Account')
+
+all: base deps
+
 %: %.pkr.hcl
 	packer validate $^
-	packer build $^
+	packer build $(PBFLAGS) $^
 
 launch:
 	@echo Launching t2.micro from AMI $(AMI) with sgs ssh and egress-all
@@ -15,4 +19,4 @@ launch:
 	@echo ssh -i ~/.ssh/ci.pem -l admin $(ip)
 
 list:
-	aws ec2 describe-images --owners 754489498669 --query "Images[*].[ImageId,Name,CreationDate]" --output text
+	aws ec2 describe-images --owners $(AWS_ACCOUNT_ID) --query "Images[*].[ImageId,Name,CreationDate]" --output text

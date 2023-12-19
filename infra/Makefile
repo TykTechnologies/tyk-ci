@@ -1,6 +1,6 @@
 # Use to this to bring up the infra from scratch
 
-.PHONY: prod
+.PHONY: prod upgrade
 
 prod:
 	@echo Generating plan upto vpc, for mount targets, and r53, for cloudflare NS entries
@@ -9,6 +9,9 @@ prod:
 	@echo Generating plan for remaining resouces
 	terraform plan -out=$(@).plan
 	terraform apply $(@).plan
+
+upgrade:
+	terraform init -upgrade
 
 prereq:
 	test -n "$(MONGODB_ATLAS_PUBLIC_KEY)"

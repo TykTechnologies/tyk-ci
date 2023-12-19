@@ -17,4 +17,4 @@ All persistance is based on an EFS volume which is mounted to `/config` for all 
 
 - ssh keypair
 - TFCloud API token as a secret, replace ARN where-ever used
-- CLOUDFLARE_TOKEN
+- `CLOUDFLARE_API_TOKEN`

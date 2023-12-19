@@ -52,7 +52,7 @@ resource "aws_security_group" "sg" {
 resource "aws_ecs_service" "service" {
   name            = var.cd.name
   cluster         = var.cluster
-  task_definition = aws_ecs_task_definition.td.id
+  task_definition = aws_ecs_task_definition.td.arn
   desired_count   = 1
   launch_type     = "FARGATE"
   # Needed for EFS

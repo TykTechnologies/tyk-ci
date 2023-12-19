@@ -1,19 +1,33 @@
-# all builds in one file so that,
+# all bullsye based builds in one file so that,
 # - can run in parallel
 # - reuse data and source blocks
 
+packer {
+  required_plugins {
+    ansible = {
+      version = ">= v1.1.1"
+      source  = "github.com/hashicorp/ansible"
+    }
+    amazon = {
+      version = ">=v1.0.2"
+      source  = "github.com/hashicorp/amazon"
+    }
+  }
+}
+
 locals {
-    common_tags = {
+  common_tags = {
     ou        = "syse"
     purpose   = "cd"
     managedby = "packer"
   }
 }
 
-data "amazon-ami" "base" {
+# Mongo 4.4 and Redis 6.0 need bullsye
+data "amazon-ami" "bullseye" {
   filters = {
     architecture        = "x86_64"
-    name                = "TykCI Base - Bullseye"
+    name                = "TykCI - Bullseye"
     root-device-type    = "ebs"
     sriov-net-support   = "simple"
     virtualization-type = "hvm"
@@ -28,7 +42,7 @@ source "amazon-ebs" "component" {
   force_delete_snapshot = true
   force_deregister      = true
   instance_type         = "t2.micro"
-  source_ami            = "${data.amazon-ami.base.id}"
+  source_ami            = "${data.amazon-ami.bullseye.id}"
   ssh_username          = "admin"
   subnet_filter {
     filters = {
@@ -38,7 +52,7 @@ source "amazon-ebs" "component" {
     most_free = true
     random    = false
   }
-  tags = local.common_tags
+  tags     = local.common_tags
   run_tags = local.common_tags
 }
 
@@ -51,7 +65,7 @@ build {
 
   provisioner "ansible-local" {
     playbook_file = "playbooks/r60.yml"
-    command = "sudo ansible-playbook"
+    command       = "sudo ansible-playbook"
   }
 }
 
@@ -64,6 +78,6 @@ build {
 
   provisioner "ansible-local" {
     playbook_file = "playbooks/m44.yml"
-    command = "sudo ansible-playbook"
+    command       = "sudo ansible-playbook"
   }
 }
