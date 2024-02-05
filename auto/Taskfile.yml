@@ -27,7 +27,7 @@ tasks:
         git checkout -f confs/${VARIATION}.env
         cat "confs/${VARIATION}.env" "${env_file}" | sort -u > tmp.env
         mv tmp.env ${env_file}
-        docker compose -p auto -f pro-ha.yml -f deps_pro-ha.yml -f ${DB}.yml --env-file master.env --profile master-datacenter up --quiet-pull -d
+        docker compose -p auto -f ${FLAVOUR}.yml -f deps_${FLAVOUR}.yml -f ${DB}.yml --env-file master.env --profile master-datacenter up --quiet-pull -d
         if [[ "${FLAVOUR}" == "pro-ha" ]];then
           task bootstrap
           docker compose -p auto -f pro-ha.yml -f deps_pro-ha.yml -f ${DB}.yml --env-file master.env --profile slave-datacenter up --quiet-pull -d
@@ -41,7 +41,8 @@ tasks:
       confs_dir: '{{ or .confs_dir "./pro" }}'
       env_file: local-{{.DB}}.env
     cmds:
-      - docker compose -p auto -f pro-ha.yml -f deps_pro-ha.yml -f ${DB}.yml --env-file master.env --profile all down
+      - docker compose -p auto -f pro-ha.yml -f deps_pro-ha.yml -f ${DB}.yml --env-file master.env --profile all down --remove-orphans
+      - docker volume prune -f
 
   pytest:
     desc: |

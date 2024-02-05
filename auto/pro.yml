@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   tyk:
-    profiles: ["all"]
+    profiles: ["all", "master-datacenter"]
     container_name: tyk
     image: ${tyk_image}
     env_file:
@@ -21,7 +21,7 @@ services:
         /opt/tyk-gateway/tyk --conf /conf/tyk.conf
 
   tyk-analytics:
-    profiles: ["all"]
+    profiles: ["all", "master-datacenter"]
     container_name: tyk-analytics
     image: ${tyk_analytics_image}
     env_file:
@@ -39,7 +39,7 @@ services:
     restart: on-failure
 
   tyk-pump:
-    profiles: ["all"]
+    profiles: ["all", "master-datacenter"]
     container_name: tyk-pump
     image: ${tyk_pump_image}
     env_file:
@@ -53,7 +53,7 @@ services:
       - wait_deps
 
   gateway-checker:
-    profiles: ["all"]
+    profiles: ["all", "master-datacenter"]
     image: curlimages/curl
     command: tail -f /dev/null
     depends_on:
@@ -66,7 +66,7 @@ services:
       timeout: 10s
 
   dashboard-checker:
-    profiles: ["all"]
+    profiles: ["all", "master-datacenter"]
     image: curlimages/curl
     command: tail -f /dev/null
     depends_on:
@@ -79,7 +79,7 @@ services:
       timeout: 10s
 
   wait:
-    profiles: ["all"]
+    profiles: ["all", "master-datacenter"]
     image: hello-world:linux
     depends_on:
         gateway-checker:
