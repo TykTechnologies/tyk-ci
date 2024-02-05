@@ -1,7 +1,7 @@
 version: "3.9"
 services:
   redis:
-    profiles: ["all"]
+    profiles: ["all", "master-datacenter"]
     container_name: redis
     image: bitnami/redis:6.2
     environment:
@@ -17,7 +17,7 @@ services:
     # command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
 
   bundle-server:
-    profiles: ["all"]
+    profiles: ["all", "master-datacenter"]
     container_name: bundle-server
     build:
       context: ./bundle-server
@@ -25,7 +25,7 @@ services:
       - "8000:8000"
 
   federation-server:
-    profiles: ["all"]
+    profiles: ["all", "master-datacenter"]
     container_name: federation
     image: agatawitkowska/federation-example
     ports:
@@ -35,7 +35,7 @@ services:
       - "4003:4003"
 
   openldap:
-    profiles: ["all"]
+    profiles: ["all", "master-datacenter"]
     container_name: openldap
     image: osixia/openldap:1.5.0
     ports:
@@ -47,7 +47,7 @@ services:
       - LDAP_READONLY_USER_PASSWORD=password
 
   graphql-faker:
-    profiles: ["all"]
+    profiles: ["all", "master-datacenter"]
     container_name: graphql-faker
     image: apisguru/graphql-faker:latest
     volumes:
@@ -57,23 +57,23 @@ services:
       - "9002:9002"
 
   upstream:
-    profiles: ["all"]
+    profiles: ["all", "master-datacenter"]
     container_name: httpbin.org
     image: kennethreitz/httpbin
     restart: always
 
   restcountries:
-    profiles: ["all"]
+    profiles: ["all", "master-datacenter"]
     container_name: restcountries
     image: bigpapoo/restcountries:1.0
       
   trevorblades:
-    profiles: ["all"]
+    profiles: ["all", "master-datacenter"]
     container_name: trevorblades
     image: mangomm/trevorblades-countries
 
   wait_deps:
-    profiles: ["all"]
+    profiles: ["all", "master-datacenter"]
     image: hello-world:linux
     depends_on:
         redis:
