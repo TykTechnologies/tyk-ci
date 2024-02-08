@@ -19,12 +19,12 @@ resource "aws_ecs_task_definition" "td" {
       name = volume.value
 
       efs_volume_configuration {
-	file_system_id = var.volume_map[volume.value]
+        file_system_id = var.volume_map[volume.value]
         root_directory = "/"
       }
     }
   }
-  tags       = var.common_tags
+  tags = var.common_tags
 }
 
 resource "aws_security_group" "sg" {
@@ -38,7 +38,7 @@ resource "aws_security_group" "sg" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -55,8 +55,6 @@ resource "aws_ecs_service" "service" {
   task_definition = aws_ecs_task_definition.td.arn
   desired_count   = 1
   launch_type     = "FARGATE"
-  # Needed for EFS
-  platform_version = "1.4.0"
 
   network_configuration {
     subnets          = var.subnets

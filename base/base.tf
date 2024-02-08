@@ -11,14 +11,14 @@ locals {
   # An additional repo that will be linked to the tyk user from repos above
   tyk_repos = ["tyk-plugin-compiler"]
   # repo list based on release cadence
-  low_cadence_repos = ["tyk-pump", "tyk-sink", "tyk-identity-broker", "portal", "tyk-sync", "tyk-plugin-compiler","tyk-automated-tests"]
+  low_cadence_repos  = ["tyk-pump", "tyk-sink", "tyk-identity-broker", "portal", "tyk-sync", "tyk-plugin-compiler", "tyk-automated-tests"]
   high_cadence_repos = ["tyk", "tyk-analytics"]
 
   pr_policy1 = jsondecode(file("files/pr_policy.json"))
   pr_policy2 = jsondecode(file("files/retain_all.json"))
 
   combined_policy = jsonencode({
-    "rules": concat(local.pr_policy1.rules, local.pr_policy2.rules)
+    "rules" : concat(local.pr_policy1.rules, local.pr_policy2.rules)
   })
 
   common_tags = {
@@ -44,7 +44,7 @@ resource "aws_ecr_repository" "integration" {
 }
 
 resource "aws_ecr_lifecycle_policy" "low_cadence" {
-  
+
   for_each = toset(local.low_cadence_repos)
 
   depends_on = [aws_ecr_repository.integration]

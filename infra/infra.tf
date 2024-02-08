@@ -189,46 +189,6 @@ data "aws_ami" "bastion" {
   }
 }
 
-data "aws_iam_policy_document" "ecs_assume_role_policy" {
-  statement {
-    actions = ["sts:AssumeRole"]
-
-    principals {
-      type        = "Service"
-      identifiers = ["ecs-tasks.amazonaws.com"]
-    }
-  }
-}
-
-# ter is required for the task to start
-resource "aws_iam_role" "ter" {
-  name = "ter"
-  path = "/cd/"
-
-  inline_policy {
-    name = "ter"
-
-    policy = jsonencode({
-      Version = "2012-10-17"
-      Statement = [
-        {
-	  Action = [
-            "ecr:GetAuthorizationToken",
-            "ecr:BatchCheckLayerAvailability",
-            "ecr:GetDownloadUrlForLayer",
-            "ecr:BatchGetImage",
-            "logs:CreateLogStream",
-	    "logs:PutLogEvents"
-	  ]
-          Effect   = "Allow"
-          Resource = "*"
-        },
-      ]
-    })
-  }
-  assume_role_policy = data.aws_iam_policy_document.ecs_assume_role_policy.json
-}
-
 # Everything logs to cloudwatch with prefixes
 resource "aws_cloudwatch_log_group" "logs" {
   name = "cd"

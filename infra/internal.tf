@@ -22,8 +22,8 @@ module "stepca" {
     secrets = [],
     region  = var.region
   }
-  trarn       = aws_iam_role.ter.arn
-  tearn       = aws_iam_role.ter.arn
+  trarn       = data.terraform_remote_state.base.outputs.cd_ter
+  tearn       = data.terraform_remote_state.base.outputs.cd_ter
   vpc         = module.vpc.vpc_id
   subnets     = module.vpc.public_subnets
   volume_map  = { ca = data.terraform_remote_state.base.outputs.shared_efs }
