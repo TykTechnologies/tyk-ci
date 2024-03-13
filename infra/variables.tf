@@ -1,6 +1,6 @@
 variable "base" {
   description = "Name of the terraform workspace which holds the base layer"
-  type = string
+  type        = string
 }
 
 variable "name_prefix" {
@@ -10,16 +10,11 @@ variable "name_prefix" {
 
 variable "cidr" {
   description = "CIDR for VPC"
-  type = string
+  type        = string
 }
 
 variable "region" {
   type = string
-}
-
-variable "key_name" {
-  description = "ssh pubkey added to bastion"
-  type        = string
 }
 
 variable "stepca_image" {

@@ -12,3 +12,8 @@ output "cd_ter" {
 output "kms" {
   value = aws_kms_key.cd.arn
 }
+
+output "key_name" {
+  value       = aws_key_pair.devacc.key_name
+  description = "Key pair for EC2 instances. Private key in devacc.pem."
+}

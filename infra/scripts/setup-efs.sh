@@ -3,7 +3,7 @@
 #sleep 2m
 sudo su - root
 
-yum install -y amazon-efs-utils
+dnf install -y amazon-efs-utils
 
 # These are actually terraform variable interpolations for a terraform template_file
 efs_id="${efs_id}"

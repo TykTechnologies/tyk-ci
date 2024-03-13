@@ -77,6 +77,11 @@ resource "aws_kms_key" "cd" {
   deletion_window_in_days = 10
 }
 
+resource "aws_key_pair" "devacc" {
+  key_name   = "devacc"
+  public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEy+rMTyKL3UaI6HKOBPbjLHu9AM9sxeZML1jfifjDoi alok@gauss"
+}
+
 # terraform apply -target=null_resource.debug will show the rendered template
 # resource "null_resource" "debug" {
 #   triggers = {

@@ -148,9 +148,9 @@ module "bastion" {
 
   name = "bastion"
 
-  ami                         = data.aws_ami.bastion.id
-  instance_type               = "t2.micro"
-  key_name                    = var.key_name
+  ami                         = data.aws_ami.al2023.id
+  instance_type               = "t3.nano"
+  key_name                    = data.terraform_remote_state.base.outputs.key_name
   monitoring                  = true
   vpc_security_group_ids      = [aws_security_group.efs.id, aws_security_group.ssh.id, aws_security_group.egress-all.id]
   subnet_id                   = element(module.vpc.public_subnets, 0)
@@ -168,12 +168,12 @@ module "bastion" {
   }
 }
 
-data "aws_ami" "bastion" {
+data "aws_ami" "al2023" {
   most_recent = true
   owners      = ["amazon"]
   filter {
     name   = "name"
-    values = ["amzn2-ami-minimal-*"]
+    values = ["al2023-ami-minimal-*"]
   }
   filter {
     name   = "architecture"

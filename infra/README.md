@@ -4,6 +4,8 @@ Contains the ephemeral infrastructure for persistent environments. See `prod.aut
 
 This depends on EFS volumes from the `base` workspace on [Terraform Cloud](https://app.terraform.io/app/Tyk/workspaces/base-prod/settings/general). These manifests are in the <../base> dir.
 
+An exception to ephemeral instances is _deptrack_ which is maintained as pet. Terraform brings up the instance with docker compose installed and configured. Persistence is left to an EFS volume which is mounted in /shared.
+
 # Architecture
 
 All EC2 instances may be upgraded along with normal operations because a new AMI was released.
@@ -15,6 +17,5 @@ All persistance is based on an EFS volume which is mounted to `/config` for all 
 
 # External dependencies
 
-- ssh keypair
 - TFCloud API token as a secret, replace ARN where-ever used
 - `CLOUDFLARE_API_TOKEN`

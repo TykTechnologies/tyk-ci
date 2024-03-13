@@ -37,7 +37,7 @@ module "storage_sg" {
   vpc_id      = module.vpc.vpc_id
 
   ingress_cidr_blocks = [module.vpc.vpc_cidr_block]
-  ingress_rules       = [
+  ingress_rules = [
     "postgresql-tcp",
     "mongodb-27017-tcp",
     "redis-tcp",
@@ -54,7 +54,7 @@ module "storage_components" {
 
   ami           = data.aws_ami.storage_components[each.key].id
   instance_type = each.value.itype
-  key_name      = var.key_name
+  key_name      = data.terraform_remote_state.base.outputs.key_name
   monitoring    = true
   vpc_security_group_ids = [
     module.storage_sg.security_group_id,
