@@ -25,7 +25,3 @@ jobs:
           tag_name: ${{ github.ref_name }}
           body_path: auto/release.md
           files: ci-env.tgz
-
-  trigger-api-regression-tests:
-    uses: TykTechnologies/tyk-automated-tests/.github/workflows/release.yml@main
-    secrets: inherit
