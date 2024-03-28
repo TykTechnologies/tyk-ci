@@ -27,5 +27,5 @@ jobs:
           files: ci-env.tgz
 
   trigger-api-regression-tests:
-    uses: TykTechnologies/tyk-automated-tests/.github/workflows/release.yml@main
+    uses: TykTechnologies/tyk-automated-tests/.github/workflows/release.yml@master
     secrets: inherit
