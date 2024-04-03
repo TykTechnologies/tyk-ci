@@ -1,0 +1,15 @@
+name: Test Processing
+on:
+  repository_dispatch:
+    types: [process-test-results]
+
+jobs:
+  process-test-results:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+      - name: Process test results
+        run: |
+          echo "Processing test results..."
+          echo "${{ github.event.client_payload }}"
