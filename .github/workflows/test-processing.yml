@@ -3,13 +3,33 @@ on:
   repository_dispatch:
     types: [process-test-results]
 
+permissions:
+  id-token: write   # This is required for requesting the JWT
+  contents: read    # This is required for actions/checkout
+
+env:
+  S3_BUCKET: s3://assets.dev.tyk.technology/testreports  
+
 jobs:
   process-test-results:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: arn:aws:iam::754489498669:role/ecr_rw_tyk
+          role-session-name: cipush
+          aws-region: eu-central-1				
       - name: Process test results
         run: |
           echo "Processing test results..."
           echo "${{ github.event.client_payload }}"
+      
+      - name: Download report from S3
+        run: aws s3 cp ${{ env.S3_BUCKET }}/${{ github.event.client_payload.file }} /tmp/report.xml
+
+      - name: Convert XML report into Json
+        run: |
+          npx junit2json -p /tmp/report.xml > /tmp/report.json
+          cat /tmp/report.json          
