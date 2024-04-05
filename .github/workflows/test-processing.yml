@@ -48,3 +48,13 @@ jobs:
           --arg sink_compatibility "${{ github.event.client_payload.meta.sink_compatibility }}" \
           '. + {repo: $repo, branch: $branch, commit: $commit, test_suite_version: $test_suite_version, test_suite_name: $test_suite_name, test_suite_run: $test_suite_run, db: $db, conf: $conf, pump_compatibility: $pump_compatibility, sink_compatibility: $sink_compatibility}' /tmp/report.json > /tmp/report_with_metadata.json
           cat /tmp/report_with_metadata.json
+
+      - name: Insert into MongoDB
+        uses: mongodb-js/query@v2
+        with:
+          mongodb_uri: mongodb+srv://mongo:${{ secrets.CI_MONGO_PASS }}@tyk-ci.pzeexqy.mongodb.net/
+          database: test
+          collection: test_report
+          query: |
+            db.test_report.insertOne($(cat /tmp/report_with_metadata.json))
+        
