@@ -64,11 +64,14 @@ resource "aws_ecr_lifecycle_policy" "high_cadence" {
 
 }
 
-# Common filesystem for all resources
+# Dependency Track filesystem
+resource "aws_efs_file_system" "deptrack" {
+  creation_token = "dependency track"
+}
+
+# Common filesystem for Tyk CD clusters
 resource "aws_efs_file_system" "shared" {
   creation_token = "reproducible environments"
-
-  tags = local.common_tags
 }
 
 # CD secrets
@@ -80,6 +83,18 @@ resource "aws_kms_key" "cd" {
 resource "aws_key_pair" "devacc" {
   key_name   = "devacc"
   public_key = "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIEy+rMTyKL3UaI6HKOBPbjLHu9AM9sxeZML1jfifjDoi alok@gauss"
+}
+
+resource "aws_s3_bucket" "assets" {
+  bucket        = "assets.dev.tyk.technology"
+  force_destroy = true
+}
+
+resource "aws_s3_object" "testreports" {
+  key    = "testreports/"
+  bucket = aws_s3_bucket.assets.id
+  acl    = "private"
+  source = "/dev/null"
 }
 
 # terraform apply -target=null_resource.debug will show the rendered template

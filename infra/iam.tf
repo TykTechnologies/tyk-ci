@@ -34,11 +34,16 @@ data "aws_iam_policy_document" "extra" {
       "elasticfilesystem:DescribeFileSystems"
     ]
 
-    resources = [aws_efs_file_system.shared.arn]
+    resources = [data.aws_efs_file_system.shared.arn]
   }
 }
 
-# ter is required for the task to start. We create it in one shot
+data "aws_efs_file_system" "shared" {
+  file_system_id = data.terraform_remote_state.base.outputs.shared_efs
+}
+
+
+# ter is required for the CD task to start. We create it in one shot
 # instead of using role_policy_attachment resources as this role is
 # managed exclusively by terraform
 resource "aws_iam_role" "ter" {
@@ -51,4 +56,23 @@ resource "aws_iam_role" "ter" {
   }
   assume_role_policy = data.aws_iam_policy_document.ecs_assume_role_policy.json
   #managed_policy_arns = ["arn:aws:iam::aws:policy/aws-service-role/AmazonECSServiceRolePolicy"]
+}
+
+resource "aws_s3_bucket_policy" "deptrack_lb_logs" {
+  bucket = data.terraform_remote_state.base.outputs.assets
+  policy = <<EOF
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::054676820928:root"
+      },
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::${data.terraform_remote_state.base.outputs.assets}/deptrack-lb/AWSLogs/754489498669/*"
+    }
+  ]
+}
+EOF
 }

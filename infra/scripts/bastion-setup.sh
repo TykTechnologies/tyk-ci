@@ -6,7 +6,7 @@ ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCi94TW0M9UuW3SKmWLUR/aBUXOS7XdQ5Rs/Gixr4R6
 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIB20kCeQniG3EmynWupaq1SWwwHQG+wj4GQYj3+xY9k4 alok@gauss
 EOF
 
-sudo tee -a /etc/yum.repos.d/mongo-org.repo <<EOF
+tee -a /etc/yum.repos.d/mongo-org.repo <<EOF
 [mongodb-org-4.4]
 name=MongoDB Repository
 baseurl=https://repo.mongodb.org/yum/amazon/2/mongodb-org/4.4/x86_64/
@@ -15,8 +15,8 @@ enabled=1
 gpgkey=https://www.mongodb.org/static/pgp/server-4.4.asc
 EOF
 
-sudo yum install -y mongodb-org-shell && yum update -y
+yum update -y && yum install -y mongodb-org-shell 
 
-sudo groupadd tyk
+groupadd tyk
 
 // TODO: implement TrustedUserCAKeys with cfssl, see https://github.com/drewfarris/sample-cfssl-ca

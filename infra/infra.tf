@@ -69,35 +69,9 @@ module "vpc" {
   enable_dns_hostnames = true
 }
 
-resource "aws_security_group" "efs" {
-  name        = "efs"
-  description = "Allow efs inbound traffic from anywhere in the VPC"
-  vpc_id      = module.vpc.vpc_id
-
-  ingress {
-    from_port   = 2049
-    to_port     = 2049
-    protocol    = "tcp"
-    cidr_blocks = [module.vpc.vpc_cidr_block]
-  }
-}
-
-resource "aws_security_group" "ssh" {
-  name        = "ssh"
-  description = "Allow ssh inbound traffic from anywhere"
-  vpc_id      = module.vpc.vpc_id
-
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
-resource "aws_security_group" "egress-all" {
-  name        = "egress-all"
-  description = "Allow all outbound traffic"
+resource "aws_security_group" "tasks" {
+  name        = "tasks"
+  description = "EFS, ssh and egress"
   vpc_id      = module.vpc.vpc_id
 
   egress {
@@ -108,37 +82,82 @@ resource "aws_security_group" "egress-all" {
   }
 }
 
-# shared mount targets for all public subnets
+resource "aws_vpc_security_group_ingress_rule" "ssh" {
+  security_group_id = aws_security_group.tasks.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 22
+  to_port           = 22
+  ip_protocol       = "tcp"
+}
 
-data "template_file" "mount_shared" {
-  template = file("scripts/setup-efs.sh")
-  vars = {
-    efs_id      = data.terraform_remote_state.base.outputs.shared_efs
-    mount_point = "/shared"
+resource "aws_vpc_security_group_ingress_rule" "efs" {
+  security_group_id = aws_security_group.tasks.id
+  cidr_ipv4         = module.vpc.vpc_cidr_block
+  from_port         = 2049
+  to_port           = 2049
+  ip_protocol       = "tcp"
+}
+
+resource "aws_security_group" "http_s" {
+  name        = "http_s"
+  description = "Allow http(s) inbound traffic from anywhere"
+  vpc_id      = module.vpc.vpc_id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
   }
 }
 
-data "template_cloudinit_config" "bastion" {
-  gzip          = true
-  base64_encode = true
-
-  part {
-    content_type = "text/x-shellscript"
-    content      = data.template_file.mount_shared.rendered
-  }
-
-  part {
-    content_type = "text/x-shellscript"
-    content      = file("scripts/bastion-setup.sh")
-  }
+resource "aws_vpc_security_group_ingress_rule" "http" {
+  security_group_id = aws_security_group.http_s.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 80
+  to_port           = 80
+  ip_protocol       = "tcp"
 }
 
+resource "aws_vpc_security_group_ingress_rule" "https" {
+  security_group_id = aws_security_group.http_s.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
+}
+
+# CD tasks will run in the public subnet
 resource "aws_efs_mount_target" "shared" {
   for_each = toset(module.vpc.public_subnets)
 
   file_system_id  = data.terraform_remote_state.base.outputs.shared_efs
   subnet_id       = each.value
-  security_groups = [aws_security_group.efs.id]
+  security_groups = [aws_security_group.tasks.id]
+}
+
+# The deptrack EFS is only needed in the private subnet
+resource "aws_efs_mount_target" "deptrack" {
+  for_each = toset(module.vpc.private_subnets)
+
+  file_system_id  = data.terraform_remote_state.base.outputs.deptrack_efs
+  subnet_id       = each.value
+  security_groups = [aws_security_group.tasks.id]
+}
+
+data "cloudinit_config" "bastion" {
+  gzip          = true
+  base64_encode = true
+
+  part {
+    content_type = "text/cloud-config"
+    content = templatefile("bastion-cloudinit.yaml.tftpl", {
+      efs_mounts = [
+        { dev = data.terraform_remote_state.base.outputs.deptrack_efs, mp = "/deptrack" },
+        { dev = data.terraform_remote_state.base.outputs.shared_efs, mp = "/shared" },
+      ]
+    })
+  }
 }
 
 # Bastion
@@ -152,10 +171,10 @@ module "bastion" {
   instance_type               = "t3.nano"
   key_name                    = data.terraform_remote_state.base.outputs.key_name
   monitoring                  = true
-  vpc_security_group_ids      = [aws_security_group.efs.id, aws_security_group.ssh.id, aws_security_group.egress-all.id]
+  vpc_security_group_ids      = [aws_security_group.tasks.id]
   subnet_id                   = element(module.vpc.public_subnets, 0)
   associate_public_ip_address = true
-  user_data_base64            = data.template_cloudinit_config.bastion.rendered
+  user_data_base64            = data.cloudinit_config.bastion.rendered
 
   # Spot request specific attributes
   spot_price                          = "0.1"
@@ -190,7 +209,7 @@ data "aws_ami" "al2023" {
 }
 
 # Everything logs to cloudwatch with prefixes
-resource "aws_cloudwatch_log_group" "logs" {
+resource "aws_cloudwatch_log_group" "cd" {
   name = "cd"
 
   retention_in_days = 7
@@ -202,7 +221,7 @@ resource "aws_ecs_cluster" "internal" {
     execute_command_configuration {
       logging = "OVERRIDE"
       log_configuration {
-        cloud_watch_log_group_name = aws_cloudwatch_log_group.logs.name
+        cloud_watch_log_group_name = aws_cloudwatch_log_group.cd.name
       }
     }
   }
@@ -211,10 +230,30 @@ resource "aws_ecs_cluster" "internal" {
 
 # DNS
 
-# resource "aws_service_discovery_private_dns_namespace" "cd" {
-#   name        = "dev.tyk.technology"
-#   description = "CD ECS resources"
-# }
+resource "aws_service_discovery_private_dns_namespace" "internal" {
+  name        = "dev.internal"
+  description = "Private DNS for resources"
+  vpc         = module.vpc.vpc_id
+}
+
+resource "aws_service_discovery_service" "internal" {
+  name = "example"
+
+  dns_config {
+    namespace_id = aws_service_discovery_private_dns_namespace.internal.id
+
+    dns_records {
+      ttl  = 10
+      type = "A"
+    }
+
+    routing_policy = "MULTIVALUE"
+  }
+
+  health_check_custom_config {
+    failure_threshold = 1
+  }
+}
 
 resource "aws_route53_zone" "dev_tyk_tech" {
   name = "dev.tyk.technology"

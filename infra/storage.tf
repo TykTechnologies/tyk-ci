@@ -58,9 +58,7 @@ module "storage_components" {
   monitoring    = true
   vpc_security_group_ids = [
     module.storage_sg.security_group_id,
-    aws_security_group.efs.id,
-    aws_security_group.ssh.id,
-    aws_security_group.egress-all.id
+    aws_security_group.tasks.id,
   ]
   subnet_id = element(module.vpc.private_subnets, 1)
 

@@ -10,8 +10,8 @@ module "stepca" {
   cd = {
     name      = "stepca",
     port      = 8888,
-    log_group = aws_cloudwatch_log_group.logs.name,
-    image     = "smallstep/step-ca:0.25.2",
+    log_group = aws_cloudwatch_log_group.cd.name,
+    image     = "smallstep/step-ca:0.26.0",
     mounts = [
       { src = "ca", dest = "/ca", readonly = false },
     ],
@@ -22,8 +22,8 @@ module "stepca" {
     secrets = [],
     region  = var.region
   }
-  trarn       = data.terraform_remote_state.base.outputs.cd_ter
-  tearn       = data.terraform_remote_state.base.outputs.cd_ter
+  trarn       = aws_iam_role.ter.arn
+  tearn       = aws_iam_role.ter.arn
   vpc         = module.vpc.vpc_id
   subnets     = module.vpc.public_subnets
   volume_map  = { ca = data.terraform_remote_state.base.outputs.shared_efs }

@@ -1,10 +1,10 @@
 # AWS - Github OIDC
 # https://docs.aws.amazon.com/IAM/latest/UserGuide/id_roles_providers_create_oidc.html
 resource "aws_iam_openid_connect_provider" "github" {
-      url             = "https://token.actions.githubusercontent.com"
-      client_id_list  = ["sts.amazonaws.com"]
-      thumbprint_list = data.tls_certificate.github.certificates[*].sha1_fingerprint
-      tags            = local.common_tags
+  url             = "https://token.actions.githubusercontent.com"
+  client_id_list  = ["sts.amazonaws.com"]
+  thumbprint_list = data.tls_certificate.github.certificates[*].sha1_fingerprint
+  tags            = local.common_tags
 }
 
 data "tls_certificate" "github" {
@@ -74,6 +74,13 @@ resource "aws_iam_policy" "cipush" {
         ]
         Effect   = "Allow"
         Resource = "*"
+      },
+      {
+        Action = [
+          "s3:PutObject"
+        ],
+        Effect   = "Allow"
+        Resource = join("", [aws_s3_object.testreports.arn, "*"])
       },
     ]
   })
