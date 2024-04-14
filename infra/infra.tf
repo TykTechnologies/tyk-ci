@@ -90,7 +90,7 @@ resource "aws_vpc_security_group_ingress_rule" "ssh" {
   ip_protocol       = "tcp"
 }
 
-resource "aws_vpc_security_group_ingress_rule" "efs" {
+resource "aws_vpc_security_group_ingress_rule" "efs_tasks" {
   security_group_id = aws_security_group.tasks.id
   cidr_ipv4         = module.vpc.vpc_cidr_block
   from_port         = 2049
@@ -227,6 +227,34 @@ resource "aws_ecs_cluster" "internal" {
   }
 }
 
+# One wildcard cert
+
+resource "aws_acm_certificate" "dev_tyk_technology" {
+  domain_name       = "*.dev.tyk.technology"
+  validation_method = "DNS"
+}
+
+resource "aws_route53_record" "dev_tyk_technology" {
+  for_each = {
+    for dvo in aws_acm_certificate.dev_tyk_technology.domain_validation_options : dvo.domain_name => {
+      name   = dvo.resource_record_name
+      record = dvo.resource_record_value
+      type   = dvo.resource_record_type
+    }
+  }
+
+  allow_overwrite = true
+  name            = each.value.name
+  records         = [each.value.record]
+  ttl             = 60
+  type            = each.value.type
+  zone_id         = aws_route53_zone.dev_tyk_tech.zone_id
+}
+
+resource "aws_acm_certificate_validation" "dev_tyk_technology" {
+  certificate_arn         = aws_acm_certificate.dev_tyk_technology.arn
+  validation_record_fqdns = [for record in aws_route53_record.dev_tyk_technology : record.fqdn]
+}
 
 # DNS
 
@@ -234,25 +262,6 @@ resource "aws_service_discovery_private_dns_namespace" "internal" {
   name        = "dev.internal"
   description = "Private DNS for resources"
   vpc         = module.vpc.vpc_id
-}
-
-resource "aws_service_discovery_service" "internal" {
-  name = "example"
-
-  dns_config {
-    namespace_id = aws_service_discovery_private_dns_namespace.internal.id
-
-    dns_records {
-      ttl  = 10
-      type = "A"
-    }
-
-    routing_policy = "MULTIVALUE"
-  }
-
-  health_check_custom_config {
-    failure_threshold = 1
-  }
 }
 
 resource "aws_route53_zone" "dev_tyk_tech" {
