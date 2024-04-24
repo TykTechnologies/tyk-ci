@@ -34,9 +34,9 @@ module "storage_sg" {
 
   name        = "storage"
   description = "Persistent storage EC2 instances"
-  vpc_id      = module.vpc.vpc_id
+  vpc_id      = data.terraform_remote_state.base.outputs.vpc.id
 
-  ingress_cidr_blocks = [module.vpc.vpc_cidr_block]
+  ingress_cidr_blocks = [data.terraform_remote_state.base.outputs.vpc.cidr]
   ingress_rules = [
     "postgresql-tcp",
     "mongodb-27017-tcp",
@@ -58,9 +58,9 @@ module "storage_components" {
   monitoring    = true
   vpc_security_group_ids = [
     module.storage_sg.security_group_id,
-    aws_security_group.tasks.id,
+    aws_security_group.instances.id,
   ]
-  subnet_id = element(module.vpc.private_subnets, 1)
+  subnet_id = element(data.terraform_remote_state.base.outputs.vpc.private_subnets, 1)
 
   spot_price                          = "0.1"
   spot_wait_for_fulfillment           = true
@@ -75,7 +75,7 @@ module "storage_components" {
 resource "aws_route53_zone" "storage_internal" {
   name = "storage.internal"
   vpc {
-    vpc_id = module.vpc.vpc_id
+    vpc_id = data.terraform_remote_state.base.outputs.vpc.id
   }
 }
 

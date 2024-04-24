@@ -1,12 +1,34 @@
 # Dependency Track
 
+provider "aws" {
+  region = "eu-central-1"
+  default_tags {
+    tags = {
+      "managed" = "terraform",
+      "ou"      = "devops",
+      "purpose" = "security",
+    }
+  }
+}
+
+# Persistence layer
+data "terraform_remote_state" "base" {
+  backend = "remote"
+
+  config = {
+    organization = "Tyk"
+    workspaces = {
+      name = var.base
+    }
+  }
+}
+
 locals {
   # ports
   dtrack_port    = 8080
   dtrack_version = "4.10.0"
-  dtrack_tags = {
-    purpose = "security"
-  }
+  dtrack_db_name = "deptrack"
+  dtrack_db_role = "deptrack"
 }
 
 resource "aws_ecs_cluster" "deptrack" {
@@ -19,20 +41,18 @@ resource "aws_ecs_cluster" "deptrack" {
       }
     }
   }
-  tags = local.dtrack_tags
 }
 
 resource "aws_cloudwatch_log_group" "deptrack" {
   name = "deptrack"
 
   retention_in_days = 7
-  tags              = local.dtrack_tags
 }
 
 resource "aws_security_group" "deptrack" {
   name        = "deptrack"
   description = "For DependencyTrack on Fargate"
-  vpc_id      = module.vpc.vpc_id
+  vpc_id      = data.terraform_remote_state.base.outputs.vpc.id
 
   egress {
     from_port   = 0
@@ -40,19 +60,47 @@ resource "aws_security_group" "deptrack" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-  tags = local.dtrack_tags
 }
 
 resource "aws_vpc_security_group_ingress_rule" "deptrack" {
   for_each = toset([for p in [2049, local.dtrack_port] : tostring(p)])
 
   security_group_id = aws_security_group.deptrack.id
-  cidr_ipv4         = module.vpc.vpc_cidr_block
+  cidr_ipv4         = data.terraform_remote_state.base.outputs.vpc.cidr
   from_port         = each.key
   to_port           = each.key
   ip_protocol       = "tcp"
-  tags              = local.dtrack_tags
 }
+
+resource "aws_security_group" "http_s" {
+  name        = "http_s"
+  description = "Allow http(s) inbound traffic from anywhere"
+  vpc_id      = data.terraform_remote_state.base.outputs.vpc.id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "http" {
+  security_group_id = aws_security_group.http_s.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 80
+  to_port           = 80
+  ip_protocol       = "tcp"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "https" {
+  security_group_id = aws_security_group.http_s.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 443
+  to_port           = 443
+  ip_protocol       = "tcp"
+}
+
 
 module "deptrack_api" {
   source = "terraform-aws-modules/ecs/aws//modules/service"
@@ -60,6 +108,8 @@ module "deptrack_api" {
   name             = "deptrack-api"
   cluster_arn      = aws_ecs_cluster.deptrack.arn
   assign_public_ip = true
+
+  depends_on = [aws_lb_listener.deptrack]
 
   cpu           = 4096
   memory        = 16384
@@ -75,6 +125,15 @@ module "deptrack_api" {
         { sourceVolume = "dtrack-data", containerPath = "/root" }
       ]
       environment = [
+        { name = "ALPINE_DATABASE_MODE", value = "external" },
+        { name = "ALPINE_DATABASE_URL", value = "jdbc:postgresql://${data.terraform_remote_state.base.outputs.rds.address}:${data.terraform_remote_state.base.outputs.rds.port}/${local.dtrack_db_name}?ssl=true" },
+        { name = "ALPINE_DATABASE_DRIVER", value = "org.postgresql.Driver" },
+        { name = "ALPINE_DATABASE_USERNAME", value = local.dtrack_db_role },
+        { name = "ALPINE_DATABASE_POOL_ENABLED", value = "true" },
+        { name = "ALPINE_DATABASE_POOL_MAX_SIZE", value = "20" },
+        { name = "ALPINE_DATABASE_POOL_MIN_IDLE", value = "10" },
+        { name = "ALPINE_DATABASE_POOL_IDLE_TIMEOUT", value = "300000" },
+        { name = "ALPINE_DATABASE_POOL_MAX_LIFETIME", value = "600000" },
         { name = "ALPINE_CORS_ENABLED", value = "true" },
         { name = "ALPINE_CORS_ALLOW_ORIGIN", value = "*" },
         { name = "ALPINE_CORS_ALLOW_METHODS", value = "GET,POST,PUT,DELETE,OPTIONS" },
@@ -89,6 +148,9 @@ module "deptrack_api" {
         { name = "ALPINE_OIDC_USER_PROVISIONING", value = "true" },
         { name = "ALPINE_OIDC_TEAM_SYNCHRONIZATION", value = "false" },
         { name = "LOGGING_LEVEL", value = "INFO" }
+      ]
+      secrets = [
+        { name = "ALPINE_DATABASE_PASSWORD", valueFrom = data.terraform_remote_state.base.outputs. }
       ]
       port_mappings = [
         {
@@ -115,9 +177,7 @@ module "deptrack_api" {
       }
     }
   }
-  depends_on = [aws_lb_listener.deptrack]
-
-  subnet_ids = module.vpc.public_subnets
+  subnet_ids = data.terraform_remote_state.base.outputs.vpc.public_subnets
   load_balancer = {
     service = {
       target_group_arn = aws_lb_target_group.deptrack_api.arn
@@ -128,8 +188,6 @@ module "deptrack_api" {
 
   create_security_group = false
   security_group_ids    = [aws_security_group.deptrack.id]
-
-  tags = local.dtrack_tags
 }
 
 module "deptrack_fe" {
@@ -138,6 +196,11 @@ module "deptrack_fe" {
   name             = "deptrack-fe"
   cluster_arn      = aws_ecs_cluster.deptrack.arn
   assign_public_ip = true
+  desired_count    = 2
+
+  create_security_group = false
+
+  depends_on = [module.deptrack_api, aws_lb_listener.deptrack]
 
   cpu    = 1024
   memory = 2048
@@ -172,10 +235,7 @@ module "deptrack_fe" {
       ]
     }
   }
-  desired_count = 2
-  depends_on    = [module.deptrack_api, aws_lb_listener.deptrack]
-
-  subnet_ids = module.vpc.public_subnets
+  subnet_ids = data.terraform_remote_state.base.outputs.vpc.public_subnets
   load_balancer = {
     service = {
       target_group_arn = aws_lb_target_group.deptrack_fe.arn
@@ -183,11 +243,7 @@ module "deptrack_fe" {
       container_port   = local.dtrack_port
     }
   }
-
-  create_security_group = false
-  security_group_ids    = [aws_security_group.deptrack.id]
-
-  tags = local.dtrack_tags
+  security_group_ids = [aws_security_group.deptrack.id]
 }
 
 resource "aws_lb" "deptrack" {
@@ -195,7 +251,7 @@ resource "aws_lb" "deptrack" {
   internal           = false
   load_balancer_type = "application"
   security_groups    = [aws_security_group.http_s.id]
-  subnets            = module.vpc.public_subnets
+  subnets            = data.terraform_remote_state.base.outputs.vpc.public_subnets
 
   enable_deletion_protection = true
 
@@ -210,7 +266,6 @@ resource "aws_lb" "deptrack" {
     prefix  = "deptrack-lb"
     enabled = true
   }
-  tags = local.dtrack_tags
 }
 
 resource "aws_lb_listener" "deptrack" {
@@ -218,7 +273,7 @@ resource "aws_lb_listener" "deptrack" {
   port              = "443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
-  certificate_arn   = aws_acm_certificate_validation.dev_tyk_technology.certificate_arn
+  certificate_arn   = data.terraform_remote_state.base.outputs.cert
 
   default_action {
     type = "fixed-response"
@@ -228,7 +283,6 @@ resource "aws_lb_listener" "deptrack" {
       status_code  = "404"
     }
   }
-  tags = local.dtrack_tags
 }
 
 resource "aws_lb_listener_rule" "deptrack" {
@@ -244,7 +298,6 @@ resource "aws_lb_listener_rule" "deptrack" {
       values = ["deptrack.dev.tyk.technology"]
     }
   }
-  tags = local.dtrack_tags
 }
 
 resource "aws_lb_listener_rule" "deptrack_api" {
@@ -260,7 +313,6 @@ resource "aws_lb_listener_rule" "deptrack_api" {
       values = ["deptrack-api.dev.tyk.technology"]
     }
   }
-  tags = local.dtrack_tags
 }
 
 resource "aws_lb_target_group" "deptrack_fe" {
@@ -268,9 +320,7 @@ resource "aws_lb_target_group" "deptrack_fe" {
   port        = local.dtrack_port
   protocol    = "HTTP"
   target_type = "ip"
-  vpc_id      = module.vpc.vpc_id
-
-  tags = local.dtrack_tags
+  vpc_id      = data.terraform_remote_state.base.outputs.vpc.id
 }
 
 resource "aws_lb_target_group" "deptrack_api" {
@@ -278,20 +328,18 @@ resource "aws_lb_target_group" "deptrack_api" {
   port        = local.dtrack_port
   protocol    = "HTTP"
   target_type = "ip"
-  vpc_id      = module.vpc.vpc_id
+  vpc_id      = data.terraform_remote_state.base.outputs.vpc.id
 
   health_check {
     enabled = true
     path    = "/api/version"
   }
-
-  tags = local.dtrack_tags
 }
 
 resource "aws_route53_record" "deptrack" {
   for_each = toset(["deptrack", "deptrack-api"])
 
-  zone_id = aws_route53_zone.dev_tyk_tech.zone_id
+  zone_id = data.terraform_remote_state.base.outputs.zone_id
 
   name = each.key
   type = "CNAME"
@@ -299,4 +347,3 @@ resource "aws_route53_record" "deptrack" {
 
   records = [aws_lb.deptrack.dns_name]
 }
-

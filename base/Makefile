@@ -3,8 +3,8 @@
 .PHONY: prod upgrade
 
 prod:
-	@echo Generating plan upto vpc, for mount targets, and r53, for cloudflare NS entries
-	terraform plan -target=module.vpc -target=aws_route53_zone.dev_tyk_tech -out=$(@).plan
+	@echo Generating plan upto cloudflare NS entries
+	terraform plan -target=aws_route53_zone.dev_tyk_tech -out=$(@).plan
 	terraform apply $(@).plan
 	@echo Generating plan for remaining resouces
 	terraform plan -out=$(@).plan

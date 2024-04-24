@@ -1,4 +1,5 @@
-# cloud-config for bastion, assumed to be al2023
+#cloud-config
+# assumed to be al2023 full
 # templated for EFS mounts
 
 ssh_keys:
@@ -31,12 +32,35 @@ yum_repos:
     name: MongoDB community edition 7.0
 
 packages:
- - mongodb-mongosh
- - amazon-efs-utils
+  - mongodb-mongosh
+  - git
+  - amazon-efs-utils
+  - amazon-cloudwatch-agent
+  - python3-pip
+
+users:
+  - default # do not remove
+  - name: ansible
+    gecos: Ansible User
+    shell: /bin/bash
+    groups: users,admin,wheel
+    sudo: ALL=(ALL) NOPASSWD:ALL
+
+ansible:
+  install_method: pip
+  package_name: ansible
+  run_user: ec2-user
+  galaxy:
+    actions:
+      - ["ansible-galaxy", "collection", "install", "community.general"]
+  setup_controller:
+    repositories:
+      - path: /home/ansible/tyk-ci/
+        source: git@github.com:TykTechnologies/tyk-ci.git
 
 mounts:
 %{ for m in efs_mounts ~}
-  - ["${m.dev}:/", "${m.mp}", efs, "defaults,_netdev,nofail", 0, 0 ]
+  - ["${m.dev}:/", "${m.mp}", efs, "defaults,_netdev,nofail", "0", "0" ]
 %{ endfor ~}
 
 runcmd:

@@ -27,7 +27,6 @@ locals {
     "purpose" = "ci",
     "env"     = local.name
   }
-
 }
 
 resource "aws_ecr_repository" "integration" {
@@ -59,9 +58,7 @@ resource "aws_ecr_lifecycle_policy" "high_cadence" {
 
   depends_on = [aws_ecr_repository.integration]
   repository = each.key
-
-  policy = local.combined_policy
-
+  policy     = local.combined_policy
 }
 
 # Dependency Track filesystem
@@ -96,11 +93,4 @@ resource "aws_s3_object" "testreports" {
   acl    = "private"
   source = "/dev/null"
 }
-
-# terraform apply -target=null_resource.debug will show the rendered template
-# resource "null_resource" "debug" {
-#   triggers = {
-#     json = "${data.template_file.tyk_repo_access.rendered}"
-#   }
-# }
 

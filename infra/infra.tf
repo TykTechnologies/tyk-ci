@@ -1,11 +1,10 @@
 provider "aws" {
-  region = var.region
+  region = "eu-central-1"
   default_tags {
     tags = {
       "managed" = "terraform",
       "ou"      = "devops",
       "purpose" = "ci",
-      "env"     = var.name_prefix
     }
   }
 }
@@ -22,57 +21,10 @@ data "terraform_remote_state" "base" {
   }
 }
 
-data "aws_availability_zones" "available" {
-  state = "available"
-}
-
-module "private_subnets" {
-  source = "hashicorp/subnets/cidr"
-
-  base_cidr_block = cidrsubnet(var.cidr, 4, 1)
-  networks = [
-    { name = "privaz1", new_bits = 4 },
-    { name = "privaz2", new_bits = 4 },
-    { name = "privaz3", new_bits = 4 },
-  ]
-}
-
-module "public_subnets" {
-  source = "hashicorp/subnets/cidr"
-
-  base_cidr_block = cidrsubnet(var.cidr, 4, 15)
-  networks = [
-    { name = "pubaz1", new_bits = 4 },
-    { name = "pubaz2", new_bits = 4 },
-    { name = "pubaz3", new_bits = 4 },
-  ]
-}
-
-module "vpc" {
-  source = "terraform-aws-modules/vpc/aws"
-
-  name = var.name_prefix
-  cidr = var.cidr
-
-  azs                 = data.aws_availability_zones.available.names
-  private_subnets     = module.private_subnets.networks[*].cidr_block
-  private_subnet_tags = { Type = "private" }
-  public_subnets      = module.public_subnets.networks[*].cidr_block
-  public_subnet_tags  = { Type = "public" }
-
-  enable_nat_gateway      = true
-  single_nat_gateway      = true
-  map_public_ip_on_launch = true
-
-  # Need DNS to address EFS by name
-  enable_dns_support   = true
-  enable_dns_hostnames = true
-}
-
-resource "aws_security_group" "tasks" {
-  name        = "tasks"
+resource "aws_security_group" "instances" {
+  name        = "instances"
   description = "EFS, ssh and egress"
-  vpc_id      = module.vpc.vpc_id
+  vpc_id      = data.terraform_remote_state.base.outputs.vpc.id
 
   egress {
     from_port   = 0
@@ -83,7 +35,7 @@ resource "aws_security_group" "tasks" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "ssh" {
-  security_group_id = aws_security_group.tasks.id
+  security_group_id = aws_security_group.instances.id
   cidr_ipv4         = "0.0.0.0/0"
   from_port         = 22
   to_port           = 22
@@ -91,58 +43,29 @@ resource "aws_vpc_security_group_ingress_rule" "ssh" {
 }
 
 resource "aws_vpc_security_group_ingress_rule" "efs_tasks" {
-  security_group_id = aws_security_group.tasks.id
-  cidr_ipv4         = module.vpc.vpc_cidr_block
+  security_group_id = aws_security_group.instances.id
+  cidr_ipv4         = data.terraform_remote_state.base.outputs.vpc.cidr
   from_port         = 2049
   to_port           = 2049
   ip_protocol       = "tcp"
 }
 
-resource "aws_security_group" "http_s" {
-  name        = "http_s"
-  description = "Allow http(s) inbound traffic from anywhere"
-  vpc_id      = module.vpc.vpc_id
-
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
-}
-
-resource "aws_vpc_security_group_ingress_rule" "http" {
-  security_group_id = aws_security_group.http_s.id
-  cidr_ipv4         = "0.0.0.0/0"
-  from_port         = 80
-  to_port           = 80
-  ip_protocol       = "tcp"
-}
-
-resource "aws_vpc_security_group_ingress_rule" "https" {
-  security_group_id = aws_security_group.http_s.id
-  cidr_ipv4         = "0.0.0.0/0"
-  from_port         = 443
-  to_port           = 443
-  ip_protocol       = "tcp"
-}
-
 # CD tasks will run in the public subnet
 resource "aws_efs_mount_target" "shared" {
-  for_each = toset(module.vpc.public_subnets)
+  for_each = toset(data.terraform_remote_state.base.outputs.vpc.public_subnets)
 
   file_system_id  = data.terraform_remote_state.base.outputs.shared_efs
   subnet_id       = each.value
-  security_groups = [aws_security_group.tasks.id]
+  security_groups = [aws_security_group.instances.id]
 }
 
-# The deptrack EFS is only needed in the private subnet
+# TODO: remove deptrack when done
 resource "aws_efs_mount_target" "deptrack" {
-  for_each = toset(module.vpc.private_subnets)
+  for_each = toset(data.terraform_remote_state.base.outputs.vpc.public_subnets)
 
   file_system_id  = data.terraform_remote_state.base.outputs.deptrack_efs
   subnet_id       = each.value
-  security_groups = [aws_security_group.tasks.id]
+  security_groups = [aws_security_group.instances.id]
 }
 
 data "cloudinit_config" "bastion" {
@@ -153,12 +76,18 @@ data "cloudinit_config" "bastion" {
     content_type = "text/cloud-config"
     content = templatefile("bastion-cloudinit.yaml.tftpl", {
       efs_mounts = [
+        # TODO: remove deptrack
         { dev = data.terraform_remote_state.base.outputs.deptrack_efs, mp = "/deptrack" },
         { dev = data.terraform_remote_state.base.outputs.shared_efs, mp = "/shared" },
       ]
     })
   }
 }
+
+# For debugging cloud-init
+# output "cloudinit" {
+#   value = data.cloudinit_config.bastion.rendered
+# }
 
 # Bastion
 
@@ -171,16 +100,23 @@ module "bastion" {
   instance_type               = "t3.nano"
   key_name                    = data.terraform_remote_state.base.outputs.key_name
   monitoring                  = true
-  vpc_security_group_ids      = [aws_security_group.tasks.id]
-  subnet_id                   = element(module.vpc.public_subnets, 0)
+  vpc_security_group_ids      = [aws_security_group.instances.id]
+  subnet_id                   = element(data.terraform_remote_state.base.outputs.vpc.public_subnets, 0)
   associate_public_ip_address = true
   user_data_base64            = data.cloudinit_config.bastion.rendered
-
+  user_data_replace_on_change = true
+  # Allow access via SessionManager
+  create_iam_instance_profile = true
+  iam_role_description        = "IAM role for EC2 instance"
+  iam_role_policies = {
+    AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore",
+    CloudWatchAgentServerPolicy  = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
+  }
   # Spot request specific attributes
-  spot_price                          = "0.1"
-  spot_wait_for_fulfillment           = true
-  spot_type                           = "persistent"
-  spot_instance_interruption_behavior = "terminate"
+  # spot_price                          = "0.1"
+  # spot_wait_for_fulfillment           = true
+  # spot_type                           = "persistent"
+  # spot_instance_interruption_behavior = "terminate"
 
   metadata_options = {
     http_tokens = "required" # IMDSv2
@@ -192,7 +128,7 @@ data "aws_ami" "al2023" {
   owners      = ["amazon"]
   filter {
     name   = "name"
-    values = ["al2023-ami-minimal-*"]
+    values = ["al2023-ami-2023*"]
   }
   filter {
     name   = "architecture"
@@ -227,49 +163,16 @@ resource "aws_ecs_cluster" "internal" {
   }
 }
 
-# One wildcard cert
-
-resource "aws_acm_certificate" "dev_tyk_technology" {
-  domain_name       = "*.dev.tyk.technology"
-  validation_method = "DNS"
-}
-
-resource "aws_route53_record" "dev_tyk_technology" {
-  for_each = {
-    for dvo in aws_acm_certificate.dev_tyk_technology.domain_validation_options : dvo.domain_name => {
-      name   = dvo.resource_record_name
-      record = dvo.resource_record_value
-      type   = dvo.resource_record_type
-    }
-  }
-
-  allow_overwrite = true
-  name            = each.value.name
-  records         = [each.value.record]
-  ttl             = 60
-  type            = each.value.type
-  zone_id         = aws_route53_zone.dev_tyk_tech.zone_id
-}
-
-resource "aws_acm_certificate_validation" "dev_tyk_technology" {
-  certificate_arn         = aws_acm_certificate.dev_tyk_technology.arn
-  validation_record_fqdns = [for record in aws_route53_record.dev_tyk_technology : record.fqdn]
-}
-
 # DNS
 
 resource "aws_service_discovery_private_dns_namespace" "internal" {
   name        = "dev.internal"
   description = "Private DNS for resources"
-  vpc         = module.vpc.vpc_id
-}
-
-resource "aws_route53_zone" "dev_tyk_tech" {
-  name = "dev.tyk.technology"
+  vpc         = data.terraform_remote_state.base.outputs.vpc.id
 }
 
 resource "aws_route53_record" "bastion" {
-  zone_id = aws_route53_zone.dev_tyk_tech.zone_id
+  zone_id = data.terraform_remote_state.base.outputs.dns.zone_id
 
   name = "bastion"
   type = "A"

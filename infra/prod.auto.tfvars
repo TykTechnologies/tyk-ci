@@ -1,6 +1,3 @@
 base         = "base-prod"
-name_prefix  = "prod"
-cidr         = "10.91.0.0/16"
-region       = "eu-central-1"
 stepca_image = "smallstep/step-ca:0.25.2"
-#gromit_image    = "tykio/gromit:v1.4.4"
+#gromit_image = "tykio/gromit:v1.4.4"

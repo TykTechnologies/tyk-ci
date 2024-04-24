@@ -76,3 +76,4 @@ resource "aws_s3_bucket_policy" "deptrack_lb_logs" {
 }
 EOF
 }
+
