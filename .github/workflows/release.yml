@@ -33,6 +33,9 @@ jobs:
   api-tests:
     needs: [test-controller-api]
     runs-on: ubuntu-latest
+    env:
+      METADATA_REPORT_PATH: /tmp/metadata.toml
+      XUNIT_REPORT_PATH: ${{ github.workspace }}/reports/pytest-report.xml    
     permissions:
       id-token: write # This is required for requesting the Github JWT
       contents: read # This is required for actions/checkout
