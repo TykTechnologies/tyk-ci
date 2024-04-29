@@ -3,7 +3,7 @@ services:
   mongo:
     profiles: ["all", "master-datacenter"]
     container_name: mongo
-    image: mongo:4.4
+    image: mongo:7
     # environment:
     #   - MONGO_INITDB_ROOT_USERNAME=root
     #   - MONGO_INITDB_ROOT_PASSWORD=123456789
