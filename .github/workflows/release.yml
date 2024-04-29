@@ -8,7 +8,7 @@ on:
     
 jobs:
   test-controller-api:
-    runs-on: ubuntu-latest-m-2
+    runs-on: ubuntu-latest
     container: tykio/gromit:v1.7
     outputs:
       conf: ${{ steps.params.outputs.api_conf }}
@@ -32,7 +32,7 @@ jobs:
         run: gromit policy controller --loglevel debug | tee -a "$GITHUB_OUTPUT"
   api-tests:
     needs: [test-controller-api]
-    runs-on: ubuntu-latest-m-2
+    runs-on: ubuntu-latest
     permissions:
       id-token: write # This is required for requesting the Github JWT
       contents: read # This is required for actions/checkout
