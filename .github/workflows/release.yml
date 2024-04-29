@@ -1,6 +1,7 @@
 name: Release
 
 on:
+  pull_request:
   push:
     tags:
       - 'v*'
@@ -135,6 +136,7 @@ jobs:
           retention-days: 3
           overwrite: true
   release:
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     needs: [api-tests]
     permissions:
