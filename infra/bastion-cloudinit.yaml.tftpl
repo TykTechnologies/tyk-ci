@@ -36,7 +36,8 @@ packages:
   - git
   - amazon-efs-utils
   - amazon-cloudwatch-agent
-  - python3-pip
+  - postgresql15
+  - ansible
 
 users:
   - default # do not remove
@@ -58,6 +59,37 @@ ansible:
       - path: /home/ansible/tyk-ci/
         source: git@github.com:TykTechnologies/tyk-ci.git
 
+write_files:
+  - path: /etc/cloudwatch-agent.json
+    content: |
+      {
+        "agent": {
+          "run_as_user": "root"
+        },
+        "logs": {
+          "logs_collected": {
+            "files": {
+              "collect_list": [
+                {
+                  "file_path": "/var/log/messages",
+                  "log_group_class": "STANDARD",
+                  "log_group_name": "bastion",
+                  "log_stream_name": "messages {instance_id}",
+                  "retention_in_days": 3
+                },
+                {
+                  "file_path": "/var/log/secure",
+                  "log_group_class": "STANDARD",
+                  "log_group_name": "bastion",
+                  "log_stream_name": "secure {instance_id}",
+                  "retention_in_days": 3
+                }
+              ]
+            }
+          }
+        }
+      }
+
 mounts:
 %{ for m in efs_mounts ~}
   - ["${m.dev}:/", "${m.mp}", efs, "defaults,_netdev,nofail", "0", "0" ]
@@ -65,6 +97,7 @@ mounts:
 
 runcmd:
   - mount -a
+  - amazon-cloudwatch-agent-ctl -a start -c file:/etc/cloudwatch-agent.json
 
 # Local Variables:
 # mode: yaml-ts

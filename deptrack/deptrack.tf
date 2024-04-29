@@ -27,9 +27,16 @@ locals {
   # ports
   dtrack_port    = 8080
   dtrack_version = "4.10.0"
+  # See README for how DB objects are created
   dtrack_db_name = "deptrack"
   dtrack_db_role = "deptrack"
 }
+# See README for how this parameter is created
+data "aws_ssm_parameter" "deptrack_db_pass" {
+  name            = "/deptrack/db_pass"
+  with_decryption = false
+}
+
 
 resource "aws_ecs_cluster" "deptrack" {
   name = "deptrack"
@@ -101,7 +108,6 @@ resource "aws_vpc_security_group_ingress_rule" "https" {
   ip_protocol       = "tcp"
 }
 
-
 module "deptrack_api" {
   source = "terraform-aws-modules/ecs/aws//modules/service"
 
@@ -126,7 +132,7 @@ module "deptrack_api" {
       ]
       environment = [
         { name = "ALPINE_DATABASE_MODE", value = "external" },
-        { name = "ALPINE_DATABASE_URL", value = "jdbc:postgresql://${data.terraform_remote_state.base.outputs.rds.address}:${data.terraform_remote_state.base.outputs.rds.port}/${local.dtrack_db_name}?ssl=true" },
+        { name = "ALPINE_DATABASE_URL", value = "jdbc:postgresql://${data.terraform_remote_state.base.outputs.rds.address}:${data.terraform_remote_state.base.outputs.rds.port}/${local.dtrack_db_name}?sslmode=require&sslfactory=org.postgresql.ssl.NonValidatingFactory" },
         { name = "ALPINE_DATABASE_DRIVER", value = "org.postgresql.Driver" },
         { name = "ALPINE_DATABASE_USERNAME", value = local.dtrack_db_role },
         { name = "ALPINE_DATABASE_POOL_ENABLED", value = "true" },
@@ -150,7 +156,7 @@ module "deptrack_api" {
         { name = "LOGGING_LEVEL", value = "INFO" }
       ]
       secrets = [
-        { name = "ALPINE_DATABASE_PASSWORD", valueFrom = data.terraform_remote_state.base.outputs. }
+        { name = "ALPINE_DATABASE_PASSWORD", valueFrom = data.aws_ssm_parameter.deptrack_db_pass.arn }
       ]
       port_mappings = [
         {
@@ -186,8 +192,11 @@ module "deptrack_api" {
     }
   }
 
-  create_security_group = false
-  security_group_ids    = [aws_security_group.deptrack.id]
+  create_task_exec_iam_role = false
+  create_task_exec_policy   = false
+  task_exec_iam_role_arn    = aws_iam_role.deptrack.arn
+  create_security_group     = false
+  security_group_ids        = [aws_security_group.deptrack.id]
 }
 
 module "deptrack_fe" {
@@ -273,7 +282,7 @@ resource "aws_lb_listener" "deptrack" {
   port              = "443"
   protocol          = "HTTPS"
   ssl_policy        = "ELBSecurityPolicy-TLS13-1-2-2021-06"
-  certificate_arn   = data.terraform_remote_state.base.outputs.cert
+  certificate_arn   = data.terraform_remote_state.base.outputs.dns.cert
 
   default_action {
     type = "fixed-response"
@@ -339,7 +348,7 @@ resource "aws_lb_target_group" "deptrack_api" {
 resource "aws_route53_record" "deptrack" {
   for_each = toset(["deptrack", "deptrack-api"])
 
-  zone_id = data.terraform_remote_state.base.outputs.zone_id
+  zone_id = data.terraform_remote_state.base.outputs.dns.zone_id
 
   name = each.key
   type = "CNAME"
