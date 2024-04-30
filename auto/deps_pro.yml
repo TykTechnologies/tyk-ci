@@ -1,20 +1,5 @@
 version: "3.9"
 services:
-  redis:
-    profiles: ["all", "master-datacenter"]
-    container_name: redis
-    image: bitnami/redis:7.0.15
-    environment:
-      - ALLOW_EMPTY_PASSWORD=yes
-    ports:
-      - "6379:6379"
-    healthcheck:
-      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
-      interval: 5s
-      retries: 10
-      start_period: 2s
-      timeout: 10s
-    # command: [ "redis-server", "/usr/local/etc/redis/redis.conf" ]
 
   bundle-server:
     profiles: ["all", "master-datacenter"]
