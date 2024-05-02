@@ -14,12 +14,10 @@ services:
       - "6000:6000"
       - "8003:8003"
       - "8080:8080"
-    entrypoint: ["/bin/bash"]
+    entrypoint: ["/opt/tyk-gateway/tyk"]
     command:
-      - "-c"
-      - |
-        update-ca-certificates
-        /opt/tyk-gateway/tyk --conf /conf/tyk.conf
+      - --conf
+      - /conf/tyk.conf
 
   tyk-analytics:
     profiles: ["all", "master-datacenter"]
