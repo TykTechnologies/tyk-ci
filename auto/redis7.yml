@@ -51,3 +51,12 @@ services:
     depends_on:
         redis:
             condition: service_healthy      
+
+  wait_redis_slaves:
+    profiles: ["all", "slave-datacenter"]
+    image: hello-world:linux
+    depends_on:
+        redis-datacenter-1:
+            condition: service_healthy            
+        redis-datacenter-2:
+            condition: service_healthy            

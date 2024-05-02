@@ -149,7 +149,7 @@ services:
     healthcheck:
       test: curl -s -k --fail https://tyk:8080/hello | grep -o '.*status":"pass".*dashboard":{"status":"pass".*redis":{"status":"pass"'
       interval: 5s
-      retries: 10
+      retries: 30
       start_period: 4s
       timeout: 10s
 
@@ -175,7 +175,7 @@ services:
     healthcheck:
       test: curl -s -k --fail https://tyk-gateway-datacenter-1-alfa:8181/hello | grep -o '.*status":"pass".*redis":{"status":"pass".*rpc":{"status":"pass"'
       interval: 5s
-      retries: 10
+      retries: 30
       start_period: 4s
       timeout: 10s
 
@@ -188,7 +188,7 @@ services:
     healthcheck:
       test: curl -s -k --fail https://tyk-gateway-datacenter-1-beta:8182/hello | grep -o '.*status":"pass".*redis":{"status":"pass".*rpc":{"status":"pass"'
       interval: 5s
-      retries: 10
+      retries: 30
       start_period: 4s
       timeout: 10s
 
@@ -201,7 +201,7 @@ services:
     healthcheck:
       test: curl -s -k --fail https://tyk-gateway-datacenter-2-alfa:8281/hello | grep -o '.*status":"pass".*redis":{"status":"pass".*rpc":{"status":"pass"'
       interval: 5s
-      retries: 10
+      retries: 30
       start_period: 4s
       timeout: 10s
 
@@ -214,7 +214,7 @@ services:
     healthcheck:
       test: curl -s -k --fail https://tyk-gateway-datacenter-2-beta:8282/hello | grep -o '.*status":"pass".*redis":{"status":"pass".*rpc":{"status":"pass"'
       interval: 5s
-      retries: 10
+      retries: 30
       start_period: 4s
       timeout: 10s
 
