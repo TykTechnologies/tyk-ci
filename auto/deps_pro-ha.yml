@@ -55,10 +55,3 @@ services:
     profiles: ["all", "master-datacenter"]
     container_name: trevorblades
     image: mangomm/trevorblades-countries
-
-  wait_deps:
-    profiles: ["all", "master-datacenter"]
-    image: hello-world:linux
-    depends_on:
-        redis:
-            condition: service_healthy
