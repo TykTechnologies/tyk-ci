@@ -45,7 +45,7 @@ services:
       start_period: 2s
       timeout: 10s
 
-  wait_deps:
+  wait_redis:
     profiles: ["all", "master-datacenter"]
     image: hello-world:linux
     depends_on:

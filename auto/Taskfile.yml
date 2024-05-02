@@ -19,7 +19,7 @@ tasks:
     env:
       FLAVOUR: '{{ or .FLAVOUR "pro" }}'
       DB: '{{ or .DB "mongo44" }}'
-      CACHE: '{{ or .DB "redis6" }}'
+      CACHE: '{{ or .CACHE "redis6" }}'
       VARIATION: '{{or .VARIATION "murmur64" }}'
       confs_dir: './{{ .FLAVOUR }}'
       env_file: local-{{.DB}}.env
@@ -40,12 +40,12 @@ tasks:
     env:
       FLAVOUR: '{{ or .FLAVOUR "pro" }}'
       DB: '{{ or .DB "mongo44" }}'
-      CACHE: '{{ or .DB "redis6" }}'
+      CACHE: '{{ or .CACHE "redis6" }}'
       VARIATION: '{{or .VARIATION "murmur64" }}'
       confs_dir: './{{ .FLAVOUR }}'
       env_file: local-{{.DB}}.env
     cmds:
-      - docker compose -p auto --f ${FLAVOUR}.yml -f deps_${FLAVOUR}.yml -f ${DB}.yml -f ${CACHE}.yml --env-file master.env --env-file master.env --profile all down --remove-orphans
+      - docker compose -p auto -f ${FLAVOUR}.yml -f deps_${FLAVOUR}.yml -f ${DB}.yml -f ${CACHE}.yml --env-file master.env --env-file master.env --profile all down --remove-orphans
       - docker volume prune -f
 
   pytest:
