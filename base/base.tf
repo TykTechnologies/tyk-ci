@@ -71,6 +71,13 @@ resource "aws_efs_file_system" "shared" {
   creation_token = "reproducible environments"
 }
 
+resource "aws_ssm_parameter" "cd_efs" {
+  name        = "/cd/efs"
+  type        = "String"
+  description = "EFS ID for CD tasks"
+  value       = aws_efs_file_system.shared.id
+}
+
 # CD secrets
 resource "aws_kms_key" "cd" {
   description             = "usage delegated to tyk-ci/infra"

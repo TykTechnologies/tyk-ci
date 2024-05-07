@@ -165,12 +165,6 @@ resource "aws_ecs_cluster" "internal" {
 
 # DNS
 
-resource "aws_service_discovery_private_dns_namespace" "internal" {
-  name        = "dev.internal"
-  description = "Private DNS for resources"
-  vpc         = data.terraform_remote_state.base.outputs.vpc.id
-}
-
 resource "aws_route53_record" "bastion" {
   zone_id = data.terraform_remote_state.base.outputs.dns.zone_id
 
@@ -179,4 +173,41 @@ resource "aws_route53_record" "bastion" {
   ttl  = "300"
 
   records = [module.bastion.public_ip]
+}
+
+# For CD tasks
+resource "aws_service_discovery_private_dns_namespace" "dev_internal" {
+  name        = "dev.internal"
+  description = "For CD ECS tasks"
+  vpc         = data.terraform_remote_state.base.outputs.vpc.id
+}
+
+resource "aws_service_discovery_service" "dev_internal" {
+  name = "dev-internal"
+
+  dns_config {
+    namespace_id = aws_service_discovery_private_dns_namespace.dev_internal.id
+
+    dns_records {
+      ttl  = 10
+      type = "A"
+    }
+    dns_records {
+      ttl  = 10
+      type = "SRV"
+    }
+
+    routing_policy = "MULTIVALUE"
+  }
+
+  health_check_custom_config {
+    failure_threshold = 1
+  }
+}
+
+resource "aws_ssm_parameter" "cd_sd" {
+  name        = "/cd/sd"
+  type        = "String"
+  description = "Service discovery registry arn for CD tasks"
+  value       = aws_service_discovery_service.dev_internal.arn
 }

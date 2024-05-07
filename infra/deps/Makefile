@@ -20,3 +20,6 @@ launch:
 
 list:
 	aws ec2 describe-images --owners $(AWS_ACCOUNT_ID) --query "Images[*].[ImageId,Name,CreationDate]" --output text
+
+upload: envfiles
+	aws s3 sync $< s3://assets.dev.tyk.technology/$<

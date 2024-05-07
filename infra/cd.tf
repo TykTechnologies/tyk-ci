@@ -1,3 +1,5 @@
+# Common resources used by all CD tasks
+
 data "aws_iam_policy_document" "ecs_assume_role_policy" {
   statement {
     actions = ["sts:AssumeRole"]
@@ -36,6 +38,29 @@ data "aws_iam_policy_document" "extra" {
 
     resources = [data.aws_efs_file_system.shared.arn]
   }
+
+  statement {
+    sid = "envfiles"
+    actions = [
+      "s3:GetObject"
+    ]
+
+    resources = ["arn:aws:s3:::${data.terraform_remote_state.base.outputs.assets}/envfiles/*"]
+  }
+
+  statement {
+    sid = "secrets"
+    actions = [
+      "ssm:GetParameters",
+      "kms:Decrypt"
+    ]
+
+    resources = [
+      data.terraform_remote_state.base.outputs.kms,
+      "arn:aws:ssm:eu-central-1:754489498669:parameter/cd/*"
+    ]
+  }
+
 }
 
 data "aws_efs_file_system" "shared" {
@@ -58,6 +83,13 @@ resource "aws_iam_role" "ter" {
   #managed_policy_arns = ["arn:aws:iam::aws:policy/aws-service-role/AmazonECSServiceRolePolicy"]
 }
 
+resource "aws_ssm_parameter" "ter" {
+  name        = "/cd/ter"
+  type        = "String"
+  description = "Task execution role ARN for CD tasks"
+  value       = aws_iam_role.ter.arn
+}
+
 resource "aws_s3_bucket_policy" "deptrack_lb_logs" {
   bucket = data.terraform_remote_state.base.outputs.assets
   policy = <<EOF
@@ -77,3 +109,46 @@ resource "aws_s3_bucket_policy" "deptrack_lb_logs" {
 EOF
 }
 
+resource "aws_security_group" "cd_tasks" {
+  name        = "cd-tasks"
+  description = "EFS, gw, dash"
+  vpc_id      = data.terraform_remote_state.base.outputs.vpc.id
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+}
+
+resource "aws_ssm_parameter" "cd_sg" {
+  name        = "/cd/sg"
+  type        = "String"
+  description = "Security group ID for CD tasks"
+  value       = aws_security_group.cd_tasks.id
+}
+
+resource "aws_vpc_security_group_ingress_rule" "gw" {
+  security_group_id = aws_security_group.cd_tasks.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 8080
+  to_port           = 8080
+  ip_protocol       = "tcp"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "dash" {
+  security_group_id = aws_security_group.cd_tasks.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = 3000
+  to_port           = 3000
+  ip_protocol       = "tcp"
+}
+
+resource "aws_vpc_security_group_ingress_rule" "efs" {
+  security_group_id = aws_security_group.cd_tasks.id
+  cidr_ipv4         = data.terraform_remote_state.base.outputs.vpc.cidr
+  from_port         = 2049
+  to_port           = 2049
+  ip_protocol       = "tcp"
+}

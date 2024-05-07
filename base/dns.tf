@@ -6,18 +6,25 @@ provider "cloudflare" {
 }
 
 resource "cloudflare_record" "dev_tyk_tech" {
-  for_each = toset(aws_route53_zone.dev_tyk_tech.name_servers)
+  for_each   = toset(aws_route53_zone.dev_tyk_tech.name_servers)
   depends_on = [aws_route53_zone.dev_tyk_tech]
-  
+
   # This is the tyk.technology zone
   zone_id = "f3ee9e1c1e0e47f8ab60fae66d39aa8f"
   name    = "dev"
   type    = "NS"
-  value = each.value
+  value   = each.value
 }
 
 resource "aws_route53_zone" "dev_tyk_tech" {
   name = "dev.tyk.technology"
+}
+
+resource "aws_ssm_parameter" "cd_zone" {
+  name        = "/cd/zone"
+  type        = "String"
+  description = "Route53 zone ID for CD tasks"
+  value       = aws_route53_zone.dev_tyk_tech.id
 }
 
 # One wildcard cert
