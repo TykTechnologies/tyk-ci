@@ -26,7 +26,7 @@ data "terraform_remote_state" "base" {
 locals {
   # ports
   dtrack_port    = 8080
-  dtrack_version = "4.10.0"
+  dtrack_version = "4.11.0"
   # See README for how DB objects are created
   dtrack_db_name = "deptrack"
   dtrack_db_role = "deptrack"
