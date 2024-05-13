@@ -18,3 +18,13 @@ GRANT ROLE
 postgres=> create database deptrack with owner deptrack encoding 'UTF8';
 CREATE DATABASE
 ```
+
+## Applying manifests
+To apply the manifests from scratch, login to AWS on your CLI. You will need at least PowerUser access to the devacc (754489498669) sub-account. Then use the the usual incantation:
+
+```
+terraform init && terraform plan && terraform apply
+```
+
+## Access
+Via bastion.dev.tyk.technology. Add your key to the [cloudinit template](https://github.com/TykTechnologies/tyk-ci/blob/master/infra/bastion-cloudinit.yaml.tftpl#L19) or use the devacc key.
