@@ -241,6 +241,10 @@ jobs:
         env:
           TOKEN: '${{ secrets.ORG_GH_TOKEN }}'
         run: "git config --global url.\"https://${TOKEN}@github.com\".insteadOf \"https://github.com\"                    \n"
+      - name: DEBUG WORKSPACE
+        run: |
+          echo "WORKSPACE IS ${{ github.workspace }}"
+          ls -lR ${{ github.workspace }}        
       - name: Checkout of Dashboard
         uses: actions/checkout@v4
         with:
@@ -251,6 +255,10 @@ jobs:
             tests/ui
             bin
           submodules: false
+      - name: DEBUG WORKSPACE
+        run: |
+          echo "WORKSPACE IS ${{ github.workspace }}"
+          ls -lR ${{ github.workspace }}                  
       - name: Install test dependecies
         run: |
           npm ci
