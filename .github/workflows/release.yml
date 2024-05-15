@@ -314,5 +314,6 @@ jobs:
           token: ${{ secrets.ORG_GH_TOKEN }}
           name: ${{ github.ref_name }}
           tag_name: ${{ github.ref_name }}
+          draft: ${{ endsWith(github.ref_name, '-rc') || endsWith(github.ref_name, '-alpha') || endsWith(github.ref_name, '-beta') }}
           body_path: auto/release.md
           files: ci-env.tgz
