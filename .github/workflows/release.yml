@@ -9,7 +9,7 @@ on:
 jobs:
   test-controller-api:
     runs-on: ubuntu-latest
-    container: tykio/gromit:v1.8
+    container: tykio/gromit:v1.8.1-alpha
     outputs:
       conf: ${{ steps.params.outputs.api_conf }}
       db: ${{ steps.params.outputs.api_db }}
