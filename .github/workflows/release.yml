@@ -142,7 +142,7 @@ jobs:
           overwrite: true
   test-controller-ui:
     runs-on: ubuntu-latest
-    container: tykio/gromit:v1.8-alpha
+    container: tykio/gromit:v1.8.1-alpha
     outputs:
       conf: ${{ steps.params.outputs.ui_conf }}
       db: ${{ steps.params.outputs.ui_db }}
