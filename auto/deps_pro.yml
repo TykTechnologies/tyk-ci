@@ -1,6 +1,5 @@
 version: "3.9"
 services:
-
   bundle-server:
     profiles: ["all", "master-datacenter"]
     container_name: bundle-server
@@ -24,8 +23,8 @@ services:
     container_name: openldap
     image: osixia/openldap:1.5.0
     ports:
-      - '389:389'
-      - '636:636'
+      - "389:389"
+      - "636:636"
     environment:
       - LDAP_READONLY_USER=true
       - LDAP_READONLY_USER_USERNAME=read-only-admin
@@ -51,8 +50,16 @@ services:
     profiles: ["all", "master-datacenter"]
     container_name: restcountries
     image: bigpapoo/restcountries:1.0
-      
+
   trevorblades:
     profiles: ["all", "master-datacenter"]
     container_name: trevorblades
     image: mangomm/trevorblades-countries
+
+  webhook:
+    profiles: ["all", "master-datacenter"]
+    container_name: webhook-server
+    build:
+      context: ./webhook-server
+    ports:
+      - "9003:8080"
