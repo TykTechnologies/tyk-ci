@@ -10,8 +10,8 @@ COPY . .
 # Build the Go app
 RUN go build -o webhook .
 
-# Expose port 8080 to the outside world
-EXPOSE 8080
+# Expose port 9003 to the outside world
+EXPOSE 9003
 
 # Command to run the executable
 CMD ["./webhook"]

@@ -12,6 +12,7 @@ A simple Go application to receive and store webhook events, and retrieve them b
 ## Usage
 
 ### Start webhook server
+
 `go run main.go` runs the webhook server listening on port `8080`.
 
 ### Sending a Webhook Event

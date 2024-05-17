@@ -62,4 +62,4 @@ services:
     build:
       context: ./webhook-server
     ports:
-      - "9003:8080"
+      - "9003:9003"
