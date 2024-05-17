@@ -25,7 +25,7 @@ curl -X POST http://localhost:8080/webhook/1 \
 ```
 
 ### Retrieving Stored Requests
-Send a GET request to `/requests/{id}` to retrieve the requests stored for a particular ID
+Send a GET request to `/requests/{id}` to retrieve the requests stored for a particular ID (ID is of string type)
 ```
 curl http://localhost:8080/requests/1
 ```
@@ -33,17 +33,17 @@ curl http://localhost:8080/requests/1
 This will return a JSON array of all received webhook requests for the given ID.
 
 ### Example
-1. Send a webhook event to ID `1`:
+1. Send a webhook event to ID `wh-1`:
 
 ```
-curl -X POST http://localhost:8080/webhook/1 \
+curl -X POST http://localhost:8080/webhook/wh-1 \
      -H "Content-Type: application/json" \
-     -d '{"event": "test event for ID 1"}'
+     -d '{"event": "test event for ID wh-1"}'
 ```
 
-2. Retrieve stored requests for ID `1`:
+2. Retrieve stored requests for ID `wh-1`:
 ```
-curl http://localhost:8080/requests/1
+curl http://localhost:8080/requests/wh-1
 ```
 
 Response 
@@ -54,7 +54,7 @@ Response
       "Content-Type": ["application/json"],
       ...
     },
-    "body": {"event": "test event for ID 1"}
+    "body": {"event": "test event for ID wh-1"}
   }
 ]
 ```
