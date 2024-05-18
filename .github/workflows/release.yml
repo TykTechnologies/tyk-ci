@@ -8,7 +8,7 @@ on:
     
 jobs:
   regresion-tests:
-    uses: ./.github/workflows/api-tests.yml
+    uses: ./.github/workflows/api-test.yml
   release:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
