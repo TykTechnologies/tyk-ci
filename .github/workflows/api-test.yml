@@ -28,6 +28,7 @@ jobs:
         run: gromit policy controller --loglevel debug | tee -a "$GITHUB_OUTPUT"
   api-tests:
     runs-on: ubuntu-latest
+    needs: test-controller-api
     env:
       METADATA_REPORT_PATH: /tmp/metadata.toml
       XUNIT_REPORT_PATH: ${{ github.workspace }}/reports/pytest-report.xml
