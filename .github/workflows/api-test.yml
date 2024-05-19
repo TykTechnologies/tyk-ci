@@ -69,8 +69,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release list --repo github.com/TykTechnologies/tyk-ci
-          gh release download v1.3.1 --repo github.com/TykTechnologies/tyk-ci -p 'ci-env.tgz' -O env.tgz
+          gh release download v1.3.0 --repo github.com/TykTechnologies/tyk-ci -p 'ci-env.tgz' -O env.tgz
           tar xzvf env.tgz
       - name: env up
         shell: bash
