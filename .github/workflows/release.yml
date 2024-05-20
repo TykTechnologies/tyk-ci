@@ -7,13 +7,16 @@ on:
       - 'v*'
     
 jobs:
-  regresion-tests:
+  api-tests:
     uses: ./.github/workflows/api-test.yml
+    secrets: inherit
+  ui-tests:
+    uses: ./.github/workflows/ui-test.yml
     secrets: inherit
   release:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
-    needs: [regresion-tests]
+    needs: [api-tests, ui-tests]
     permissions:
       contents: write  
     steps:
