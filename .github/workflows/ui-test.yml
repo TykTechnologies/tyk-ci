@@ -201,6 +201,8 @@ jobs:
           aws s3 cp ${XUNIT_REPORT_PATH}  s3://assets.dev.tyk.technology/testreports/${REPORT_NAME#*/}.xml
           #Upload metadata report
           aws s3 cp ${METADATA_REPORT_PATH} s3://assets.dev.tyk.technology/testreports/${REPORT_NAME#*/}.metadata.toml
+      - name: Debug dirs before
+        run: ls -lR          
       - name: Docker logs for all components
         if: failure() && (steps.test_execution.outcome != 'success' || steps.env_up.outcome != 'success')
         working-directory: auto
@@ -216,6 +218,9 @@ jobs:
           echo "::group::DockerLogs"
           cat ${{ github.workspace }}/docker-compose.log
           echo "::endgroup::"
+      - name: Debug dirs after
+        if: always()
+        run: ls -lR          
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         if: failure() && (steps.test_execution.outcome != 'success' || steps.env_up.outcome != 'success')
