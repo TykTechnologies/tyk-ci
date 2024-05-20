@@ -129,6 +129,7 @@ jobs:
         run: |
           # Generate report id
           echo "id=$(date +%s%N)" >> $GITHUB_OUTPUT
+          make it fail on purpose
           npm run test -- --workers=3
         working-directory: tests/ui
         env:
