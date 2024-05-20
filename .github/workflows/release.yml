@@ -9,6 +9,7 @@ on:
 jobs:
   regresion-tests:
     uses: ./.github/workflows/api-test.yml
+    secrets: inherit
   release:
     if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
