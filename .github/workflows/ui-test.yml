@@ -108,7 +108,7 @@ jobs:
       #   run: "git config --global url.\"https://${TOKEN}@github.com\".insteadOf \"https://github.com\"                    \n"
       - name: Debug before checkout          
         run: |
-          echo "I'm at $(pwd)
+          echo "I'm at $(pwd)"
           ls -lR
       - name: Checkout of Dashboard
         uses: actions/checkout@v4
@@ -123,7 +123,7 @@ jobs:
           submodules: false
       - name: Debug after checkout          
         run: |
-          echo "I'm at $(pwd)
+          echo "I'm at $(pwd)"
           ls -lR
       - name: Install test dependecies
         run: |
