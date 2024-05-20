@@ -106,17 +106,25 @@ jobs:
         env:
           TOKEN: '${{ secrets.ORG_GH_TOKEN }}'
         run: "git config --global url.\"https://${TOKEN}@github.com\".insteadOf \"https://github.com\"                    \n"
+      - name: Debug before checkout          
+        run: |
+          echo "I'm at $(pwd)
+          ls -lR
       - name: Checkout of Dashboard
         uses: actions/checkout@v4
         with:
           repository: TykTechnologies/tyk-analytics
-          clean: 'false'
+          clean: false
           fetch-depth: 1
           token: ${{ secrets.ORG_GH_TOKEN }}
           sparse-checkout: |
             tests/ui
             bin
           submodules: false
+      - name: Debug after checkout          
+        run: |
+          echo "I'm at $(pwd)
+          ls -lR
       - name: Install test dependecies
         run: |
           npm ci
