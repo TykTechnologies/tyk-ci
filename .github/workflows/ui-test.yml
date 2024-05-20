@@ -106,6 +106,8 @@ jobs:
         env:
           TOKEN: '${{ secrets.ORG_GH_TOKEN }}'
         run: "git config --global url.\"https://${TOKEN}@github.com\".insteadOf \"https://github.com\"                    \n"
+      - name: DEBUG DIRS before checkout
+        run: ls -lR
       - name: Checkout of Dashboard
         uses: actions/checkout@v4
         with:
@@ -116,6 +118,8 @@ jobs:
             tests/ui
             bin
           submodules: false
+      - name: DEBUG DIRS after checkout
+        run: ls -lR
       - name: Install test dependecies
         run: |
           npm ci
