@@ -56,7 +56,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         uses: actions/checkout@v4
         with:
-          sparse-checkout: auto
+          sparse-checkout: |
+            auto
+            reports
       - name: env up
         shell: bash
         working-directory: auto
@@ -215,7 +217,9 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         uses: actions/checkout@v4
         with:
-          sparse-checkout: auto
+          sparse-checkout: |
+            auto
+            reports
       - name: env up
         shell: bash
         working-directory: auto
