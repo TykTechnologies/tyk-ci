@@ -69,11 +69,11 @@ jobs:
           ECR: ${{ steps.ecr.outputs.registry }}
         run: |
           echo "ECR=${ECR}
-          tyk_image=$ECR/tyk:master
-          tyk_analytics_image=$ECR/tyk-analytics:master
+          tyk_image=\$ECR/tyk:master
+          tyk_analytics_image=\$ECR/tyk-analytics:master
           # alfa and beta have to come after the override
-          tyk_alfa_image=$tyk_image
-          tyk_beta_image=$tyk_image
+          tyk_alfa_image=\$tyk_image
+          tyk_beta_image=\$tyk_image
           tyk_pump_image=${{matrix.pump}}
           tyk_sink_image=${{matrix.sink}}
           confs_dir=./pro-ha
@@ -228,11 +228,11 @@ jobs:
           ECR: ${{ steps.ecr.outputs.registry }}
         run: |
           echo "ECR=${ECR}
-          tyk_image=$ECR/tyk:master
-          tyk_analytics_image=$ECR/tyk-analytics:master
+          tyk_image=\$ECR/tyk:master
+          tyk_analytics_image=\$ECR/tyk-analytics:master
           # alfa and beta have to come after the override
-          tyk_alfa_image=$tyk_image
-          tyk_beta_image=$tyk_image
+          tyk_alfa_image=\$tyk_image
+          tyk_beta_image=\$tyk_image
           tyk_pump_image=${{matrix.pump}}
           tyk_sink_image=${{matrix.sink}}
           confs_dir=./pro-ha
