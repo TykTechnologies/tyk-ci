@@ -116,7 +116,7 @@ jobs:
           repo = ${{ github.repository }}
           branch = ${{ github.ref }}
           commit = ${{ github.sha }}
-          test_suite_version = ${{ needs.test-controller-api.outputs.gd_tag }}
+          test_suite_version = master
           test_suite_name = ${{ github.job }}
           test_suite_run = ${{ github.run_id }}-${{ github.run_attempt }}
           db = ${{ matrix.db }}
@@ -332,7 +332,7 @@ jobs:
           repo = ${{ github.repository }}
           branch = ${{ github.ref }}
           commit = ${{ github.sha }}
-          test_suite_version = ${{ needs.test-controller-ui.outputs.gd_tag }}
+          test_suite_version = master
           test_suite_name = ${{ github.job }}
           test_suite_run = ${{ github.run_id }}-${{ github.run_attempt }}
           db = ${{ matrix.db }}
