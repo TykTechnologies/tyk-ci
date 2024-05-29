@@ -11,12 +11,12 @@ variable "cdt" {
 
 variable "cd" {
   description = "Container definition object to fill in the template"
-  type = object({ 
+  type = object({
     name      = string
     command   = list(string)
     log_group = string
     image     = string
-    mounts    = list(object({src=string, dest=string, readonly=bool}))
+    mounts    = list(object({ src = string, dest = string, readonly = bool }))
     env       = list(map(string))
     secrets   = list(map(string))
     region    = string
@@ -38,11 +38,6 @@ variable "tearn" {
 variable "schedule" {
   description = "schedule_expression"
   type        = string
-}
-
-variable "common_tags" {
-  description = "Tags to apply to every resource that can be tagged"
-  type        = map(string)
 }
 
 variable "vpc" {

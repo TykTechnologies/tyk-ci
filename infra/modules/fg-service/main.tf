@@ -19,12 +19,11 @@ resource "aws_ecs_task_definition" "td" {
       name = volume.value
 
       efs_volume_configuration {
-        file_system_id = var.volume_map[volume.value]
-        root_directory = "/"
+        file_system_id = var.volume_map[volume.value].fs_id
+        root_directory = var.volume_map[volume.value].root
       }
     }
   }
-  tags = var.common_tags
 }
 
 resource "aws_security_group" "sg" {
@@ -45,8 +44,6 @@ resource "aws_security_group" "sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
-  tags = var.common_tags
 }
 
 resource "aws_ecs_service" "service" {
@@ -61,6 +58,4 @@ resource "aws_ecs_service" "service" {
     security_groups  = [aws_security_group.sg.id]
     assign_public_ip = true
   }
-
-  tags = var.common_tags
 }

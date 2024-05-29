@@ -1,5 +1,5 @@
 data "template_file" "cd" {
-  template = templatefile(var.cdt, merge(var.cd, { port=null}))
+  template = templatefile(var.cdt, merge(var.cd, { port = null }))
 }
 
 resource "aws_ecs_task_definition" "td" {
@@ -19,12 +19,11 @@ resource "aws_ecs_task_definition" "td" {
       name = volume.value
 
       efs_volume_configuration {
-	file_system_id = var.volume_map[volume.value]
+        file_system_id = var.volume_map[volume.value]
         root_directory = "/"
       }
     }
   }
-  tags = var.common_tags
 }
 
 resource "aws_security_group" "sg" {
@@ -38,8 +37,6 @@ resource "aws_security_group" "sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
-
-  tags = var.common_tags
 }
 
 resource "aws_cloudwatch_event_rule" "cw_erule" {
