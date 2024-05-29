@@ -113,10 +113,10 @@ module "bastion" {
     CloudWatchAgentServerPolicy  = "arn:aws:iam::aws:policy/CloudWatchAgentServerPolicy"
   }
   # Spot request specific attributes
-  # spot_price                          = "0.1"
-  # spot_wait_for_fulfillment           = true
-  # spot_type                           = "persistent"
-  # spot_instance_interruption_behavior = "terminate"
+  spot_price                          = "0.1"
+  spot_wait_for_fulfillment           = true
+  spot_type                           = "persistent"
+  spot_instance_interruption_behavior = "terminate"
 
   metadata_options = {
     http_tokens = "required" # IMDSv2
@@ -144,9 +144,18 @@ data "aws_ami" "al2023" {
   }
 }
 
+# Log group for CD tasks
 # Everything logs to cloudwatch with prefixes
 resource "aws_cloudwatch_log_group" "cd" {
   name = "cd"
+
+  retention_in_days = 3
+}
+
+
+# Log group for internal tasks
+resource "aws_cloudwatch_log_group" "internal" {
+  name = "internal"
 
   retention_in_days = 7
 }

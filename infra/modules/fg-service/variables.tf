@@ -17,7 +17,7 @@ variable "cd" {
     port      = number
     log_group = string
     image     = string
-    mounts    = list(object({src=string, dest=string, readonly=bool}))
+    mounts    = list(object({ src = string, dest = string, readonly = bool }))
     env       = list(map(string))
     secrets   = list(map(string))
     region    = string
@@ -36,11 +36,6 @@ variable "tearn" {
   default     = ""
 }
 
-variable "common_tags" {
-  description = "Tags to apply to every resource that can be tagged"
-  type        = map(string)
-}
-
 variable "vpc" {
   description = "VPC to use, the task will be attached to networks below"
   type        = string
@@ -53,5 +48,5 @@ variable "subnets" {
 
 variable "volume_map" {
   description = "map of volume name to EFS id"
-  type        = map(string)
+  type        = map(object({ fs_id = string, root = string }))
 }
