@@ -83,6 +83,61 @@ resource "aws_iam_role" "ter" {
   #managed_policy_arns = ["arn:aws:iam::aws:policy/aws-service-role/AmazonECSServiceRolePolicy"]
 }
 
+# ecr_rw_tyk is created in base but ter is created here. We need to
+# know ter so that we can give ecr_rw_tyk the minimum permission
+# boundary
+data "aws_iam_role" "ecr_rw_tyk" {
+  name = "ecr_rw_tyk"
+}
+
+resource "aws_iam_policy" "ecs_deploy" {
+  name        = "ecs_deploy"
+  path        = "/cd/deploy/"
+  description = "Allows ECS tasks to be updated"
+
+  policy = <<-EOF
+{
+   "Version":"2012-10-17",
+   "Statement":[
+      {
+         "Sid":"RegisterTaskDefinition",
+         "Effect":"Allow",
+         "Action":[
+            "ecs:RegisterTaskDefinition"
+         ],
+         "Resource":"*"
+      },
+      {
+         "Sid":"PassRolesInTaskDefinition",
+         "Effect":"Allow",
+         "Action":[
+            "iam:PassRole"
+         ],
+         "Resource":[
+            "${data.aws_iam_role.ecr_rw_tyk.arn}"
+         ]
+      },
+      {
+         "Sid":"DeployService",
+         "Effect":"Allow",
+         "Action":[
+            "ecs:UpdateService",
+            "ecs:DescribeServices"
+         ],
+         "Resource":[
+            "arn:aws:ecs:eu-central-1:754489498669:service/*"
+         ]
+      }
+   ]
+}
+EOF
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_deploy" {
+  role       = data.aws_iam_role.ecr_rw_tyk.name
+  policy_arn = aws_iam_policy.ecs_deploy.arn
+}
+
 resource "aws_ssm_parameter" "ter" {
   name        = "/cd/ter"
   type        = "String"
@@ -92,7 +147,7 @@ resource "aws_ssm_parameter" "ter" {
 
 resource "aws_s3_bucket_policy" "deptrack_lb_logs" {
   bucket = data.terraform_remote_state.base.outputs.assets
-  policy = <<EOF
+  policy = <<-EOF
 {
   "Version": "2012-10-17",
   "Statement": [
