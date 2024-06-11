@@ -20,6 +20,14 @@ resource "aws_ssm_parameter" "licenser_tokens" {
   value       = data.sops_file.secrets.data["licenser_tokens.${each.value}"]
 }
 
+
+resource "aws_ssm_parameter" "tui_credentials" {
+  name        = "/cd/tui_credentials"
+  type        = "SecureString"
+  description = "Authenticated tui APIs"
+  value       = data.sops_file.secrets.data["tui_credentials"]
+}
+
 # API server for test UI
 module "tui" {
   source = "./modules/fg-service"
@@ -36,9 +44,11 @@ module "tui" {
     mounts = [
       { src = "shared", dest = "/shared", readonly = false },
     ],
-    env     = [],
-    secrets = [],
-    region  = data.aws_region.current.name
+    env = [],
+    secrets = [
+      { name = "CREDENTIALS", valueFrom = aws_ssm_parameter.tui_credentials.arn }
+    ],
+    region = data.aws_region.current.name
   }
   trarn      = aws_iam_role.ter.arn
   tearn      = aws_iam_role.ter.arn
