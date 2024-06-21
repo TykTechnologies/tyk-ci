@@ -5,8 +5,36 @@ on:
     tags:
       - 'v*'
 jobs:
-  api-tests:
+  test-controller-api:
     runs-on: ubuntu-latest
+    outputs:
+      envfiles: ${{ steps.params.outputs.envfiles }}
+      pump: ${{ steps.params.outputs.pump }}
+      sink: ${{ steps.params.outputs.sink }}
+    steps:
+      - name: set params
+        id: params
+        shell: bash
+        env:
+          # Cover pull_request_target too
+          BASE_REF: ${{startsWith(github.event_name, 'pull_request') && github.base_ref || github.ref}}
+        run: |
+          set -eo pipefail
+          endpoint="http://tui.internal.dev.tyk.technology/api/tyk-ci/$BASE_REF/${{ github.event_name}}/api"
+          curl="curl -s --retry 5 --retry-delay 10 --fail-with-body --retry-all-errors"
+          echo "pump<<EOF
+          $($curl ${endpoint}/Pump)
+          EOF
+          sink<<EOF
+          $($curl ${endpoint}/Sink)
+          EOF
+          envfiles<<EOF
+          $($curl ${endpoint}/EnvFiles)
+          EOF" | tee -a "$GITHUB_OUTPUT"
+  api-tests:
+    needs:
+      - test-controller-api
+    runs-on: ubuntu-latest-m-2
     env:
       METADATA_REPORT_PATH: /tmp/metadata.toml
       XUNIT_REPORT_PATH: ${{ github.workspace }}/reports/pytest-report.xml
@@ -16,20 +44,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        conf: ["sha256", "murmur128"]
-        db: ["mongo7", "postgres15"]
-        cache_db: ["redis7"]
-        pump: ["tykio/tyk-pump-docker-pub:v1.8", "$ECR/tyk-pump:master"]
-        sink: ["tykio/tyk-mdcb-docker:v2.4", "$ECR/tyk-sink:master"]
-        exclude:
-          - pump: tykio/tyk-pump-docker-pub:v1.8
-            sink: $ECR/tyk-sink:master
-          - pump: $ECR/tyk-pump:master
-            sink: tykio/tyk-mdcb-docker:v2.4
-          - db: mongo7
-            conf: murmur128
-          - db: postgres15
-            conf: sha256
+        envfiles: ${{ fromJson(needs.test-controller-api.outputs.envfiles) }}
+        pump: ${{ fromJson(needs.test-controller-api.outputs.pump) }}
+        sink: ${{ fromJson(needs.test-controller-api.outputs.sink) }}
         include:
           - db: postgres15
             markers: "and not sql"
@@ -68,30 +85,33 @@ jobs:
           GH_TOKEN: ${{ secrets.ORG_GH_TOKEN }}
           TYK_DB_LICENSEKEY: ${{ secrets.DASH_LICENSE }}
           TYK_MDCB_LICENSE: ${{ secrets.MDCB_LICENSE }}
-          ECR: ${{ steps.ecr.outputs.registry }}
+          BASE_REF: ${{startsWith(github.event_name, 'pull_request') && github.base_ref || github.ref}}
         run: |
-          echo "ECR=${ECR}
-          tyk_image=\$ECR/tyk:master
-          tyk_analytics_image=\$ECR/tyk-analytics:master
-          # alfa and beta have to come after the override
-          tyk_alfa_image=\$tyk_image
-          tyk_beta_image=\$tyk_image
+          tags=(${{steps.ecr.outputs.registry}}:$BASE_REF)
+          docker run -q --rm -v ~/.docker/config.json:/root/.docker/config.json tykio/gromit policy match ${tags[0]} 2>versions.env
+          echo '# alfa and beta have to come after the override
+          tyk_alfa_image=$tyk_image
+          tyk_beta_image=$tyk_image
+          ECR=${{steps.ecr.outputs.registry}}
           tyk_pump_image=${{matrix.pump}}
           tyk_sink_image=${{matrix.sink}}
           confs_dir=./pro-ha
-          env_file=local-${{ matrix.db }}.env" > versions.env
+          env_file=local-${{ matrix.envfiles.db }}.env' >> versions.env
           echo "::group::versions"
           cat versions.env
           echo "::endgroup::"
           # Add Tyk component config variations to $env_file
-          cat confs/${{ matrix.conf }}.env >> local-${{ matrix.db }}.env
+          cat confs/${{ matrix.envfiles.config }}.env >> local-${{ matrix.envfiles.db }}.env
           # bring up env, the project name is important
-          docker compose -p auto -f pro-ha.yml -f deps_pro-ha.yml -f ${{ matrix.db }}.yml -f ${{ matrix.cache_db }}.yml --env-file versions.env --profile master-datacenter up --quiet-pull -d
+          docker compose -p auto -f pro-ha.yml -f deps_pro-ha.yml -f ${{ matrix.envfiles.db }}.yml -f ${{ matrix.envfiles.cache }}.yml --env-file versions.env --profile master-datacenter up --quiet-pull -d
           ./dash-bootstrap.sh http://localhost:3000
-          docker compose -p auto -f pro-ha.yml -f deps_pro-ha.yml -f ${{ matrix.db }}.yml -f ${{ matrix.cache_db }}.yml --env-file versions.env --profile slave-datacenter up --quiet-pull -d
+          docker compose -p auto -f pro-ha.yml -f deps_pro-ha.yml -f ${{ matrix.envfiles.db }}.yml -f ${{ matrix.envfiles.cache }}.yml --env-file versions.env --profile slave-datacenter up --quiet-pull -d
       - name: Run tests
         working-directory: auto
         id: test_execution
+        env:
+          # Cover pull_request_target too
+          BASE_REF: ${{startsWith(github.event_name, 'pull_request') && github.base_ref || github.ref}}
         run: |
           # Generate report id
           echo "id=$(date +%s%N)" >> $GITHUB_OUTPUT
@@ -103,7 +123,7 @@ jobs:
             pytest -c pytest_ci.ini --junitxml=./${XUNIT_REPORT_PATH#"${{ github.workspace }}"} --ci -m "not local and not dind ${{ matrix.markers }}" | tee tests.out; then
               echo "All tests passed!" >> $GITHUB_STEP_SUMMARY
           else
-            echo "::error title=API tests ${{ matrix.db }} ${{ matrix.conf }}::Test execution failed"
+            echo "::error title=API tests ${{ matrix.envfiles.db }} ${{ matrix.envfiles.conf }}::Test execution failed"
             cat tests.out >> $GITHUB_STEP_SUMMARY
             exit 1
           fi
@@ -111,6 +131,7 @@ jobs:
         if: always() && steps.test_execution.outcome != 'skipped'
         id: metadata_report
         env:
+          BASE_REF: ${{startsWith(github.event_name, 'pull_request') && github.base_ref || github.ref}}
           REPORT_NAME: ${{ github.repository }}_${{ github.run_id }}_${{ github.run_attempt }}-${{steps.test_execution.outputs.id}}
         run: |
           # Generate metadata report
@@ -118,11 +139,12 @@ jobs:
           repo = ${{ github.repository }}
           branch = ${{ github.ref }}
           commit = ${{ github.sha }}
-          test_suite_version = master
+          test_suite_version = $BASE_REF
           test_suite_name = ${{ github.job }}
           test_suite_run = ${{ github.run_id }}-${{ github.run_attempt }}
-          db = ${{ matrix.db }}
-          conf = ${{ matrix.conf }}
+          db = ${{ matrix.envfiles.db }}
+          conf = ${{ matrix.envfiles.config }}
+          cache = ${{ matrix.envfiles.cache }}
           pump_compatibility = ${{ matrix.pump }}
           sink_compatibility = ${{ matrix.sink }}
           " > ${METADATA_REPORT_PATH}
@@ -166,8 +188,36 @@ jobs:
           retention-days: 3
           path: ${{ github.workspace }}/reports
           overwrite: true
-  ui-tests:
+  test-controller-ui:
     runs-on: ubuntu-latest
+    outputs:
+      envfiles: ${{ steps.params.outputs.envfiles }}
+      pump: ${{ steps.params.outputs.pump }}
+      sink: ${{ steps.params.outputs.sink }}
+    steps:
+      - name: set params
+        id: params
+        shell: bash
+        env:
+          # Cover pull_request_target too
+          BASE_REF: ${{startsWith(github.event_name, 'pull_request') && github.base_ref || github.ref}}
+        run: |
+          set -eo pipefail
+          endpoint="http://tui.internal.dev.tyk.technology/api/tyk-ci/$BASE_REF/${{ github.event_name}}/ui"
+          curl="curl -s --retry 5 --retry-delay 10 --fail-with-body --retry-all-errors"
+          echo "pump<<EOF
+          $($curl ${endpoint}/Pump)
+          EOF
+          sink<<EOF
+          $($curl ${endpoint}/Sink)
+          EOF
+          envfiles<<EOF
+          $($curl ${endpoint}/EnvFiles)
+          EOF" | tee -a "$GITHUB_OUTPUT"
+  ui-tests:
+    needs:
+      - test-controller-ui
+    runs-on: ubuntu-latest-m-2
     env:
       METADATA_REPORT_PATH: /tmp/metadata.toml
       XUNIT_REPORT_PATH: ${{ github.workspace }}/tyk-analytics/tests/ui/playwright-report/results.xml
@@ -177,20 +227,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        conf: ["sha256", "murmur128"]
-        db: ["mongo7", "postgres15"]
-        cache_db: ["redis7"]
-        pump: ["tykio/tyk-pump-docker-pub:v1.8", "$ECR/tyk-pump:master"]
-        sink: ["tykio/tyk-mdcb-docker:v2.4", "$ECR/tyk-sink:master"]
-        exclude:
-          - pump: tykio/tyk-pump-docker-pub:v1.8
-            sink: $ECR/tyk-sink:master
-          - pump: $ECR/tyk-pump:master
-            sink: tykio/tyk-mdcb-docker:v2.4
-          - db: mongo7
-            conf: murmur128
-          - db: postgres15
-            conf: sha256
+        envfiles: ${{ fromJson(needs.test-controller-ui.outputs.envfiles) }}
+        pump: ${{ fromJson(needs.test-controller-ui.outputs.pump) }}
+        sink: ${{ fromJson(needs.test-controller-ui.outputs.sink) }}
         include:
           - db: postgres15
             markers: "and not sql"
@@ -229,27 +268,27 @@ jobs:
           GH_TOKEN: ${{ secrets.ORG_GH_TOKEN }}
           TYK_DB_LICENSEKEY: ${{ secrets.DASH_LICENSE }}
           TYK_MDCB_LICENSE: ${{ secrets.MDCB_LICENSE }}
-          ECR: ${{ steps.ecr.outputs.registry }}
+          BASE_REF: ${{startsWith(github.event_name, 'pull_request') && github.base_ref || github.ref}}
         run: |
-          echo "ECR=${ECR}
-          tyk_image=\$ECR/tyk:master
-          tyk_analytics_image=\$ECR/tyk-analytics:master
-          # alfa and beta have to come after the override
-          tyk_alfa_image=\$tyk_image
-          tyk_beta_image=\$tyk_image
+          tags=(${{steps.ecr.outputs.registry}}:$BASE_REF)
+          docker run -q --rm -v ~/.docker/config.json:/root/.docker/config.json tykio/gromit policy match ${tags[0]} 2>versions.env
+          echo '# alfa and beta have to come after the override
+          tyk_alfa_image=$tyk_image
+          tyk_beta_image=$tyk_image
+          ECR=${{steps.ecr.outputs.registry}}
           tyk_pump_image=${{matrix.pump}}
           tyk_sink_image=${{matrix.sink}}
           confs_dir=./pro-ha
-          env_file=local-${{ matrix.db }}.env" > versions.env
+          env_file=local-${{ matrix.envfiles.db }}.env' >> versions.env
           echo "::group::versions"
           cat versions.env
           echo "::endgroup::"
           # Add Tyk component config variations to $env_file
-          cat confs/${{ matrix.conf }}.env >> local-${{ matrix.db }}.env
+          cat confs/${{ matrix.envfiles.config }}.env >> local-${{ matrix.envfiles.db }}.env
           # bring up env, the project name is important
-          docker compose -p auto -f pro-ha.yml -f deps_pro-ha.yml -f ${{ matrix.db }}.yml -f ${{ matrix.cache_db }}.yml --env-file versions.env --profile master-datacenter up --quiet-pull -d
+          docker compose -p auto -f pro-ha.yml -f deps_pro-ha.yml -f ${{ matrix.envfiles.db }}.yml -f ${{ matrix.envfiles.cache }}.yml --env-file versions.env --profile master-datacenter up --quiet-pull -d
           ./dash-bootstrap.sh http://localhost:3000
-          docker compose -p auto -f pro-ha.yml -f deps_pro-ha.yml -f ${{ matrix.db }}.yml -f ${{ matrix.cache_db }}.yml --env-file versions.env --profile slave-datacenter up --quiet-pull -d
+          docker compose -p auto -f pro-ha.yml -f deps_pro-ha.yml -f ${{ matrix.envfiles.db }}.yml -f ${{ matrix.envfiles.cache }}.yml --env-file versions.env --profile slave-datacenter up --quiet-pull -d
       - name: Install Node.js 18.16
         uses: actions/setup-node@v2.4.1
         with:
@@ -329,6 +368,7 @@ jobs:
         if: always() && steps.test_execution.outcome != 'skipped'
         id: metadata_report
         env:
+          BASE_REF: ${{startsWith(github.event_name, 'pull_request') && github.base_ref || github.ref}}
           REPORT_NAME: ${{ github.repository }}_${{ github.run_id }}_${{ github.run_attempt }}-${{steps.test_execution.outputs.id}}
         run: |
           # Generate metadata report
@@ -336,11 +376,12 @@ jobs:
           repo = ${{ github.repository }}
           branch = ${{ github.ref }}
           commit = ${{ github.sha }}
-          test_suite_version = master
+          test_suite_version = $BASE_REF
           test_suite_name = ${{ github.job }}
           test_suite_run = ${{ github.run_id }}-${{ github.run_attempt }}
-          db = ${{ matrix.db }}
-          conf = ${{ matrix.conf }}
+          db = ${{ matrix.envfiles.db }}
+          conf = ${{ matrix.envfiles.config }}
+          cache = ${{ matrix.envfiles.cache }}
           pump_compatibility = ${{ matrix.pump }}
           sink_compatibility = ${{ matrix.sink }}
           " > ${METADATA_REPORT_PATH}
