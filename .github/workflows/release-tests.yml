@@ -50,6 +50,11 @@ jobs:
         include:
           - db: postgres15
             markers: "and not sql"
+        exclude:
+          - pump: $ECR/tyk-pump:v1.8
+            sink: $ECR/tyk-sink:master
+          - pump: $ECR/tyk-pump:master
+            sink: $ECR/tyk-sink:v2.4
     steps:
       - uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -233,6 +238,11 @@ jobs:
         include:
           - db: postgres15
             markers: "and not sql"
+        exclude:
+          - pump: $ECR/tyk-pump:v1.8
+            sink: $ECR/tyk-sink:master
+          - pump: $ECR/tyk-pump:master
+            sink: $ECR/tyk-sink:v2.4
     steps:
       - uses: aws-actions/configure-aws-credentials@v4
         with:
