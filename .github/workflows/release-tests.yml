@@ -34,7 +34,7 @@ jobs:
   api-tests:
     needs:
       - test-controller-api
-    runs-on: ubuntu-latest-m-2
+    runs-on: ubuntu-latest
     env:
       METADATA_REPORT_PATH: /tmp/metadata.toml
       XUNIT_REPORT_PATH: ${{ github.workspace }}/reports/pytest-report.xml
@@ -222,7 +222,7 @@ jobs:
   ui-tests:
     needs:
       - test-controller-ui
-    runs-on: ubuntu-latest-m-2
+    runs-on: ubuntu-latest
     env:
       METADATA_REPORT_PATH: /tmp/metadata.toml
       XUNIT_REPORT_PATH: ${{ github.workspace }}/tyk-analytics/tests/ui/playwright-report/results.xml
