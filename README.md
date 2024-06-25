@@ -1,3 +1,4 @@
+force
 # Tyk CI/CD
 
 Infrastructure definition for CI/CD environments.
