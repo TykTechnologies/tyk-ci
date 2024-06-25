@@ -51,10 +51,10 @@ jobs:
           - db: postgres15
             markers: "and not sql"
         exclude:
-          - pump: $ECR/tyk-pump:v1.8
+          - pump: tykio/tyk-pump-docker-pub:v1.8
             sink: $ECR/tyk-sink:master
           - pump: $ECR/tyk-pump:master
-            sink: $ECR/tyk-sink:v2.4
+            sink: tykio/tyk-mdcb-docker:v2.4
     steps:
       - uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -239,10 +239,10 @@ jobs:
           - db: postgres15
             markers: "and not sql"
         exclude:
-          - pump: $ECR/tyk-pump:v1.8
+          - pump: tykio/tyk-pump-docker-pub:v1.8
             sink: $ECR/tyk-sink:master
           - pump: $ECR/tyk-pump:master
-            sink: $ECR/tyk-sink:v2.4
+            sink: tykio/tyk-mdcb-docker:v2.4
     steps:
       - uses: aws-actions/configure-aws-credentials@v4
         with:
