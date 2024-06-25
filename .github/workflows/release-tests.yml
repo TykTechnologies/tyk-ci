@@ -92,7 +92,7 @@ jobs:
           TYK_MDCB_LICENSE: ${{ secrets.MDCB_LICENSE }}
           BASE_REF: ${{startsWith(github.event_name, 'pull_request') && github.base_ref || github.ref}}
         run: |
-          tags=(${{steps.ecr.outputs.registry}}:$BASE_REF)
+          tags=(${{steps.ecr.outputs.registry}}/$REPO:$BASE_REF)
           docker run -q --rm -v ~/.docker/config.json:/root/.docker/config.json tykio/gromit policy match ${tags[0]} 2>versions.env
           echo '# alfa and beta have to come after the override
           tyk_alfa_image=$tyk_image
@@ -280,7 +280,7 @@ jobs:
           TYK_MDCB_LICENSE: ${{ secrets.MDCB_LICENSE }}
           BASE_REF: ${{startsWith(github.event_name, 'pull_request') && github.base_ref || github.ref}}
         run: |
-          tags=(${{steps.ecr.outputs.registry}}:$BASE_REF)
+          tags=(${{steps.ecr.outputs.registry}}/$REPO:$BASE_REF)
           docker run -q --rm -v ~/.docker/config.json:/root/.docker/config.json tykio/gromit policy match ${tags[0]} 2>versions.env
           echo '# alfa and beta have to come after the override
           tyk_alfa_image=$tyk_image
