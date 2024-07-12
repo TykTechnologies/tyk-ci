@@ -180,3 +180,4 @@ $ export USER_API_SECRET=<COPY VALUE FROM BOOTSTRAP OUTPUT>
 $ pytest -c pytest_local.ini --ci -m "not local and not dind and not sql"
 
 ```
+test auto gates
