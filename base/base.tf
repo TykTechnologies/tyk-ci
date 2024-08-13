@@ -11,7 +11,7 @@ locals {
   # An additional repo that will be linked to the tyk user from repos above
   tyk_repos = ["tyk-plugin-compiler"]
   # repo list based on release cadence
-  low_cadence_repos  = ["tyk-pump", "tyk-sink", "tyk-identity-broker", "portal", "tyk-sync", "tyk-plugin-compiler", "tyk-automated-tests"]
+  low_cadence_repos  = ["tyk-pump", "tyk-sink", "tyk-identity-broker", "portal", "tyk-sync-internal", "tyk-plugin-compiler", "tyk-automated-tests"]
   high_cadence_repos = ["tyk", "tyk-analytics"]
 
   pr_policy1 = jsondecode(file("files/pr_policy.json"))
