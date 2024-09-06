@@ -13,12 +13,13 @@ services:
       - "6000:6000"
       - "8003:8003"
       - "8080:8080"
-    entrypoint: ["/bin/bash"]
-    command:
-      - "-c"
-      - |
-        update-ca-certificates
-        /opt/tyk-gateway/tyk --conf /conf/tyk.conf
+    #entrypoint: ["/bin/bash"]
+    command: ["--conf", "/conf/tyk.conf"]
+    #command:
+    #  - "-c"
+    #  - |
+    #    update-ca-certificates
+    #    /opt/tyk-gateway/tyk --conf /conf/tyk.conf
 
   tyk-analytics:
     profiles: ["all", "master-datacenter"]
@@ -50,7 +51,7 @@ services:
       - "8061:8061"
     command: [ "--conf", "/conf/tyk-pump.conf" ]
     depends_on:
-      - wait_deps
+      - wait_db
 
   gateway-checker:
     profiles: ["all", "master-datacenter"]
