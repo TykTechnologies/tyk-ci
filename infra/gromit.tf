@@ -40,7 +40,7 @@ module "tui" {
     port      = 80,
     log_group = "internal",
     image     = var.gromit_image,
-    command   = ["--textlogs=false", "policy", "serve", "--save=/shared/prod-variations.yml", "--port=:80"],
+    command   = ["--textlogs=false", "policy", "serve", "--save=/shared", "--port=:80"],
     mounts = [
       { src = "shared", dest = "/shared", readonly = false },
     ],
