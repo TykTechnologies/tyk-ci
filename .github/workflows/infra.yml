@@ -1,4 +1,4 @@
-name: Infra Apply
+name: Infra Validate
 
 on:
   push:
@@ -34,12 +34,6 @@ jobs:
           aws-region: eu-central-1
           
       - name: validate
-        id: validate
         run: |
           terraform init
           terraform validate
-        
-      - name: apply
-        id: apply
-        run: |
-          terraform apply -auto-approve -var-file ${TF_WORKSPACE}.tfvars
