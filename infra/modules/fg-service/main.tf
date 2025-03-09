@@ -28,15 +28,8 @@ resource "aws_ecs_task_definition" "td" {
 
 resource "aws_security_group" "sg" {
   name        = var.cd.name
-  description = "One TCP port from anywhere, full outbound access"
+  description = format("For service %s", var.cd.name)
   vpc_id      = var.vpc
-
-  ingress {
-    from_port   = var.cd.port
-    to_port     = var.cd.port
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
 
   egress {
     from_port   = 0
@@ -44,6 +37,26 @@ resource "aws_security_group" "sg" {
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
   }
+}
+
+resource "aws_vpc_security_group_ingress_rule" "ing_port" {
+  security_group_id = aws_security_group.sg.id
+  cidr_ipv4         = "0.0.0.0/0"
+  from_port         = var.cd.port
+  to_port           = var.cd.port
+  ip_protocol       = "tcp"
+}
+
+data "aws_vpc" "vpc" {
+  id = var.vpc
+}
+
+resource "aws_vpc_security_group_ingress_rule" "efs" {
+  security_group_id = aws_security_group.sg.id
+  cidr_ipv4         = data.aws_vpc.vpc.cidr_block
+  from_port         = 2049
+  to_port           = 2049
+  ip_protocol       = "tcp"
 }
 
 resource "aws_ecs_service" "service" {
@@ -56,6 +69,6 @@ resource "aws_ecs_service" "service" {
   network_configuration {
     subnets          = var.subnets
     security_groups  = [aws_security_group.sg.id]
-    assign_public_ip = true
+    assign_public_ip = var.public_ip
   }
 }

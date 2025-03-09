@@ -75,12 +75,14 @@ resource "aws_iam_role" "ter" {
   name = "ter"
   path = "/cd/"
 
-  inline_policy {
-    name   = "extra-ter"
-    policy = data.aws_iam_policy_document.extra.json
-  }
   assume_role_policy = data.aws_iam_policy_document.ecs_assume_role_policy.json
   #managed_policy_arns = ["arn:aws:iam::aws:policy/aws-service-role/AmazonECSServiceRolePolicy"]
+}
+
+resource "aws_iam_role_policy" "extra" {
+  name   = "extra-ter"
+  role   = aws_iam_role.ter.id
+  policy = data.aws_iam_policy_document.extra.json
 }
 
 # ecr_rw_tyk is created in base but ter is created here. We need to
@@ -145,7 +147,7 @@ resource "aws_ssm_parameter" "ter" {
   value       = aws_iam_role.ter.arn
 }
 
-resource "aws_s3_bucket_policy" "deptrack_lb_logs" {
+resource "aws_s3_bucket_policy" "lb_logs" {
   bucket = data.terraform_remote_state.base.outputs.assets
   policy = <<-EOF
 {
@@ -158,6 +160,14 @@ resource "aws_s3_bucket_policy" "deptrack_lb_logs" {
       },
       "Action": "s3:PutObject",
       "Resource": "arn:aws:s3:::${data.terraform_remote_state.base.outputs.assets}/deptrack-lb/AWSLogs/754489498669/*"
+    },
+    {
+      "Effect": "Allow",
+      "Principal": {
+        "AWS": "arn:aws:iam::054676820928:root"
+      },
+      "Action": "s3:PutObject",
+      "Resource": "arn:aws:s3:::${data.terraform_remote_state.base.outputs.assets}/tui-lb/AWSLogs/754489498669/*"
     }
   ]
 }

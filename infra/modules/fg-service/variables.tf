@@ -50,3 +50,9 @@ variable "volume_map" {
   description = "map of volume name to EFS id"
   type        = map(object({ fs_id = string, root = string }))
 }
+
+variable "public_ip" {
+  description = "assign public IP"
+  type        = bool
+  default     = false
+}
