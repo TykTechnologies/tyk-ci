@@ -5,7 +5,7 @@ module "tui" {
 
   name             = "tui"
   cluster_arn      = aws_ecs_cluster.internal.arn
-  assign_public_ip = false
+  assign_public_ip = true
   launch_type      = "FARGATE"
 
   volume = {
@@ -20,7 +20,7 @@ module "tui" {
 
   cpu           = 256 # 0.25 vCPU
   memory        = 512
-  desired_count = 1
+  desired_count = 2
   container_definitions = {
     tui = {
       cpu     = 256
