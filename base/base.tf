@@ -7,12 +7,12 @@ locals {
   # name should match the tf workspace name
   name = "base-prod"
   # Repositories to create with per-repo access keys
-  repos = ["tyk", "tyk-ee", "tyk-analytics", "tyk-pump", "tyk-pump-ee", "tyk-sink", "tyk-identity-broker", "portal", "tyk-sync", "tyk-plugin-compiler-ee"]
+  repos = ["tyk", "tyk-ee", "tyk-fips", "tyk-analytics", "tyk-analytics-fips", "tyk-pump", "tyk-pump-ee", "tyk-pump-fips", "tyk-sink", "tyk-sink-fips", "tyk-identity-broker", "portal", "tyk-sync", "tyk-plugin-compiler-ee"]
   # An additional repo that will be linked to the tyk user from repos above
   tyk_repos = ["tyk-plugin-compiler"]
   # repo list based on release cadence
-  low_cadence_repos  = ["tyk-pump", "tyk-sink", "tyk-identity-broker", "portal", "tyk-sync", "tyk-plugin-compiler", "tyk-automated-tests"]
-  high_cadence_repos = ["tyk", "tyk-analytics"]
+  low_cadence_repos  = ["tyk-pump", "tyk-pump-fips", "tyk-sink", "tyk-sink-fips", "tyk-identity-broker", "portal", "tyk-sync", "tyk-plugin-compiler", "tyk-automated-tests"]
+  high_cadence_repos = ["tyk", "tyk-fips", "tyk-analytics", "tyk-analytics-fips"]
 
   pr_policy1 = jsondecode(file("files/pr_policy.json"))
   pr_policy2 = jsondecode(file("files/retain_all.json"))
