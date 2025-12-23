@@ -1,0 +1,65 @@
+version: "3.9"
+services:
+  bundle-server:
+    profiles: ["all", "master-datacenter"]
+    container_name: bundle-server
+    build:
+      context: ./bundle-server
+    ports:
+      - "8000:8000"
+
+  federation-server:
+    profiles: ["all", "master-datacenter"]
+    container_name: federation
+    image: agatawitkowska/federation-example
+    ports:
+      - "4000:4000"
+      - "4001:4001"
+      - "4002:4002"
+      - "4003:4003"
+
+  openldap:
+    profiles: ["all", "master-datacenter"]
+    container_name: openldap
+    image: osixia/openldap:1.5.0
+    ports:
+      - "389:389"
+      - "636:636"
+    environment:
+      - LDAP_READONLY_USER=true
+      - LDAP_READONLY_USER_USERNAME=read-only-admin
+      - LDAP_READONLY_USER_PASSWORD=password
+
+  graphql-faker:
+    profiles: ["all", "master-datacenter"]
+    container_name: graphql-faker
+    image: apisguru/graphql-faker:latest
+    volumes:
+      - ./faker-schema.graphql:/workdir/faker-schema.graphql
+    command: "faker-schema.graphql"
+    ports:
+      - "9002:9002"
+
+  upstream:
+    profiles: ["all", "master-datacenter"]
+    container_name: httpbin.org
+    image: kennethreitz/httpbin
+    restart: always
+
+  restcountries:
+    profiles: ["all", "master-datacenter"]
+    container_name: restcountries
+    image: bigpapoo/restcountries:1.0
+
+  trevorblades:
+    profiles: ["all", "master-datacenter"]
+    container_name: trevorblades
+    image: mangomm/trevorblades-countries
+
+  webhook:
+    profiles: ["all", "master-datacenter"]
+    container_name: webhook-server
+    build:
+      context: ./webhook-server
+    ports:
+      - "9003:9003"

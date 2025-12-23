@@ -1,0 +1,40 @@
+#QA1042
+type Query {
+  qa1042_query(input: QA1024_input): People
+  qa1043_query: QA1043_RootObject
+}
+
+input QA1024_input{
+  values: [String!]
+}
+
+type People {
+  name: String @examples(values: ["Wojciech"])
+  age: Int @fake(type: number, options: {maxNumber: 80, minNumber: 1}) 
+}
+
+#QA1043
+type QA1043_RootObject {
+  subObject: QA1043_SubObject
+}
+
+type QA1043_SubObject{
+  works: String @examples(values: ["Works works"])
+  theOtherField: String @examples(values: ["theOtherValue"])
+}
+
+#QA1041
+type Mutation {
+  qa1041_mutationA(input: QA1041_input!): String! @examples(values: ["MutA"])
+  qa1041_mutationB(input: QA1041_input): String! @examples(values: ["MutB"])
+}
+
+input QA1041_input{
+  fieldA: QA1041_enum! = ENUM_A
+  fieldB: String
+}
+
+enum QA1041_enum{
+  ENUM_A
+  ENUM_B
+}
